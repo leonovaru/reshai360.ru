@@ -120,12 +120,8 @@
     <!-- ЭКРАН 2: ВЫБОР ДИАГНОСТИКИ И ОПЛАТА -->
     <section id="select-program" class="py-12 border-t border-slate-800/60 scroll-mt-10">
         <div class="max-w-5xl mx-auto px-4">
-            <div class="text-center mb-6 space-y-2">
+            <div class="text-center mb-8 space-y-2">
                 <h2 class="text-2xl sm:text-4xl font-extrabold text-white">Выберите вариант диагностики</h2>
-            </div>
-
-            <div class="max-w-3xl mx-auto mb-6 p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-xs sm:text-sm text-slate-300 text-center leading-relaxed">
-                <span class="font-bold text-indigo-400">💡 Важная информация:</span> Мы не предоставляем типовые варианты пробников ОГЭ/ЕГЭ, ВПР или контрольных работ. Диагностический тест проводит независимый глубокий аудит всех ключевых знаний по темам программы за прошлые годы, выявляя скрытые пробелы.
             </div>
 
             <!-- Табы переключения -->
@@ -375,14 +371,22 @@
                 const canvas = document.getElementById('pdf-canvas');
                 const ctx = canvas.getContext('2d');
 
-                const unscaledViewport = page.getViewport({ scale: 1 });
-                const maxWidth = Math.min(wrapper.clientWidth - 10, 420);
-                
-                const scale = maxWidth / unscaledViewport.width;
+                // Плотность пикселей экрана (HiDPI / Retina)
+                const pixelRatio = window.devicePixelRatio || 1;
 
-                const viewport = page.getViewport({ scale: scale });
-                canvas.height = viewport.height;
+                const unscaledViewport = page.getViewport({ scale: 1 });
+                const maxWidth = Math.min(wrapper.clientWidth - 20, 420);
+                
+                const baseScale = maxWidth / unscaledViewport.width;
+                const viewport = page.getViewport({ scale: baseScale * pixelRatio });
+
+                // Физическое разрешение холста
                 canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                // Отображаемые размеры CSS для резкости
+                canvas.style.width = `${maxWidth}px`;
+                canvas.style.height = `${viewport.height / pixelRatio}px`;
 
                 const renderContext = {
                     canvasContext: ctx,
