@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Решай360.ру — Полный аудит знаний по математике</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- PDF.js CDN для просмотра PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        body {
+            background-color: #090d16;
+            color: #f1f5f9;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .phone-mockup {
+            aspect-ratio: 9 / 19;
+            box-shadow: 0 0 50px rgba(99, 102, 241, 0.2);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col justify-between pt-14">
+
+    <!-- ЛИПКАЯ ПЛАШКА СВЕРХУ ПРИ СКРОЛЛЕ -->
+    <div id="sticky-bar" class="fixed top-0 left-0 right-0 z-50 bg-[#090d16]/95 backdrop-blur-md border-b border-indigo-500/30 py-2.5 px-4 shadow-2xl transition-all duration-300">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-lg font-black tracking-wider bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">РЕШАЙ360</span>
+                <span class="hidden md:inline-block text-xs text-slate-400 border-l border-slate-800 pl-3">
+                    Глубокая диагностика по всей программе
+                </span>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <a href="#support" class="text-xs sm:text-sm font-semibold text-slate-300 hover:text-white px-3 py-1.5 rounded-xl transition">
+                    Поддержка
+                </a>
+                <a href="#select-program" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition shadow-lg shadow-indigo-600/30 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-list-check text-xs"></i>
+                    <span>Выбрать класс / Начать</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН 1: HERO SECTION (АДАПТИВНЫЙ ПОД ЛЮБЫЕ ЭКРАНЫ) -->
+    <section class="py-6 lg:py-10 min-h-[calc(100vh-3.5rem)] flex flex-col justify-center relative overflow-hidden">
+        <div class="max-w-6xl mx-auto px-4 w-full">
+            <div class="grid lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+                
+                <!-- Левый блок: Оффер -->
+                <div class="lg:col-span-7 space-y-4 text-left">
+                    
+                    <!-- ПЛАШКА НА САМОМ ВЕРХУ -->
+                    <div>
+                        <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
+                            📱 Аудит знаний с любого устройства
+                        </span>
+                    </div>
+                    
+                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight">
+                        Пробник, контрольная или ВПР показывают балл.<br>
+                        <span class="bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">Решай360 показывает пробелы.</span>
+                    </h1>
+                    
+                    <p class="text-slate-300 text-xs sm:text-sm lg:text-base font-normal leading-relaxed max-w-xl">
+                        Проверь знания по всей пройденной программе. Получи развернутую PDF-карту: что освоено идеально, где скрыты ошибки и как выполнено каждое задание с фото ваших решений.
+                    </p>
+
+                    <!-- Преимущества компактными чипами (без пустого места) -->
+                    <div class="flex flex-wrap gap-2 pt-1 text-xs font-medium text-slate-300">
+                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
+                            <i class="fa-solid fa-laptop-mobile text-indigo-400"></i>
+                            <span>С любого устройства</span>
+                        </div>
+                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
+                            <i class="fa-solid fa-floppy-disk text-indigo-400"></i>
+                            <span>Сохраняет прогресс</span>
+                        </div>
+                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
+                            <i class="fa-solid fa-file-pdf text-indigo-400"></i>
+                            <span>Отчет в PDF А4</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <a href="#select-program" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-7 py-3 rounded-xl font-bold text-sm transition shadow-xl shadow-indigo-600/25 space-x-2">
+                            <span>Выбрать свой класс</span>
+                            <i class="fa-solid fa-arrow-down text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Правый блок: Видео смартфона -->
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="phone-mockup relative w-full max-w-[200px] sm:max-w-[230px] rounded-[32px] p-2 bg-slate-900 border-4 border-slate-800 shadow-2xl overflow-hidden">
+                        <div class="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-3.5 bg-slate-950 rounded-full z-20 flex items-center justify-center">
+                            <div class="w-6 h-1 bg-slate-800 rounded-full"></div>
+                        </div>
+                        
+                        <div class="relative w-full h-full rounded-[26px] overflow-hidden bg-slate-950 flex items-center justify-center">
+                            <video id="demo-video" autoplay muted loop playsinline class="w-full h-full object-cover">
+                                <source src="demo_mobile.mp4" type="video/mp4">
+                                Ваш браузер не поддерживает видео.
+                            </video>
+                            <button onclick="toggleVideoSound()" class="absolute bottom-3 right-3 bg-slate-950/80 hover:bg-slate-900 text-white p-2.5 rounded-full border border-slate-700/80 transition z-20">
+                                <i id="sound-icon" class="fa-solid fa-volume-xmark text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ЭКРАН 2: ВЫБОР ДИАГНОСТИКИ И ОПЛАТА -->
+    <section id="select-program" class="py-12 border-t border-slate-800/60 scroll-mt-10">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-6 space-y-2">
+                <h2 class="text-2xl sm:text-4xl font-extrabold text-white">Выберите вариант диагностики</h2>
+            </div>
+
+            <!-- Информационное примечание для клиентов -->
+            <div class="max-w-3xl mx-auto mb-6 p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-xs sm:text-sm text-slate-300 text-center leading-relaxed">
+                <span class="font-bold text-indigo-400">💡 Важная информация:</span> Мы не предоставляем типовые варианты пробников ОГЭ/ЕГЭ, ВПР или контрольных работ. Диагностический тест проводит независимый глубокий аудит всех ключевых знаний по темам программы за прошлые годы, выявляя скрытые пробелы.
+            </div>
+
+            <!-- Табы переключения -->
+            <div class="space-y-5 mb-8">
+                <!-- Классы -->
+                <div class="flex flex-col items-center">
+                    <span class="text-[11px] uppercase font-bold tracking-wider text-slate-500 mb-2">Школьная программа</span>
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <button onclick="selectOption('5')" id="btn-5" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">5 класс</button>
+                        <button onclick="selectOption('6')" id="btn-6" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">6 класс</button>
+                        <button onclick="selectOption('7')" id="btn-7" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">7 класс</button>
+                        <button onclick="selectOption('8')" id="btn-8" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">8 класс</button>
+                        <button onclick="selectOption('9')" id="btn-9" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">9 класс</button>
+                        <button onclick="selectOption('10')" id="btn-10" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">10 класс</button>
+                    </div>
+                </div>
+
+                <!-- Экзамены (ФИПИ) -->
+                <div class="flex flex-col items-center pt-1">
+                    <span class="text-[11px] uppercase font-bold tracking-wider text-indigo-400 mb-2">Государственные экзамены</span>
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <button onclick="selectOption('oge')" id="btn-oge" class="opt-btn px-5 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500/40 bg-indigo-950/40 text-indigo-300 hover:bg-indigo-600 hover:text-white transition">ОГЭ</button>
+                        <button onclick="selectOption('ege_base')" id="btn-ege_base" class="opt-btn px-5 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500/40 bg-indigo-950/40 text-indigo-300 hover:bg-indigo-600 hover:text-white transition">ЕГЭ База</button>
+                        <button onclick="selectOption('ege_prof')" id="btn-ege_prof" class="opt-btn px-5 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500/40 bg-indigo-950/40 text-indigo-300 hover:bg-indigo-600 hover:text-white transition">ЕГЭ Профиль</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА ВЫБРАННОЙ ДИАГНОСТИКИ -->
+            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 max-w-4xl mx-auto shadow-2xl">
+                
+                <!-- Шапка карточки -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-6 mb-6">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span id="badge-text" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
+                                Полный аудит
+                            </span>
+                            <span id="fipi-badge" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                                <i class="fa-solid fa-award mr-1"></i>Соответствует спецификации ФИПИ
+                            </span>
+                        </div>
+                        <h3 id="card-title" class="text-2xl sm:text-3xl font-extrabold text-white mt-2">
+                            Готовность к ЕГЭ Профиль
+                        </h3>
+                        <p id="card-desc" class="text-xs text-slate-400 mt-1">Проверяем знания за 1–11 классы</p>
+                    </div>
+                    <div class="text-left sm:text-right">
+                        <div id="card-price" class="text-3xl sm:text-4xl font-black text-white">1 490 ₽</div>
+                        <div class="text-xs text-slate-400 mt-1">Доступ к тесту сразу после оплаты</div>
+                    </div>
+                </div>
+
+                <!-- Подробный список блоков -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Что будет проверено в этой диагностике:</h4>
+                    
+                    <div id="blocks-container" class="grid md:grid-cols-2 gap-4 text-xs sm:text-sm">
+                        <!-- Динамический JS -->
+                    </div>
+                </div>
+
+                <!-- Форма заказа -->
+                <form id="checkout-form" onsubmit="handleSubmit(event)" class="mt-8 pt-6 border-t border-slate-800 space-y-4">
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Ваше имя</label>
+                            <input type="text" required placeholder="Александр" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Email (сюда придет PDF-отчет)</label>
+                            <input type="email" required placeholder="student@mail.ru" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Обязательное согласие на обработку персональных данных -->
+                    <div class="flex items-start space-x-2.5 pt-2 text-xs text-slate-400">
+                        <input type="checkbox" id="consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
+                        <label for="consent" class="text-[11px] leading-tight text-slate-400">
+                            Я даю согласие на обработку персональных данных и принимаю условия <a href="#" class="underline hover:text-indigo-400">Политики конфиденциальности</a> и <a href="#" class="underline hover:text-indigo-400">Публичной оферты</a>.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition shadow-xl shadow-indigo-600/25 text-base mt-4 flex items-center justify-center space-x-2">
+                        <span>Перейти к оплате</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ЭКРАН 3: ПОЧЕМУ ПРОБНИКИ И КОНТРОЛЬНЫЕ НЕ ДАЮТ ПОЛНОЙ КАРТИНЫ -->
+    <section class="py-12 bg-slate-900/40 border-y border-slate-800/60">
+        <div class="max-w-4xl mx-auto px-4 text-center space-y-3">
+            <h2 class="text-xl sm:text-2xl font-bold text-white">
+                Обычные тесты не показывают причину ошибок
+            </h2>
+            <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                На школьной контрольной, ВПР или тестовом пробнике легко получить случайный высокий балл, если выпадут легкие темы. При этом слабые места останутся скрыты до самого дня экзамена. В <strong class="text-indigo-400">Решай360</strong> проверка идет по всей пройденной программе за прошлые годы.
+            </p>
+        </div>
+    </section>
+
+    <!-- ЭКРАН 4: ИНТЕРАКТИВНЫЙ ПРОСМОТР PDF -->
+    <section class="py-12 border-b border-slate-800/60">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-6 space-y-2">
+                <h2 class="text-2xl sm:text-3xl font-bold text-white">
+                    Как выглядит итоговый PDF-отчет
+                </h2>
+            </div>
+
+            <!-- PDF Viewer Card -->
+            <div class="glass-panel p-4 sm:p-6 rounded-3xl border border-slate-800 max-w-3xl mx-auto flex flex-col items-center space-y-4">
+                
+                <!-- Панель управления навигацией -->
+                <div class="flex items-center justify-between w-full max-w-md bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-800 text-xs sm:text-sm">
+                    <button id="prev-page" onclick="changePage(-1)" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-1">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                        <span>Назад</span>
+                    </button>
+
+                    <span class="text-slate-300 font-medium">
+                        Страница <span id="page-num" class="font-bold text-indigo-400">1</span> из <span id="page-count" class="font-bold text-white">--</span>
+                    </span>
+
+                    <button id="next-page" onclick="changePage(1)" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-semibold transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-1">
+                        <span>Вперед</span>
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Canvas контейнер под размер листа А4 -->
+                <div id="canvas-wrapper" class="w-full flex justify-center bg-slate-950 p-2 sm:p-4 rounded-2xl border border-slate-800/80 overflow-hidden min-h-[480px] items-center relative">
+                    <div id="pdf-loading" class="text-slate-400 text-xs flex items-center space-x-2">
+                        <i class="fa-solid fa-spinner fa-spin text-indigo-400 text-base"></i>
+                        <span>Загрузка страниц отчета...</span>
+                    </div>
+                    <canvas id="pdf-canvas" class="max-w-full rounded-lg shadow-2xl border border-slate-700/50 hidden" oncontextmenu="return false;"></canvas>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ЭКРАН 5: СЛУЖБА ПОДДЕРЖКИ -->
+    <section id="support" class="py-12 bg-slate-900/40 border-t border-slate-800/60 scroll-mt-10">
+        <div class="max-w-3xl mx-auto px-4 text-center space-y-4">
+            <h3 class="text-2xl font-bold text-white">Нужна помощь или возникли вопросы?</h3>
+            <p class="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+                Если возникли вопросы по оплате, не пришел PDF-отчет или не открылась страница с тестом — напишите в нашу службу поддержки.
+            </p>
+            <p class="text-xs sm:text-sm font-semibold text-indigo-400">
+                График работы службы поддержки: ежедневно с 10:00 до 20:00 по МСК.
+            </p>
+            <div class="flex flex-wrap justify-center items-center gap-4 pt-3">
+                <a href="https://t.me/your_support" target="_blank" class="inline-flex items-center space-x-2 bg-[#229ED9] hover:bg-[#1d8cb0] text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg shadow-[#229ED9]/20">
+                    <i class="fa-brands fa-telegram text-lg"></i>
+                    <span>Написать в Telegram</span>
+                </a>
+                <a href="https://vk.com/your_support" target="_blank" class="inline-flex items-center space-x-2 bg-[#0077FF] hover:bg-[#0066cc] text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg shadow-[#0077FF]/20">
+                    <i class="fa-brands fa-vk text-lg"></i>
+                    <span>Сообщество VK</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ФУТЕР -->
+    <footer class="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500">
+        <div class="max-w-6xl mx-auto px-4">
+            © 2026 РЕШАЙ360.РУ. Независимый аудит знаний по математике. Все права защищены.
+        </div>
+    </footer>
+
+    <!-- СКРИПТЫ -->
+    <script>
+        // Настройка рабочей среды PDF.js
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        let pdfDoc = null;
+        let currentPdfPage = 1;
+        let pageRendering = false;
+        let pageNumPending = null;
+
+        function renderPdfPage(num) {
+            if (!pdfDoc) return;
+            pageRendering = true;
+            pdfDoc.getPage(num).then(function(page) {
+                const wrapper = document.getElementById('canvas-wrapper');
+                const canvas = document.getElementById('pdf-canvas');
+                const ctx = canvas.getContext('2d');
+
+                const unscaledViewport = page.getViewport({ scale: 1 });
+                const maxWidth = Math.min(wrapper.clientWidth - 20, 620);
+                const maxHeight = window.innerHeight * 0.65;
+                
+                const scaleW = maxWidth / unscaledViewport.width;
+                const scaleH = maxHeight / unscaledViewport.height;
+                const scale = Math.min(scaleW, scaleH, 1.2);
+
+                const viewport = page.getViewport({ scale: scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                const renderTask = page.render(renderContext);
+
+                renderTask.promise.then(function() {
+                    pageRendering = false;
+                    const loadingElem = document.getElementById('pdf-loading');
+                    if (loadingElem) loadingElem.classList.add('hidden');
+                    canvas.classList.remove('hidden');
+                    if (pageNumPending !== null) {
+                        renderPdfPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                });
+            }).catch(function(e) {
+                console.error("Ошибка рендеринга страницы:", e);
+            });
+
+            document.getElementById('page-num').textContent = num;
+            document.getElementById('prev-page').disabled = (num <= 1);
+            document.getElementById('next-page').disabled = (num >= pdfDoc.numPages);
+        }
+
+        function queueRenderPdfPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPdfPage(num);
+            }
+        }
+
+        function changePage(delta) {
+            if (!pdfDoc) return;
+            const newPage = currentPdfPage + delta;
+            if (newPage >= 1 && newPage <= pdfDoc.numPages) {
+                currentPdfPage = newPage;
+                queueRenderPdfPage(currentPdfPage);
+            }
+        }
+
+        // Загрузка PDF отчета с кодированием имени файла
+        const pdfFileName = encodeURIComponent('report.pdf');
+        pdfjsLib.getDocument(pdfFileName).promise.then(function(doc) {
+            pdfDoc = doc;
+            document.getElementById('page-count').textContent = pdfDoc.numPages;
+            renderPdfPage(currentPdfPage);
+        }).catch(function(err) {
+            console.warn("Файл по кодированному пути не найден, пробуем прямое имя...", err);
+            // Фолбэк на прямое имя файла
+            pdfjsLib.getDocument('report.pdf').promise.then(function(doc) {
+                pdfDoc = doc;
+                document.getElementById('page-count').textContent = pdfDoc.numPages;
+                renderPdfPage(currentPdfPage);
+            }).catch(function(e) {
+                console.error("Ошибка загрузки PDF файла:", e);
+                const loadingElem = document.getElementById('pdf-loading');
+                if (loadingElem) {
+                    loadingElem.innerHTML = `<span class="text-rose-400 text-xs">Файл «report.pdf» находится в обработке или не найден. Пожалуйста, убедитесь, что файл размещен в корне сайта.</span>`;
+                }
+            });
+        });
+
+        window.addEventListener('resize', function() {
+            if (pdfDoc) queueRenderPdfPage(currentPdfPage);
+        });
+
+        // Данные программ без скобок в описаниях
+        const programData = {
+            '5': {
+                badge: "Школьная программа",
+                fipi: false,
+                title: "Готовность к 5 классу",
+                desc: "Проверяем знания за 1–4 классы",
+                price: "490 ₽",
+                blocks: [
+                    { name: "Блок 1. Арифметика и вычисления", items: ["1. Натуральные числа и свойства сложения/умножения", "2. Деление с остатком и порядок действий"] },
+                    { name: "Блок 2. Текстовые задачи", items: ["3. Задачи на движение, работу и стоимость", "4. Величины и единицы измерения"] },
+                    { name: "Блок 3. Базовая геометрия", items: ["5. Периметр и площадь прямоугольника/квадрата"] }
+                ]
+            },
+            '6': {
+                badge: "Школьная программа",
+                fipi: false,
+                title: "Готовность к 6 классу",
+                desc: "Проверяем знания за 1–5 классы",
+                price: "490 ₽",
+                blocks: [
+                    { name: "Блок 1. Дроби", items: ["1. Обыкновенные и десятичные дроби", "2. Сравнение и вычисления с дробями"] },
+                    { name: "Блок 2. Алгебраические элементы", items: ["3. Простые уравнения в 1-2 действия", "4. Округление чисел"] }
+                ]
+            },
+            '7': {
+                badge: "Школьная программа",
+                fipi: false,
+                title: "Готовность к 7 классу",
+                desc: "Проверяем знания за 1–6 классы",
+                price: "590 ₽",
+                blocks: [
+                    { name: "Блок 1. Рациональные числа", items: ["1. Отрицательные и положительные числа", "2. Раскрытие скобок и подобные слагаемые"] },
+                    { name: "Блок 2. Пропорции и проценты", items: ["3. Пропорциональные зависимости", "4. Нахождение процентов от числа"] }
+                ]
+            },
+            '8': {
+                badge: "Школьная программа",
+                fipi: false,
+                title: "Готовность к 8 классу",
+                desc: "Проверяем знания за 1–7 классы",
+                price: "590 ₽",
+                blocks: [
+                    { name: "Блок 1. Алгебра 7 класса", items: ["1. Линейные уравнения и системы", "2. Свойства степеней", "3. Формулы сокращенного умножения"] },
+                    { name: "Блок 2. Наглядная геометрия", items: ["4. Признаки равенства треугольников", "5. Параллельные прямые"] }
+                ]
+            },
+            '9': {
+                badge: "Школьная программа",
+                fipi: false,
+                title: "Готовность к 9 классу",
+                desc: "Проверяем знания за 1–8 классы",
+                price: "790 ₽",
+                blocks: [
+                    { name: "Блок 1. Алгебра 8 класса", items: ["1. Квадратные корни и уравнения", "2. Рациональные выражения", "3. Неравенства"] },
+                    { name: "Блок 2. Планиметрия 8 класса", items: ["4. Четырехугольники и теорема Пифагора", "5. Площади фигур"] }
+                ]
+            },
+            '10': {
+                badge: "Школьная программа",
+                fipi: false,
+                title: "Готовность к 10 классу",
+                desc: "Проверяем знания за курс основной школы",
+                price: "790 ₽",
+                blocks: [
+                    { name: "Блок 1. Алгебра и функции", items: ["1. Системы уравнений и неравенства", "2. Числовые последовательности", "3. Графики функций"] },
+                    { name: "Блок 2. Геометрия 9 класса", items: ["4. Вписанные и описанные окружности", "5. Векторы и тригонометрия"] }
+                ]
+            },
+            'oge': {
+                badge: "Государственный экзамен",
+                fipi: true,
+                title: "Диагностика ОГЭ",
+                desc: "Полный аудит экзаменационных тем согласно спецификации ФИПИ",
+                price: "990 ₽",
+                blocks: [
+                    { name: "Блок 1. Числа и вычисления", items: ["1. Дроби и степени", "2. Расчеты по формулам"] },
+                    { name: "Блок 2. Алгебра и функции", items: ["3. Уравнения и неравенства", "4. Графики функций", "5. Прогрессии"] },
+                    { name: "Блок 3. Планиметрия", items: ["6. Треугольники и четырехугольники", "7. Окружности"] },
+                    { name: "Блок 4. Теория вероятностей", items: ["8. Статистика и вероятности"] }
+                ]
+            },
+            'ege_base': {
+                badge: "Государственный экзамен",
+                fipi: true,
+                title: "Диагностика ЕГЭ База",
+                desc: "Полный срез всех базовых задач экзамена",
+                price: "1 190 ₽",
+                blocks: [
+                    { name: "Блок 1. Практическая математика", items: ["1. Текстовые задачи", "2. Чтение графиков"] },
+                    { name: "Блок 2. Алгебра и геометрия", items: ["3. Простейшие уравнения", "4. Геометрия на плоскости и в пространстве"] }
+                ]
+            },
+            'ege_prof': {
+                badge: "Государственный экзамен",
+                fipi: true,
+                title: "Диагностика ЕГЭ Профиль",
+                desc: "Глубокая проверка по всем 6 блокам профильного экзамена",
+                price: "1 490 ₽",
+                blocks: [
+                    { 
+                        name: "Блок 1. Арифметика и преобразования", 
+                        items: ["1. Вычисления и проценты", "2. Степени, корни и логарифмы", "3. Тригонометрия"] 
+                    },
+                    { 
+                        name: "Блок 2. Уравнения и системы", 
+                        items: ["4. Рациональные уравнения", "5. Показательные уравнения", "6. Тригонометрические уравнения"] 
+                    },
+                    { 
+                        name: "Блок 3. Неравенства и функции", 
+                        items: ["8. Неравенства и их системы", "9. Элементарные функции", "10. Начала анализа"] 
+                    },
+                    { 
+                        name: "Блок 4. Последовательности и вероятность", 
+                        items: ["11. Прогрессии", "12. Комбинаторика и теория вероятностей"] 
+                    },
+                    { 
+                        name: "Блок 5. Планиметрия", 
+                        items: ["13. Треугольники и четырехугольники", "14. Окружности", "15. Векторы"] 
+                    },
+                    { 
+                        name: "Блок 6. Стереометрия", 
+                        items: ["16. Параллельность и перпендикулярность", "17. Многогранники и тела вращения"] 
+                    }
+                ]
+            }
+        };
+
+        function selectOption(key) {
+            document.querySelectorAll('.opt-btn').forEach(btn => {
+                btn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition";
+            });
+
+            const activeBtn = document.getElementById(`btn-${key}`);
+            if (activeBtn) {
+                activeBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
+            }
+
+            const data = programData[key];
+            document.getElementById('badge-text').innerText = data.badge;
+            document.getElementById('card-title').innerText = data.title;
+            document.getElementById('card-desc').innerText = data.desc;
+            document.getElementById('card-price').innerText = data.price;
+
+            const fipiBadge = document.getElementById('fipi-badge');
+            if (data.fipi) {
+                fipiBadge.classList.remove('hidden');
+            } else {
+                fipiBadge.classList.add('hidden');
+            }
+
+            const container = document.getElementById('blocks-container');
+            container.innerHTML = data.blocks.map(b => `
+                <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 space-y-2">
+                    <div class="font-bold text-white text-xs sm:text-sm text-indigo-300">${b.name}</div>
+                    <ul class="space-y-1 text-slate-400 text-xs">
+                        ${b.items.map(item => `<li>• ${item}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
+        }
+
+        selectOption('ege_prof');
+
+        function toggleVideoSound() {
+            const video = document.getElementById('demo-video');
+            const icon = document.getElementById('sound-icon');
+            video.muted = !video.muted;
+            icon.className = video.muted ? "fa-solid fa-volume-xmark text-xs" : "fa-solid fa-volume-high text-xs text-indigo-400";
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+            alert("Формирование платежа... Переход в платежный шлюз.");
+        }
+    </script>
+</body>
+</html>
