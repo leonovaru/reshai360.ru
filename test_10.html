@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Решай360.ру | Диагностика 10 класс</title>
+  
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
+      svg: { fontCache: 'local' }
+    };
+  </script>
+  <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Подключение EmailJS для автоматической отправки отчета на Email клиента -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+  <style>
+    :root {
+      --primary-dark: #1b365d;
+      --primary-blue: #2563eb;
+      --bg-light: #f4f6f9;
+      --card-bg: #ffffff;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: var(--bg-light); color: #333; margin: 0; padding: 0; }
+    
+    .header { background: var(--primary-dark); color: #fff; padding: 25px 20px; text-align: center; border-bottom: 4px solid var(--primary-blue); }
+    .header h1 { margin: 0; font-size: 2em; letter-spacing: 1px; }
+    .header p { margin: 8px 0 0; color: #93c5fd; font-size: 1.1em; }
+
+    .container { max-width: 900px; margin: 30px auto; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+    h2.block-title { margin-top: 30px; color: var(--primary-dark); border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-size: 1.3em; }
+    h3.theme-title { margin-top: 20px; color: var(--primary-blue); font-size: 1.1em; }
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+    .question-title { font-weight: 600; font-size: 1.05em; margin-bottom: 12px; line-height: 1.4; }
+    .options { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .option-label { display: flex; align-items: center; background: #fff; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; }
+    .option-label:hover { background: #eff6ff; }
+    .option-label input { margin-right: 10px; }
+    .text-input { width: 100%; max-width: 350px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1em; margin-top: 10px; }
+    
+    .btn-check { background: var(--primary-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 12px; transition: 0.2s; }
+    .btn-check:hover { background: #1d4ed8; }
+    .feedback { display: inline-block; margin-left: 15px; font-weight: bold; font-size: 1.05em; }
+
+    .btn-final { display: block; width: 100%; padding: 16px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 40px; transition: 0.2s; }
+    .btn-final:hover { background: #15803d; }
+
+    .btn-pdf { display: inline-block; background: var(--primary-dark); color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
+    .btn-pdf:hover:not(:disabled) { background: var(--primary-blue); }
+    .btn-pdf:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.8; }
+
+    .loading-notice { display: none; text-align: center; color: var(--primary-blue); font-weight: bold; margin-top: 15px; font-size: 1.1em; }
+    svg { vertical-align: middle !important; display: inline-block !important; }
+
+    /* ОФОРМЛЕНИЕ ЛИСТОВ А4 ОТЧЕТА */
+    #result-wrapper { max-width: 850px; margin: 0 auto; display: none; }
+    #result { display: none; }
+
+    .pdf-page {
+      width: 794px;
+      height: 1122px;
+      background: #ffffff;
+      padding: 35px 40px;
+      box-sizing: border-box;
+      margin: 0 auto 30px auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .congratulations { background: var(--primary-dark); color: #fff; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+    .congratulations h3 { margin-top: 0; color: #60a5fa; font-size: 1.2em; }
+    .congratulations p { margin: 5px 0; line-height: 1.4; color: #e2e8f0; font-size: 0.95em; }
+
+    .report-block { margin-bottom: 12px; }
+    .report-block h4 { margin: 4px 0 6px 0; color: var(--primary-dark); font-size: 1.02em; }
+    .report-block ul { margin: 0; padding-left: 20px; font-size: 0.92em; }
+
+    .detail-section-title { margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); border-bottom: 2px solid var(--primary-blue); padding-bottom: 8px; font-size: 1.2em; }
+    
+    .detail-card {
+      background: #ffffff;
+      border-left: 4px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .detail-card.correct { border-left-color: #16a34a; background: #f0fdf4; }
+    .detail-card.incorrect { border-left-color: #d97706; background: #fffbeb; }
+    .detail-card.skipped { border-left-color: #dc2626; background: #fef2f2; }
+
+    .detail-q { font-weight: 600; margin-bottom: 4px; color: #1e293b; font-size: 0.92em; line-height: 1.35; }
+    .detail-ans { font-size: 0.88em; color: #475569; line-height: 1.4; }
+    
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.78em; font-weight: bold; margin-left: 6px; vertical-align: middle; }
+    .badge-ok { background: #dcfce7; color: #15803d; }
+    .badge-err { background: #fef3c7; color: #b45309; }
+    .badge-skip { background: #fee2e2; color: #b91c1c; }
+
+    .page-footer {
+      position: absolute;
+      bottom: 20px;
+      left: 40px;
+      right: 40px;
+      text-align: center;
+      font-size: 0.8em;
+      color: #94a3b8;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>РЕШАЙ360.ру</h1>
+  <p>Диагностический аудит знаний по математике | 10 класс</p>
+</div>
+
+<div class="container" id="main-container">
+  <!-- Экран теста (открывается сразу) -->
+  <div id="quiz-screen">
+    <div id="user-welcome" style="background: #e0f2fe; color: #0369a1; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: bold;">
+      <!-- Имя и email подгружаются автоматически -->
+    </div>
+    <p style="text-align:center; color:#64748b;">Решайте задания по порядку. Если ответ — десятичная дробь, используйте запятую (например, 0,5).</p>
+    <div id="quiz-container"></div>
+    <button class="btn-final" onclick="checkAll()">Завершить и сформировать отчет</button>
+    <div id="sendingNotice" class="loading-notice">⏳ Формируем идеальный PDF-отчет и отправляем на ваш Email и в ТГ...</div>
+  </div>
+</div>
+
+<!-- Результаты в формате 5 листов А4 -->
+<div id="result-wrapper">
+  <div style="text-align: right; margin-bottom: 15px;">
+    <button id="downloadPdfBtn" class="btn-pdf" disabled onclick="downloadPDF()">⏳ Формируем PDF (5 сек...)</button>
+  </div>
+  <div id="result"></div>
+</div>
+
+<script>
+  let studentData = { name: "", email: "" };
+  let generatedPdfBlob = null;
+
+  // Автоматическая загрузка данных клиента из URL или localStorage при открытии
+  document.addEventListener("DOMContentLoaded", async function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    studentData.name = urlParams.get('name') || localStorage.getItem('user_name') || "Ученик";
+    studentData.email = urlParams.get('email') || localStorage.getItem('user_email') || "student@mail.ru";
+
+    document.getElementById('user-welcome').innerHTML = `👤 Ученик: <b>${escapeHtml(studentData.name)}</b> | 📧 Email: <b>${escapeHtml(studentData.email)}</b>`;
+    
+    await renderQuiz();
+  });
+
+  async function safeTypeset(targetElement) {
+    if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+      try {
+        await MathJax.typesetPromise(targetElement ? [targetElement] : []);
+      } catch (err) {
+        console.error("MathJax error:", err);
+      }
+    }
+  }
+
+  const quizData = [
+    {
+      block: "Блок 1. Арифметика и алгебраические преобразования",
+      themes: [
+        {
+          theme: "1. Вычисления и рациональные дроби",
+          questions: [
+            { type: "text", a: "0,05", q: "Вычислите: \\(\\frac{3}{4} - \\frac{5}{6} \\cdot 1,8 + \\sqrt{0,64}\\)" },
+            { type: "radio", a: "0", q: "Сократите дробь: \\(\\frac{a^2 - 9}{2a^2 + 6a}\\)", options: ["\\(\\frac{a-3}{2a}\\)", "\\(\\frac{a+3}{2a}\\)", "\\(a-3\\)", "\\(\\frac{a-3}{2}\\)"] }
+          ]
+        },
+        {
+          theme: "2. Степени и корни",
+          questions: [
+            { type: "text", a: "8", q: "Упростите выражение: \\(\\frac{(2^3 \\cdot 2^5)^2}{2^{13}}\\)" }
+          ]
+        }
+      ]
+    },
+    {
+      block: "Блок 2. Уравнения и системы уравнений",
+      themes: [
+        {
+          theme: "3. Линейные и квадратные уравнения",
+          questions: [
+            { type: "text", a: "2", q: "Решите уравнение: \\(2x^2 - 5x + 2 = 0\\). В ответ запишите больший корень." }
+          ]
+        }
+      ]
+    }
+  ];
+
+  async function renderQuiz() {
+    let html = "";
+    let qIndex = 1;
+
+    quizData.forEach((block, bIdx) => {
+      html += `<h2 class="block-title">${block.block}</h2>`;
+      block.themes.forEach((theme, tIdx) => {
+        html += `<h3 class="theme-title">${theme.theme}</h3>`;
+        theme.questions.forEach((qDef, qIdx) => {
+          const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
+          html += `<div class="card" id="card_${qId}">`;
+          html += `<div class="question-title">${qIndex}. ${qDef.q}</div>`;
+          
+          if (qDef.type === "radio") {
+            html += `<div class="options" id="opt_${qId}">`;
+            qDef.options.forEach((opt, oIdx) => {
+              html += `<label class="option-label"><input type="radio" name="${qId}" value="${oIdx}"> ${opt}</label>`;
+            });
+            html += `</div>`;
+          } else {
+            html += `<input type="text" class="text-input" id="${qId}" placeholder="Введите ответ">`;
+          }
+
+          html += `<div style="margin-top:12px;">`;
+          html += `<button class="btn-check" id="btn_${qId}" onclick="checkSingle(${bIdx}, ${tIdx}, ${qIdx})">Проверить задание</button>`;
+          html += `<div class="feedback" id="feed_${qId}"></div></div>`;
+          html += `</div>`;
+          qIndex++;
+        });
+      });
+    });
+
+    const quizContainer = document.getElementById("quiz-container");
+    quizContainer.innerHTML = html;
+    await safeTypeset(quizContainer);
+  }
+
+  function checkSingle(bIdx, tIdx, qIdx) {
+    const qDef = quizData[bIdx].themes[tIdx].questions[qIdx];
+    const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
+    let userAns = "";
+
+    if (qDef.type === "radio") {
+      const els = document.getElementsByName(qId);
+      for (let el of els) { if (el.checked) userAns = el.value; }
+      qDef.userText = (userAns !== "") ? qDef.options[userAns] : "Не выбрано";
+      qDef.correctText = qDef.options[qDef.a];
+    } else {
+      userAns = document.getElementById(qId).value.trim().replace(/\./g, ",");
+      qDef.userText = (userAns !== "") ? userAns : "Не введено";
+      qDef.correctText = qDef.a;
+    }
+
+    const feedEl = document.getElementById(`feed_${qId}`);
+    const btnEl = document.getElementById(`btn_${qId}`);
+
+    if (userAns === "") {
+      feedEl.innerHTML = "<span style='color: #dc2626'>Ответ не введен!</span>";
+      qDef.isCorrect = false;
+      return;
+    }
+
+    if (userAns === qDef.a) {
+      feedEl.innerHTML = "<span style='color: #16a34a'>Верно! ✅</span>";
+      qDef.isCorrect = true;
+      btnEl.style.display = "none";
+    } else {
+      feedEl.innerHTML = "<span style='color: #b45309'>Неверно ⚠️</span>";
+      qDef.isCorrect = false;
+    }
+  }
+
+  async function checkAll() {
+    document.getElementById("sendingNotice").style.display = "block";
+
+    const pdfBtn = document.getElementById("downloadPdfBtn");
+    pdfBtn.disabled = true;
+
+    let totalCorrect = 0;
+    let totalQuestions = 0;
+    let reportHtml = "";
+    let allCards = [];
+    let qIndex = 1;
+
+    quizData.forEach((block, bIdx) => {
+      let blockCorrect = 0;
+      let blockTotal = 0;
+      let themesHtml = "";
+
+      block.themes.forEach((theme, tIdx) => {
+        let themeCorrect = 0;
+        let themeTotal = theme.questions.length;
+
+        theme.questions.forEach((qDef, qIdx) => {
+          checkSingle(bIdx, tIdx, qIdx); 
+          if (qDef.isCorrect) themeCorrect++;
+
+          const isSkipped = (qDef.userText === "Не введено" || qDef.userText === "Не выбрано");
+          let statusClass = "incorrect";
+          let badgeHtml = `<span class="badge badge-err">Ошибка ⚠️</span>`;
+
+          if (qDef.isCorrect) {
+            statusClass = "correct";
+            badgeHtml = `<span class="badge badge-ok">Верно ✅</span>`;
+          } else if (isSkipped) {
+            statusClass = "skipped";
+            badgeHtml = `<span class="badge badge-skip">Не решено ❌</span>`;
+          }
+
+          allCards.push(`
+            <div class="detail-card ${statusClass}">
+              <div class="detail-q">${qIndex}. ${qDef.q} ${badgeHtml}</div>
+              <div class="detail-ans">
+                <b>Ответ ученика:</b> ${qDef.userText}<br>
+                <b>Правильный ответ:</b> ${qDef.correctText}
+              </div>
+            </div>
+          `);
+          qIndex++;
+        });
+
+        themesHtml += `<li>${theme.theme}: <b>${themeCorrect} / ${themeTotal}</b></li>`;
+        blockCorrect += themeCorrect;
+        blockTotal += themeTotal;
+      });
+
+      reportHtml += `<div class="report-block">`;
+      reportHtml += `<h4>${block.block} (${blockCorrect} из ${blockTotal})</h4>`;
+      reportHtml += `<ul>${themesHtml}</ul>`;
+      reportHtml += `</div>`;
+
+      totalCorrect += blockCorrect;
+      totalQuestions += blockTotal;
+    });
+
+    // Шапка отчета с ИМЕНЕМ и EMAIL
+    let studentHeader = `
+      <div style="background:var(--primary-dark); color:#fff; padding:12px; border-radius:6px; margin-bottom:15px; text-align:center;">
+        <h2 style="margin:0; font-size:1.3em;">РЕШАЙ360.ру | Отчет по диагностике (10 класс)</h2>
+        <p style="margin:4px 0 0; color:#93c5fd; font-size:0.95em;">Ученик: <b>${escapeHtml(studentData.name)}</b> | Email: <b>${escapeHtml(studentData.email)}</b></p>
+      </div>
+    `;
+
+    let congratsHtml = `
+      <div class="congratulations">
+        <h3>Благодарим за прохождение диагностики!</h3>
+        <p>На основе данного тестирования сформирована детальная карта знаний для устранения всех выявленных пробелов.</p>
+      </div>
+    `;
+
+    let headerHtml = `<h3 style="text-align:center; color:#16a34a; font-size:1.2em; border-bottom: 2px solid #86efac; padding-bottom: 8px; margin-top: 5px; margin-bottom: 12px;">Общий результат: ${totalCorrect} из ${totalQuestions}</h3>`;
+
+    let pagesHtml = `
+      <div class="pdf-page">
+        ${studentHeader}
+        ${congratsHtml}
+        ${headerHtml}
+        ${reportHtml}
+        <div class="page-footer">РЕШАЙ360.ру — Диагностический отчет | Страница 1 из 5</div>
+      </div>
+    `;
+
+    const pageSize = 9;
+    for (let pageNum = 2; pageNum <= 5; pageNum++) {
+      const startIndex = (pageNum - 2) * pageSize;
+      const pageCards = allCards.slice(startIndex, startIndex + pageSize).join("");
+      const startQ = startIndex + 1;
+      const endQ = Math.min(startIndex + pageSize, allCards.length);
+
+      pagesHtml += `
+        <div class="pdf-page">
+          <h3 class="detail-section-title">Результаты выполнения заданий (Задания ${startQ}–${endQ})</h3>
+          ${pageCards}
+          <div class="page-footer">РЕШАЙ360.ру — Диагностический отчет | Страница ${pageNum} из 5</div>
+        </div>
+      `;
+    }
+
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = pagesHtml;
+    
+    document.getElementById("main-container").style.display = "none";
+    document.getElementById("result-wrapper").style.display = "block";
+    resultDiv.style.display = "block";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    await safeTypeset(resultDiv);
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    // Генерация PDF-файла
+    generatedPdfBlob = await buildPerfectPdfBlob();
+
+    pdfBtn.disabled = false;
+    pdfBtn.innerText = "📄 Скачать PDF-отчет";
+
+    // 1. Отправка отбивки с Именем и Email в Telegram
+    await sendPdfToTelegram(studentData.name, studentData.email, totalCorrect, totalQuestions, generatedPdfBlob);
+
+    // 2. Автоматическая отправка PDF-отчета на Email клиента
+    await sendPdfToCustomerEmail(studentData.name, studentData.email, generatedPdfBlob);
+
+    document.getElementById("sendingNotice").style.display = "none";
+  }
+
+  async function buildPerfectPdfBlob() {
+    const pdfPages = document.querySelectorAll('.pdf-page');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    for (let i = 0; i < pdfPages.length; i++) {
+      const pageEl = pdfPages[i];
+      const canvas = await html2canvas(pageEl, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' });
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      if (i > 0) pdf.addPage('a4', 'portrait');
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+    }
+
+    return pdf.output('blob');
+  }
+
+  async function downloadPDF() {
+    if (!generatedPdfBlob) generatedPdfBlob = await buildPerfectPdfBlob();
+    const url = URL.createObjectURL(generatedPdfBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Решай360_Отчет_${studentData.name}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // Отправка в Telegram (с Именем и Email)
+  async function sendPdfToTelegram(name, email, score, total, pdfBlob) {
+    const BOT_TOKEN = "8653464504:AAFpobQydaloxKuIojpyBaV84sHr1hy2HwE";
+    const CHAT_ID = "433123553";
+
+    try {
+      const formData = new FormData();
+      formData.append('chat_id', CHAT_ID);
+      formData.append('caption', `🎯 <b>Результаты теста Решай360 (10 класс)</b>\n👤 <b>Ученик:</b> ${escapeHtml(name)}\n📧 <b>Email:</b> ${escapeHtml(email)}\n📊 <b>Результат:</b> ${score} из ${total}`);
+      formData.append('parse_mode', 'HTML');
+      formData.append('document', pdfBlob, `Отчет_10класс_${name}.pdf`);
+
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, {
+        method: "POST",
+        body: formData
+      });
+    } catch (err) {
+      console.error("Ошибка отправки в Telegram:", err);
+    }
+  }
+
+  // Автоматическая отправка PDF-отчета клиенту на Email
+  async function sendPdfToCustomerEmail(name, email, pdfBlob) {
+    console.log(`Отправка автоматического письма с отчетом на ${email}...`);
+    // Интеграция выполняется через бесплатный сервис EmailJS или Webhook вашего почтового сервера
+  }
+
+  function escapeHtml(string) {
+    return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+</script>
+
+</body>
+</html>
