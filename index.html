@@ -27,11 +27,11 @@
 </head>
 <body class="font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col justify-between pt-20">
 
-    <!-- ВЕРХНЯЯ ПЛАШКА О БЛАГОТВОРИТЕЛЬНОСТИ (ФИКСИРОВАННАЯ САМАЯ ВЕРХНЯЯ) -->
+    <!-- ВЕРХНЯЯ ПЛАШКА О БЛАГОТВОРИТЕЛЬНОСТИ -->
     <div class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white text-[11px] sm:text-xs font-semibold py-1.5 px-4 text-center flex items-center justify-center space-x-2 shadow-md">
         <span class="inline-block animate-bounce">🐾</span>
-        <span><strong>Доброе дело:</strong> 100 ₽ с каждой диагностики уходят в приют «Собачий мир» (г. Красноярск). 1 купленный тест = 1 сытая собака на целый день!</span>
-        <a href="#charity" class="underline font-bold hover:text-amber-200 ml-1 hidden sm:inline">Подробнее &darr;</a>
+        <span><strong>1 диагностика = 1 сытая собака на день.</strong> 100 ₽ с каждого теста передаются в приют «Собачий мир» (г. Красноярск)</span>
+        <a href="#charity" class="underline font-bold hover:text-amber-200 ml-1 hidden sm:inline">Статистика &darr;</a>
     </div>
 
     <!-- ЛИПКАЯ ПЛАШКА СВЕРХУ ПРИ СКРОЛЛЕ -->
@@ -47,7 +47,7 @@
             <div class="flex items-center space-x-3">
                 <a href="#charity" class="hidden lg:flex items-center space-x-1 text-xs font-semibold text-amber-400 hover:text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
                     <span>🐾</span>
-                    <span>Приют «Собачий мир»</span>
+                    <span>Помощь приюту</span>
                 </a>
                 <a href="#support" class="text-xs sm:text-sm font-semibold text-slate-300 hover:text-white px-3 py-1.5 rounded-xl transition">
                     Поддержка
@@ -328,86 +328,46 @@
         </div>
     </section>
 
-    <!-- ЭКРАН 4: БЛАГОТВОРИТЕЛЬНАЯ МИССИЯ (ПОСЛЕДНИЙ ЭКРАН ПЕРЕД ПОДДЕРЖКОЙ) -->
+    <!-- ЭКРАН 4: ЛАКОНИЧНЫЙ БЛОК БЛАГОТВОРИТЕЛЬНОСТИ БЕЗ ЦЕЛЕЙ И ПРОГРЕСС-БАРА -->
     <section id="charity" class="py-12 border-t border-slate-800/60 bg-gradient-to-b from-[#090d16] via-[#0f172a] to-[#090d16] relative overflow-hidden scroll-mt-20">
-        <!-- Декоративное мягкое свечение -->
-        <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 blur-[120px] rounded-full pointer-events-none"></div>
-
-        <div class="max-w-5xl mx-auto px-4 relative z-10">
-            <div class="glass-panel rounded-3xl p-6 sm:p-10 border border-amber-500/30 bg-slate-900/90 shadow-2xl space-y-8">
+        <div class="max-w-3xl mx-auto px-4 relative z-10">
+            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-slate-900/90 shadow-2xl text-center space-y-6">
                 
-                <div class="text-center max-w-3xl mx-auto space-y-3">
-                    <span class="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
-                        🐾 Социальная миссия «Решай360»
+                <!-- Шапка блока -->
+                <div class="space-y-2">
+                    <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                        🐾 Социальная миссия
                     </span>
-                    <h2 class="text-2xl sm:text-4xl font-black text-white leading-tight">
-                        Учитесь и помогайте: 1 диагностика = 1 день сытой жизни собаки
+                    <h2 class="text-2xl sm:text-3xl font-black text-white">
+                        Сколько собак нам удалось накормить сегодня?
                     </h2>
-                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                        Покупая диагностику, вы не только проверяете уровень знаний и выявляете пробелы, но и дарите тепло тем, кто в нем нуждается. С каждой купленной диагностики <strong class="text-amber-400">100 рублей отправляются в приют для животных «Собачий мир» (г. Красноярск)</strong>.
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl mx-auto">
+                        С каждой купленной диагностики мы отправляем 100 ₽ в приют «Собачий мир» (г. Красноярск). Это ровно 1 день сытой жизни для одного хвостика.
                     </p>
                 </div>
 
-                <!-- Карточки с ключевыми цифрами -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 space-y-1">
-                        <div class="text-2xl sm:text-3xl font-black text-amber-400">880+</div>
-                        <div class="text-[11px] sm:text-xs text-slate-400 font-medium">собак под опекой приюта в Красноярске</div>
-                    </div>
-                    <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 space-y-1">
-                        <div class="text-2xl sm:text-3xl font-black text-indigo-400">100 собак</div>
-                        <div class="text-[11px] sm:text-xs text-slate-400 font-medium">наше постоянное обязательство по корму</div>
-                    </div>
-                    <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 space-y-1">
-                        <div class="text-2xl sm:text-3xl font-black text-emerald-400">100 ₽</div>
-                        <div class="text-[11px] sm:text-xs text-slate-400 font-medium">стоимость 1 дня питания 1 собаки</div>
-                    </div>
-                    <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 space-y-1">
-                        <div class="text-2xl sm:text-3xl font-black text-cyan-400">1 день</div>
-                        <div class="text-[11px] sm:text-xs text-slate-400 font-medium">сытой жизни 1 собаки с каждого теста</div>
-                    </div>
-                </div>
-
-                <!-- Блок-счетчик обязательств -->
-                <div class="bg-slate-950/90 rounded-2xl p-5 border border-slate-800 space-y-3">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                        <div>
-                            <h4 class="text-sm font-bold text-white flex items-center space-x-2">
-                                <i class="fa-solid fa-heart text-rose-500 text-xs"></i>
-                                <span>Программа социальной поддержки «100 сытых хвостиков»</span>
-                            </h4>
-                            <p class="text-xs text-slate-400 mt-0.5">
-                                Наша компания взяла на себя официальные обязательства на регулярной основе обеспечивать едой 100 собак из приюта.
-                            </p>
-                        </div>
-                        <span class="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 whitespace-nowrap">
-                            Вместе делаем добро
-                        </span>
-                    </div>
-
-                    <!-- Шкала прогресса помощи -->
-                    <div class="space-y-1.5 pt-1">
-                        <div class="flex justify-between text-[11px] font-semibold text-slate-400">
-                            <span>Вклад клиентов «Решай360»</span>
-                            <span class="text-amber-400 font-bold">Обеспечиваем питанием ежедневно</span>
-                        </div>
-                        <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-slate-800">
-                            <div class="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-500 rounded-full w-3/4 animate-pulse"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Блок с ссылкой для прямой помощи -->
-                <div class="pt-2 text-center space-y-3 border-t border-slate-800/80">
-                    <p class="text-xs sm:text-sm text-slate-300">
-                        Хотите просто поддержать приют, передать корм или узнать больше о хвостиках?
-                    </p>
+                <!-- Карточка счетчика -->
+                <div class="bg-slate-950/90 rounded-2xl p-6 border border-slate-800/90 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
                     <div>
-                        <a href="https://t.me/sobachiy_mir_krsk" target="_blank" class="inline-flex items-center justify-center space-x-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold px-6 py-3.5 rounded-xl text-xs sm:text-sm transition shadow-lg shadow-orange-500/20">
-                            <i class="fa-brands fa-telegram text-base"></i>
-                            <span>Перейти в Telegram-канал приюта «Собачий мир»</span>
-                        </a>
+                        <span class="text-xs text-slate-400 font-medium block">Сегодня накормлено:</span>
+                        <div class="text-3xl sm:text-4xl font-black text-amber-400 mt-1 flex items-baseline justify-center sm:justify-start space-x-2">
+                            <span id="fed-dogs-count">0</span>
+                            <span class="text-slate-500 text-lg font-normal">из 880 собак приюта</span>
+                        </div>
                     </div>
+
+                    <div class="bg-amber-500/10 border border-amber-500/20 px-4 py-3 rounded-xl text-xs text-amber-300 max-w-xs text-center sm:text-right">
+                        <strong>1 диагностика = 1 сытый день</strong><br>
+                        Статистика обновляется автоматически по оплаченным счетам.
+                    </div>
+                </div>
+
+                <!-- Ссылка в ТГ -->
+                <div class="pt-1">
+                    <a href="https://t.me/sobachiy_mir_krsk" target="_blank" class="inline-flex items-center space-x-2 text-xs sm:text-sm font-semibold text-amber-400 hover:text-amber-300 underline underline-offset-4 transition">
+                        <i class="fa-brands fa-telegram text-base"></i>
+                        <span>Перейти в Telegram-канал приюта «Собачий мир»</span>
+                    </a>
                 </div>
 
             </div>
@@ -451,7 +411,45 @@
 
     <!-- СКРИПТЫ -->
     <script>
-        // Настройка рабочей среды PDF.js
+        // --- ПРОСТОЙ ДИНАМИЧЕСКИЙ СЧЕТЧИК БЕЗ ЦЕЛЕЙ И ПРОГРЕСС-БАРА ---
+        async function initCharityCounter() {
+            let paidToday = 0; // Число оплаченных диагностик за сегодня
+
+            try {
+                // Запрос к серверу ЮKassa / базы данных:
+                // const res = await fetch('https://your-api.com/today-sales');
+                // const data = await res.json();
+                // paidToday = data.count;
+                
+                // Демо-значение для локального тестирования:
+                paidToday = parseInt(localStorage.getItem('test_paid_today') || '34'); 
+            } catch (e) {
+                console.log("Ошибка получения данных счетчика", e);
+            }
+
+            const fedCountElem = document.getElementById('fed-dogs-count');
+
+            // Плавная анимация нарастания числа при загрузке страницы
+            let currentDisplay = 0;
+            const duration = 1000;
+            const stepTime = 20;
+            const steps = duration / stepTime;
+            const increment = paidToday / steps;
+
+            const timer = setInterval(() => {
+                currentDisplay += increment;
+                if (currentDisplay >= paidToday) {
+                    currentDisplay = paidToday;
+                    clearInterval(timer);
+                }
+                fedCountElem.innerText = Math.floor(currentDisplay);
+            }, stepTime);
+        }
+
+        document.addEventListener('DOMContentLoaded', initCharityCounter);
+
+
+        // --- PDF.js РЕНДЕРИНГ ---
         if (typeof pdfjsLib !== 'undefined') {
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
@@ -469,20 +467,16 @@
                 const canvas = document.getElementById('pdf-canvas');
                 const ctx = canvas.getContext('2d');
 
-                // Плотность пикселей экрана (HiDPI / Retina)
                 const pixelRatio = window.devicePixelRatio || 1;
-
                 const unscaledViewport = page.getViewport({ scale: 1 });
                 const maxWidth = Math.min(wrapper.clientWidth - 20, 420);
                 
                 const baseScale = maxWidth / unscaledViewport.width;
                 const viewport = page.getViewport({ scale: baseScale * pixelRatio });
 
-                // Физическое разрешение холста
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
 
-                // Отображаемые размеры CSS для резкости
                 canvas.style.width = `${maxWidth}px`;
                 canvas.style.height = `${viewport.height / pixelRatio}px`;
 
@@ -528,7 +522,6 @@
             }
         }
 
-        // Загрузка PDF отчета
         const pdfFileName = encodeURIComponent('report.pdf');
         pdfjsLib.getDocument(pdfFileName).promise.then(function(doc) {
             pdfDoc = doc;
@@ -552,7 +545,7 @@
             if (pdfDoc) queueRenderPdfPage(currentPdfPage);
         });
 
-        // Данные программ и блоков
+        // --- ДАННЫЕ ПРОГРАММ И БЛОКОВ ---
         const programData = {
             '5': {
                 badge: "Школьная программа",
