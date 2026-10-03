@@ -328,7 +328,7 @@
         </div>
     </section>
 
-    <!-- ЭКРАН 4: ЛАКОНИЧНЫЙ БЛОК БЛАГОТВОРИТЕЛЬНОСТИ БЕЗ ЦЕЛЕЙ И ПРОГРЕСС-БАРА -->
+    <!-- ЭКРАН 4: ОБНОВЛЕННЫЙ ЧИСТЫЙ БЛОК БЛАГОТВОРИТЕЛЬНОСТИ -->
     <section id="charity" class="py-12 border-t border-slate-800/60 bg-gradient-to-b from-[#090d16] via-[#0f172a] to-[#090d16] relative overflow-hidden scroll-mt-20">
         <div class="max-w-3xl mx-auto px-4 relative z-10">
             <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-slate-900/90 shadow-2xl text-center space-y-6">
@@ -346,19 +346,10 @@
                     </p>
                 </div>
 
-                <!-- Карточка счетчика -->
-                <div class="bg-slate-950/90 rounded-2xl p-6 border border-slate-800/90 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-                    <div>
-                        <span class="text-xs text-slate-400 font-medium block">Сегодня накормлено:</span>
-                        <div class="text-3xl sm:text-4xl font-black text-amber-400 mt-1 flex items-baseline justify-center sm:justify-start space-x-2">
-                            <span id="fed-dogs-count">0</span>
-                            <span class="text-slate-500 text-lg font-normal">из 880 собак приюта</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-amber-500/10 border border-amber-500/20 px-4 py-3 rounded-xl text-xs text-amber-300 max-w-xs text-center sm:text-right">
-                        <strong>1 диагностика = 1 сытый день</strong><br>
-                        Статистика обновляется автоматически по оплаченным счетам.
+                <!-- Минималистичная карточка счетчика -->
+                <div class="bg-slate-950/90 rounded-2xl py-6 px-4 border border-slate-800/90 flex items-center justify-center text-center">
+                    <div class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                        <span id="fed-dogs-count">0</span> из 880 собак приюта
                     </div>
                 </div>
 
@@ -411,16 +402,11 @@
 
     <!-- СКРИПТЫ -->
     <script>
-        // --- ПРОСТОЙ ДИНАМИЧЕСКИЙ СЧЕТЧИК БЕЗ ЦЕЛЕЙ И ПРОГРЕСС-БАРА ---
+        // --- ПРОСТОЙ ДИНАМИЧЕСКИЙ СЧЕТЧИК ---
         async function initCharityCounter() {
-            let paidToday = 0; // Число оплаченных диагностик за сегодня
+            let paidToday = 0;
 
             try {
-                // Запрос к серверу ЮKassa / базы данных:
-                // const res = await fetch('https://your-api.com/today-sales');
-                // const data = await res.json();
-                // paidToday = data.count;
-                
                 // Демо-значение для локального тестирования:
                 paidToday = parseInt(localStorage.getItem('test_paid_today') || '34'); 
             } catch (e) {
@@ -429,7 +415,6 @@
 
             const fedCountElem = document.getElementById('fed-dogs-count');
 
-            // Плавная анимация нарастания числа при загрузке страницы
             let currentDisplay = 0;
             const duration = 1000;
             const stepTime = 20;
