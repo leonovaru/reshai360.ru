@@ -9,6 +9,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- PDF.js CDN для просмотра PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Внешний файл данных и конфигурации -->
+    <script src="config.js"></script>
     <style>
         body {
             background-color: #090d16;
@@ -99,7 +101,7 @@
                         
                         <div class="relative w-full h-full rounded-[26px] overflow-hidden bg-slate-950 flex items-center justify-center">
                             <video id="demo-video" autoplay muted loop playsinline webkit-playsinline preload="auto" x5-playsinline="true" class="w-full h-full object-cover">
-                                <source src="demo_mobile.mp4" type="video/mp4">
+                                <source id="video-source" src="" type="video/mp4">
                                 Ваш браузер не поддерживает видео.
                             </video>
                             <button onclick="toggleVideoSound()" class="absolute bottom-3 right-3 bg-slate-950/80 hover:bg-slate-900 text-white p-2.5 rounded-full border border-slate-700/80 transition z-20">
@@ -203,7 +205,9 @@
                     <div class="flex items-start space-x-2.5 pt-2 text-xs text-slate-400">
                         <input type="checkbox" id="consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
                         <label for="consent" class="text-[11px] leading-tight text-slate-400">
-                            Я даю согласие на обработку персональных данных и принимаю условия <a href="policy.html" target="_blank" class="underline hover:text-indigo-400">Политики конфиденциальности</a> и <a href="offer.html" target="_blank" class="underline hover:text-indigo-400">Публичной оферты</a>.
+                            Я даю согласие на обработку персональных данных и принимаю условия 
+                            <a id="link-policy" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Политики конфиденциальности</a> 
+                            и <a id="link-offer" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Публичной оферты</a>.
                         </label>
                     </div>
 
@@ -255,10 +259,9 @@
                     </div>
                 </div>
 
-                <!-- ПРАВАЯ КОЛОНКА: ОПИСАНИЕ И ПЛАШКА "ПОЧЕМУ ОБЫЧНЫЕ ТЕСТЫ НЕ РАБОТАЮТ" -->
+                <!-- ПРАВАЯ КОЛОНКА: ОПИСАНИЕ И ПЛАШКА -->
                 <div class="lg:col-span-6 space-y-6">
                     
-                    <!-- Блок с описанием отчета -->
                     <div class="space-y-4">
                         <div>
                             <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
@@ -321,12 +324,11 @@
         </div>
     </section>
 
-    <!-- ЭКРАН 4: ОБНОВЛЕННЫЙ ЧИСТЫЙ БЛОК БЛАГОТВОРИТЕЛЬНОСТИ -->
+    <!-- ЭКРАН 4: БЛОК БЛАГОТВОРИТЕЛЬНОСТИ -->
     <section id="charity" class="py-12 border-t border-slate-800/60 bg-gradient-to-b from-[#090d16] via-[#0f172a] to-[#090d16] relative overflow-hidden scroll-mt-20">
         <div class="max-w-3xl mx-auto px-4 relative z-10">
             <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-slate-900/90 shadow-2xl text-center space-y-6">
                 
-                <!-- Шапка блока -->
                 <div class="space-y-2">
                     <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
                         🐾 Социальная миссия
@@ -339,16 +341,14 @@
                     </p>
                 </div>
 
-                <!-- Минималистичная карточка счетчика -->
                 <div class="bg-slate-950/90 rounded-2xl py-6 px-4 border border-slate-800/90 flex items-center justify-center text-center">
                     <div class="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                        <span id="fed-dogs-count">0</span> из 880 собак приюта
+                        <span id="fed-dogs-count">0</span> из <span id="total-dogs-count">880</span> собак приюта
                     </div>
                 </div>
 
-                <!-- Ссылка в ТГ -->
                 <div class="pt-1">
-                    <a href="https://t.me/sobachiy_mir_krsk" target="_blank" class="inline-flex items-center space-x-2 text-xs sm:text-sm font-semibold text-amber-400 hover:text-amber-300 underline underline-offset-4 transition">
+                    <a id="link-charity-tg" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs sm:text-sm font-semibold text-amber-400 hover:text-amber-300 underline underline-offset-4 transition">
                         <i class="fa-brands fa-telegram text-base"></i>
                         <span>Перейти в Telegram-канал приюта «Собачий мир»</span>
                     </a>
@@ -369,11 +369,11 @@
                 График работы службы поддержки: ежедневно с 10:00 до 20:00 по МСК.
             </p>
             <div class="flex flex-wrap justify-center items-center gap-4 pt-3">
-                <a href="https://t.me/ваш_телеграм" target="_blank" class="inline-flex items-center space-x-2 bg-[#229ED9] hover:bg-[#1d8cb0] text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg shadow-[#229ED9]/20">
+                <a id="link-support-tg" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#229ED9] hover:bg-[#1d8cb0] text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg shadow-[#229ED9]/20">
                     <i class="fa-brands fa-telegram text-lg"></i>
                     <span>Написать в Telegram</span>
                 </a>
-                <a href="https://vk.com/ваша_группа" target="_blank" class="inline-flex items-center space-x-2 bg-[#0077FF] hover:bg-[#0066cc] text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg shadow-[#0077FF]/20">
+                <a id="link-support-vk" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#0077FF] hover:bg-[#0066cc] text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg shadow-[#0077FF]/20">
                     <i class="fa-brands fa-vk text-lg"></i>
                     <span>Сообщество VK</span>
                 </a>
@@ -386,42 +386,62 @@
         <div class="max-w-6xl mx-auto px-4 space-y-3">
             <div>© 2026 РЕШАЙ360.РУ. Независимый аудит знаний по математике. Все права защищены.</div>
             <div class="flex justify-center space-x-4 text-slate-400">
-                <a href="policy.html" target="_blank" class="hover:text-indigo-400 transition">Политика конфиденциальности</a>
+                <a id="link-footer-policy" href="#" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition">Политика конфиденциальности</a>
                 <span>•</span>
-                <a href="offer.html" target="_blank" class="hover:text-indigo-400 transition">Публичная оферта</a>
+                <a id="link-footer-offer" href="#" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition">Публичная оферта</a>
             </div>
         </div>
     </footer>
 
     <!-- СКРИПТЫ -->
     <script>
-        // ИНИЦИАЛИЗАЦИЯ И ОБРАБОТКА АВТОЗАПУСКА ВИДЕО
         document.addEventListener('DOMContentLoaded', () => {
+            initLinks();
             initCharityCounter();
+            initVideo();
+            initPdfViewer();
+            selectOption('ege_prof');
+        });
 
+        // Инициализация вынесенных ссылок из CONFIG
+        function initLinks() {
+            if (typeof CONFIG === 'undefined') return;
+
+            document.getElementById('link-policy').href = CONFIG.links.policy;
+            document.getElementById('link-offer').href = CONFIG.links.offer;
+            document.getElementById('link-footer-policy').href = CONFIG.links.policy;
+            document.getElementById('link-footer-offer').href = CONFIG.links.offer;
+            document.getElementById('link-charity-tg').href = CONFIG.links.charityTelegram;
+            document.getElementById('link-support-tg').href = CONFIG.links.supportTelegram;
+            document.getElementById('link-support-vk').href = CONFIG.links.supportVk;
+
+            document.getElementById('video-source').src = CONFIG.media.demoVideo;
+            document.getElementById('total-dogs-count').innerText = CONFIG.charity.totalDogs;
+        }
+
+        // Автозапуск видео
+        function initVideo() {
             const video = document.getElementById('demo-video');
             if (video) {
                 video.muted = true;
                 const playPromise = video.play();
                 if (playPromise !== undefined) {
                     playPromise.catch(() => {
-                        const playOnTouch = () => {
-                            video.play();
-                        };
+                        const playOnTouch = () => { video.play(); };
                         document.addEventListener('touchstart', playOnTouch, { once: true });
                         document.addEventListener('click', playOnTouch, { once: true });
                     });
                 }
             }
-        });
+        }
 
-        // СЧЕТЧИК
-        async function initCharityCounter() {
-            let paidToday = 0;
+        // Счетчик приюта
+        function initCharityCounter() {
+            let paidToday = CONFIG ? CONFIG.charity.defaultPaidToday : 34;
             try {
-                paidToday = parseInt(localStorage.getItem('test_paid_today') || '34'); 
+                paidToday = parseInt(localStorage.getItem('test_paid_today') || paidToday); 
             } catch (e) {
-                console.log("Ошибка получения данных счетчика", e);
+                console.log("Ошибка доступа к localStorage", e);
             }
 
             const fedCountElem = document.getElementById('fed-dogs-count');
@@ -443,7 +463,7 @@
             }, stepTime);
         }
 
-        // РАКРЫТИЕ / СКРЫТИЕ ПРОГРАММЫ ДИАГНОСТИКИ
+        // Переключение блоков программы
         function toggleProgramBlocks() {
             const wrapper = document.getElementById('blocks-wrapper');
             const text = document.getElementById('toggle-blocks-text');
@@ -460,15 +480,36 @@
             }
         }
 
-        // PDF.js РЕНДЕРИНГ
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        }
-
+        // Рендеринг PDF через PDF.js
         let pdfDoc = null;
         let currentPdfPage = 1;
         let pageRendering = false;
         let pageNumPending = null;
+
+        function initPdfViewer() {
+            if (typeof pdfjsLib === 'undefined') return;
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+            const pdfFile = CONFIG ? CONFIG.media.pdfReport : 'report.pdf';
+            
+            pdfjsLib.getDocument(encodeURIComponent(pdfFile)).promise.then(function(doc) {
+                pdfDoc = doc;
+                document.getElementById('page-count').textContent = pdfDoc.numPages;
+                renderPdfPage(currentPdfPage);
+            }).catch(function() {
+                pdfjsLib.getDocument(pdfFile).promise.then(function(doc) {
+                    pdfDoc = doc;
+                    document.getElementById('page-count').textContent = pdfDoc.numPages;
+                    renderPdfPage(currentPdfPage);
+                }).catch(function(e) {
+                    console.error("Ошибка загрузки PDF:", e);
+                    const loadingElem = document.getElementById('pdf-loading');
+                    if (loadingElem) {
+                        loadingElem.innerHTML = `<span class="text-rose-400 text-xs p-4">Файл «${pdfFile}» находится в обработке или не найден.</span>`;
+                    }
+                });
+            });
+        }
 
         function renderPdfPage(num) {
             if (!pdfDoc) return;
@@ -491,10 +532,7 @@
                 canvas.style.width = `${maxWidth}px`;
                 canvas.style.height = `${viewport.height / pixelRatio}px`;
 
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport
-                };
+                const renderContext = { canvasContext: ctx, viewport: viewport };
                 const renderTask = page.render(renderContext);
 
                 renderTask.promise.then(function() {
@@ -507,8 +545,6 @@
                         pageNumPending = null;
                     }
                 });
-            }).catch(function(e) {
-                console.error("Ошибка рендеринга страницы:", e);
             });
 
             document.getElementById('page-num').textContent = num;
@@ -533,178 +569,11 @@
             }
         }
 
-        const pdfFileName = encodeURIComponent('report.pdf');
-        pdfjsLib.getDocument(pdfFileName).promise.then(function(doc) {
-            pdfDoc = doc;
-            document.getElementById('page-count').textContent = pdfDoc.numPages;
-            renderPdfPage(currentPdfPage);
-        }).catch(function(err) {
-            pdfjsLib.getDocument('report.pdf').promise.then(function(doc) {
-                pdfDoc = doc;
-                document.getElementById('page-count').textContent = pdfDoc.numPages;
-                renderPdfPage(currentPdfPage);
-            }).catch(function(e) {
-                console.error("Ошибка загрузки PDF файла:", e);
-                const loadingElem = document.getElementById('pdf-loading');
-                if (loadingElem) {
-                    loadingElem.innerHTML = `<span class="text-rose-400 text-xs p-4">Файл «report.pdf» находится в обработке или не найден.</span>`;
-                }
-            });
-        });
-
         window.addEventListener('resize', function() {
             if (pdfDoc) queueRenderPdfPage(currentPdfPage);
         });
 
-        // ДАННЫЕ ПРОГРАММ И БЛОКОВ
-        const programData = {
-            '5': {
-                badge: "Школьная программа",
-                fipi: false,
-                title: "Готовность к 5 классу",
-                desc: "Диагностика знаний за 1–4 классы",
-                price: "490 ₽",
-                blocks: [
-                    { name: "Блок 1. Числа и вычисления", items: ["1. Натуральные числа и величины", "2. Арифметические действия", "3. Числовые выражения", "4. Доли и дроби"] },
-                    { name: "Блок 2. Текстовые задачи", items: ["1. Основные типы задач", "2. Задачи на движение и величины"] },
-                    { name: "Блок 3. Геометрия", items: ["1. Основные геометрические фигуры", "2. Периметр, площадь и объём"] }
-                ]
-            },
-            '6': {
-                badge: "Школьная программа",
-                fipi: false,
-                title: "Готовность к 6 классу",
-                desc: "Диагностика знаний за 1–5 классы",
-                price: "490 ₽",
-                blocks: [
-                    { name: "Блок 1. Арифметика и числа", items: ["1. Натуральные числа и вычисления", "2. Делимость чисел", "3. Обыкновенные дроби", "4. Десятичные дроби"] },
-                    { name: "Блок 2. Отношения, проценты и пропорции", items: ["1. Отношения и пропорции", "2. Проценты"] },
-                    { name: "Блок 3. Алгебраические основы", items: ["1. Буквенные выражения", "2. Уравнения", "3. Координаты и графики"] },
-                    { name: "Блок 4. Геометрия", items: ["1. Углы и треугольники", "2. Площади и окружность"] }
-                ]
-            },
-            '7': {
-                badge: "Школьная программа",
-                fipi: false,
-                title: "Готовность к 7 классу",
-                desc: "Диагностика знаний за 1–6 классы",
-                price: "590 ₽",
-                blocks: [
-                    { name: "Блок 1. Арифметика и алгебраические преобразования", items: ["1. Рациональные числа и вычисления", "2. Степени и алгебраические выражения", "3. Формулы сокращённого умножения", "4. Разложение на множители"] },
-                    { name: "Блок 2. Уравнения и системы уравнений", items: ["1. Линейные уравнения", "2. Системы линейных уравнений"] },
-                    { name: "Блок 3. Функции", items: ["1. Понятие функции", "2. Линейная функция"] },
-                    { name: "Блок 4. Геометрия", items: ["1. Углы и параллельные прямые", "2. Треугольники"] }
-                ]
-            },
-            '8': {
-                badge: "Школьная программа",
-                fipi: false,
-                title: "Готовность к 8 классу",
-                desc: "Диагностика знаний за 1–7 классы",
-                price: "590 ₽",
-                blocks: [
-                    { name: "Блок 1. Арифметика и алгебраические преобразования", items: ["1. Рациональные числа и степени", "2. Алгебраические дроби", "3. Квадратные корни", "4. Формулы сокращённого умножения и разложение на множители"] },
-                    { name: "Блок 2. Уравнения и неравенства", items: ["1. Квадратные уравнения", "2. Линейные уравнения и системы", "3. Неравенства"] },
-                    { name: "Блок 3. Функции", items: ["1. Квадратичная функция"] },
-                    { name: "Блок 4. Геометрия", items: ["1. Четырёхугольники", "2. Площади фигур", "3. Подобие и теорема Пифагора", "4. Окружность"] }
-                ]
-            },
-            '9': {
-                badge: "Школьная программа",
-                fipi: false,
-                title: "Готовность к 9 классу",
-                desc: "Диагностика знаний за 1–8 классы",
-                price: "790 ₽",
-                blocks: [
-                    { name: "Блок 1. Арифметика и алгебраические преобразования", items: ["1. Числа, дроби и проценты", "2. Алгебраические выражения", "3. Квадратные корни"] },
-                    { name: "Блок 2. Уравнения и системы уравнений", items: ["1. Линейные и квадратные уравнения", "2. Рациональные уравнения", "3. Системы уравнений"] },
-                    { name: "Блок 3. Неравенства и функции", items: ["1. Неравенства", "2. Функции и графики"] },
-                    { name: "Блок 4. Последовательности, вероятность и статистика", items: ["1. Арифметическая и геометрическая прогрессии", "2. Вероятность и статистика"] },
-                    { name: "Блок 5. Планиметрия", items: ["1. Треугольники", "2. Четырёхугольники и многоугольники", "3. Окружность", "4. Векторы и координаты"] }
-                ]
-            },
-            '10': {
-                badge: "Школьная программа",
-                fipi: false,
-                title: "Готовность к 10 классу",
-                desc: "Диагностика знаний за 1–9 классы",
-                price: "790 ₽",
-                blocks: [
-                    { name: "Блок 1. Арифметика и алгебраические преобразования", items: ["1. Вычисления, дроби и проценты", "2. Степени и корни", "3. Алгебраические преобразования"] },
-                    { name: "Блок 2. Уравнения и системы уравнений", items: ["1. Рациональные и иррациональные уравнения", "2. Показательные и логарифмические уравнения", "3. Тригонометрические уравнения", "4. Системы уравнений"] },
-                    { name: "Блок 3. Неравенства и функции", items: ["1. Неравенства и их системы", "2. Функции и их свойства", "3. Тригонометрические функции и начала анализа"] },
-                    { name: "Блок 4. Последовательности, комбинаторика и вероятность", items: ["1. Прогрессии", "2. Комбинаторика и теория вероятностей"] },
-                    { name: "Блок 5. Планиметрия", items: ["1. Треугольники", "2. Четырёхугольники и многоугольники", "3. Окружность и круг", "4. Векторы и координаты на плоскости"] },
-                    { name: "Блок 6. Стереометрия", items: ["1. Аксиомы стереометрии и следствия из них", "2. Параллельность прямых и плоскостей", "3. Перпендикулярность прямых и плоскостей", "4. Многогранники", "5. Тела вращения"] }
-                ]
-            },
-            '11': {
-                badge: "Школьная программа",
-                fipi: false,
-                title: "Готовность к 11 классу",
-                desc: "Диагностика знаний за 1–10 классы",
-                price: "890 ₽",
-                blocks: [
-                    { name: "Блок 1. Арифметика и алгебраические преобразования", items: ["1. Вычисления, проценты и рациональные дроби", "2. Степени, корни и логарифмы", "3. Тригонометрические преобразования"] },
-                    { name: "Блок 2. Уравнения и системы уравнений", items: ["1. Рациональные и иррациональные уравнения", "2. Показательные и логарифмические уравнения", "3. Тригонометрические уравнения", "4. Системы уравнений"] },
-                    { name: "Блок 3. Неравенства и функции", items: ["1. Неравенства и их системы", "2. Элементарные функции и их свойства", "3. Начала математического анализа"] },
-                    { name: "Блок 4. Последовательности, комбинаторика и вероятность", items: ["1. Прогрессии", "2. Комбинаторика и теория вероятностей"] },
-                    { name: "Блок 5. Планиметрия", items: ["1. Треугольники", "2. Четырёхугольники и многоугольники", "3. Окружность и круг", "4. Векторы и координаты на плоскости"] },
-                    { name: "Блок 6. Стереометрия", items: ["1. Аксиомы стереометрии и следствия из них", "2. Параллельность прямых и плоскостей", "3. Перпендикулярность прямых и плоскостей", "4. Многогранники", "5. Тела вращения"] }
-                ]
-            },
-            'oge': {
-                badge: "Государственный экзамен",
-                fipi: true,
-                title: "Диагностика ОГЭ",
-                desc: "Диагностика знаний для подготовки к экзамену",
-                price: "990 ₽",
-                blocks: [
-                    { name: "Блок 1. Числа и вычисления", items: ["1. Числовые выражения и вычисления", "2. Дроби, проценты и отношения", "3. Степени и корни", "4. Приближённые вычисления и оценка"] },
-                    { name: "Блок 2. Алгебраические выражения", items: ["1. Буквенные выражения", "2. Многочлены и формулы сокращённого умножения", "3. Алгебраические дроби", "4. Преобразование выражений"] },
-                    { name: "Блок 3. Уравнения и неравенства", items: ["1. Линейные уравнения", "2. Квадратные уравнения", "3. Рациональные уравнения", "4. Неравенства и их системы"] },
-                    { name: "Блок 4. Функции и графики", items: ["1. Линейная функция", "2. Квадратичная функция", "3. Графики и свойства функций"] },
-                    { name: "Блок 5. Последовательности, вероятность и статистика", items: ["1. Прогрессии", "2. Вероятность", "3. Статистика и представление данных"] },
-                    { name: "Блок 6. Геометрия", items: ["1. Треугольники", "2. Четырёхугольники и многоугольники", "3. Окружность", "4. Площади и объёмы", "5. Векторы и координаты"] },
-                    { name: "Блок 7. Текстовые задачи", items: ["1. Задачи на движение", "2. Задачи на работу и производительность", "3. Задачи на проценты, смеси и сплавы", "4. Практические задачи и зависимости"] }
-                ]
-            },
-            'ege_base': {
-                badge: "Государственный экзамен",
-                fipi: true,
-                title: "Диагностика ЕГЭ База",
-                desc: "Полный срез базового уровня математики",
-                price: "1 190 ₽",
-                blocks: [
-                    { name: "Блок 1. Числа и вычисления", items: ["1. Числовые выражения", "2. Дроби, проценты и отношения", "3. Степени, корни и логарифмы"] },
-                    { name: "Блок 2. Алгебраические выражения", items: ["1. Многочлены и формулы сокращённого умножения", "2. Алгебраические дроби", "3. Преобразование выражений"] },
-                    { name: "Блок 3. Уравнения и неравенства", items: ["1. Линейные и квадратные уравнения", "2. Рациональные уравнения", "3. Показательные и логарифмические уравнения", "4. Неравенства и их системы"] },
-                    { name: "Блок 4. Функции и графики", items: ["1. Элементарные функции и их свойства", "2. Показательная и логарифмическая функции", "3. Графики функций"] },
-                    { name: "Блок 5. Последовательности, вероятность и статистика", items: ["1. Прогрессии", "2. Комбинаторика", "3. Теория вероятностей", "4. Статистика"] },
-                    { name: "Блок 6. Геометрия", items: ["1. Треугольники", "2. Четырёхугольники и многоугольники", "3. Окружность и круг", "4. Векторы и координаты", "5. Стереометрия"] },
-                    { name: "Блок 7. Текстовые задачи", items: ["1. Задачи на движение", "2. Задачи на проценты и зависимости", "3. Практические задачи"] }
-                ]
-            },
-            'ege_prof': {
-                badge: "Государственный экзамен",
-                fipi: true,
-                title: "Диагностика ЕГЭ Профиль",
-                desc: "Глубокая проверка по всем блокам профильного экзамена",
-                price: "1 490 ₽",
-                blocks: [
-                    { name: "Блок 1. Числа и вычисления", items: ["1. Числовые выражения", "2. Дроби, проценты и отношения", "3. Степени, корни и логарифмы"] },
-                    { name: "Блок 2. Алгебраические преобразования", items: ["1. Многочлены и формулы сокращённого умножения", "2. Алгебраические дроби", "3. Иррациональные выражения", "4. Преобразование выражений"] },
-                    { name: "Блок 3. Уравнения и системы", items: ["1. Рациональные и иррациональные уравнения", "2. Показательные и логарифмические уравнения", "3. Тригонометрические уравнения", "4. Системы уравнений"] },
-                    { name: "Блок 4. Неравенства", items: ["1. Рациональные и иррациональные неравенства", "2. Показательные и логарифмические неравенства", "3. Тригонометрические неравенства", "4. Системы неравенств"] },
-                    { name: "Блок 5. Функции и математический анализ", items: ["1. Элементарные функции и их свойства", "2. Тригонометрические функции", "3. Производная и её применение", "4. Первообразная и интеграл"] },
-                    { name: "Блок 6. Последовательности, комбинаторика и вероятность", items: ["1. Прогрессии", "2. Комбинаторика", "3. Теория вероятностей", "4. Статистика"] },
-                    { name: "Блок 7. Планиметрия", items: ["1. Треугольники", "2. Четырёхугольники и многоугольники", "3. Окружность и круг", "4. Векторы и координаты на плоскости"] },
-                    { name: "Блок 8. Стереометрия", items: ["1. Аксиомы стереометрии", "2. Параллельность прямых и плоскостей", "3. Перпендикулярность прямых и плоскостей", "4. Многогранники", "5. Тела вращения", "6. Векторы и координаты в пространстве"] },
-                    { name: "Блок 9. Текстовые задачи", items: ["1. Задачи на движение", "2. Задачи на проценты и зависимости", "3. Экономические задачи", "4. Задачи с параметрами", "5. Комбинированные задачи"] }
-                ]
-            }
-        };
-
+        // Выбор варианта программы
         function selectOption(key) {
             document.querySelectorAll('.opt-btn').forEach(btn => {
                 btn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition";
@@ -715,7 +584,9 @@
                 activeBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
             }
 
-            const data = programData[key];
+            const data = (typeof CONFIG !== 'undefined' && CONFIG.programs[key]) ? CONFIG.programs[key] : null;
+            if (!data) return;
+
             document.getElementById('badge-text').innerText = data.badge;
             document.getElementById('card-title').innerText = data.title;
             document.getElementById('card-desc').innerText = data.desc;
@@ -731,15 +602,23 @@
             const container = document.getElementById('blocks-container');
             container.innerHTML = data.blocks.map(b => `
                 <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 space-y-2">
-                    <div class="font-bold text-white text-xs sm:text-sm text-indigo-300">${b.name}</div>
+                    <div class="font-bold text-white text-xs sm:text-sm text-indigo-300">${escapeHtml(b.name)}</div>
                     <ul class="space-y-1 text-slate-400 text-xs">
-                        ${b.items.map(item => `<li>• ${item}</li>`).join('')}
+                        ${b.items.map(item => `<li>• ${escapeHtml(item)}</li>`).join('')}
                     </ul>
                 </div>
             `).join('');
         }
 
-        selectOption('ege_prof');
+        // Простая утилита для экранирования выводимых данных (защита от XSS)
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
 
         function toggleVideoSound() {
             const video = document.getElementById('demo-video');
