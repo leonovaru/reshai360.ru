@@ -66,7 +66,7 @@
                     </h1>
                     
                     <p class="text-slate-300 text-xs sm:text-sm lg:text-base font-normal leading-relaxed max-w-xl">
-                        Проверь знания по всей пройденной программе. Получи развернутую PDF-карту: что освоено идеально, где скрыты ошибки и как выполнено каждое задание с фото ваших решений.
+                        Проверь знания по всей пройденной программе. Получи развернутую PDF-карту: что освоено идеально, где скрыты ошибки и детальные результаты каждого задания.
                     </p>
 
                     <div class="flex flex-wrap gap-2 pt-1 text-xs font-medium text-slate-300">
@@ -122,29 +122,17 @@
                 <h2 class="text-2xl sm:text-4xl font-extrabold text-white">Выберите вариант диагностики</h2>
             </div>
 
-            <!-- Табы переключения -->
+            <!-- Табы переключения (скрыты 5 и 6 классы, а также экзамены по ТЗ) -->
             <div class="space-y-5 mb-8">
                 <!-- Классы -->
                 <div class="flex flex-col items-center">
                     <span class="text-[11px] uppercase font-bold tracking-wider text-slate-500 mb-2">Школьная программа</span>
                     <div class="flex flex-wrap justify-center gap-2">
-                        <button onclick="selectOption('5')" id="btn-5" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">5 класс</button>
-                        <button onclick="selectOption('6')" id="btn-6" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">6 класс</button>
                         <button onclick="selectOption('7')" id="btn-7" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">7 класс</button>
                         <button onclick="selectOption('8')" id="btn-8" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">8 класс</button>
                         <button onclick="selectOption('9')" id="btn-9" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">9 класс</button>
                         <button onclick="selectOption('10')" id="btn-10" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">10 класс</button>
                         <button onclick="selectOption('11')" id="btn-11" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">11 класс</button>
-                    </div>
-                </div>
-
-                <!-- Экзамены (ФИПИ) -->
-                <div class="flex flex-col items-center pt-1">
-                    <span class="text-[11px] uppercase font-bold tracking-wider text-indigo-400 mb-2">Государственные экзамены</span>
-                    <div class="flex flex-wrap justify-center gap-2">
-                        <button onclick="selectOption('oge')" id="btn-oge" class="opt-btn px-5 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500/40 bg-indigo-950/40 text-indigo-300 hover:bg-indigo-600 hover:text-white transition">ОГЭ</button>
-                        <button onclick="selectOption('ege_base')" id="btn-ege_base" class="opt-btn px-5 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500/40 bg-indigo-950/40 text-indigo-300 hover:bg-indigo-600 hover:text-white transition">ЕГЭ База</button>
-                        <button onclick="selectOption('ege_prof')" id="btn-ege_prof" class="opt-btn px-5 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500/40 bg-indigo-950/40 text-indigo-300 hover:bg-indigo-600 hover:text-white transition">ЕГЭ Профиль</button>
                     </div>
                 </div>
             </div>
@@ -158,17 +146,17 @@
                             <span id="badge-text" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
                                 Полный аудит
                             </span>
-                            <span id="fipi-badge" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                            <span id="fipi-badge" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 hidden">
                                 <i class="fa-solid fa-award mr-1"></i>Соответствует спецификации ФИПИ
                             </span>
                         </div>
                         <h3 id="card-title" class="text-2xl sm:text-3xl font-extrabold text-white mt-2">
-                            Готовность к ЕГЭ Профиль
+                            Готовность к 10 классу
                         </h3>
-                        <p id="card-desc" class="text-xs text-slate-400 mt-1">Проверяем знания за курс профильного экзамена</p>
+                        <p id="card-desc" class="text-xs text-slate-400 mt-1">Проверяем знания за курс</p>
                     </div>
                     <div class="text-left sm:text-right">
-                        <div id="card-price" class="text-3xl sm:text-4xl font-black text-white">1 490 ₽</div>
+                        <div id="card-price" class="text-3xl sm:text-4xl font-black text-white">790 ₽</div>
                         <div class="text-xs text-slate-400 mt-1">Доступ к тесту сразу после оплаты</div>
                     </div>
                 </div>
@@ -365,15 +353,28 @@
             <p class="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
                 Если возникли вопросы по оплате, не пришел PDF-отчет или не открылась страница с тестом — напишите в нашу службу поддержки.
             </p>
-            <p class="text-xs sm:text-sm font-semibold text-indigo-400">
+            
+            <!-- Контакты: Email и Телефон -->
+            <div class="flex flex-wrap justify-center items-center gap-6 pt-2 pb-1 text-sm font-semibold">
+                <a href="mailto:support@reshai360.ru" class="text-indigo-400 hover:text-indigo-300 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>support@reshai360.ru</span>
+                </a>
+                <a href="tel:+789044766535" class="text-indigo-400 hover:text-indigo-300 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>8 (904) 476-65-35</span>
+                </a>
+            </div>
+
+            <p class="text-xs sm:text-sm font-semibold text-slate-400">
                 График работы службы поддержки: ежедневно с 10:00 до 20:00 по МСК.
             </p>
             <div class="flex flex-wrap justify-center items-center gap-4 pt-3">
-                <a id="link-support-tg" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#229ED9] hover:bg-[#1d8cb0] text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg shadow-[#229ED9]/20">
+                <a id="link-support-tg" href="https://t.me/leonovaru" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#229ED9] hover:bg-[#1d8cb0] text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg shadow-[#229ED9]/20">
                     <i class="fa-brands fa-telegram text-lg"></i>
                     <span>Написать в Telegram</span>
                 </a>
-                <a id="link-support-vk" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#0077FF] hover:bg-[#0066cc] text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg shadow-[#0077FF]/20">
+                <a id="link-support-vk" href="https://vk.ru/leonovaru" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#0077FF] hover:bg-[#0066cc] text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg shadow-[#0077FF]/20">
                     <i class="fa-brands fa-vk text-lg"></i>
                     <span>Сообщество VK</span>
                 </a>
@@ -400,7 +401,7 @@
             initCharityCounter();
             initVideo();
             initPdfViewer();
-            selectOption('ege_prof');
+            selectOption('10'); // Установлен доступный 10 класс по умолчанию
         });
 
         // Инициализация вынесенных ссылок из CONFIG
@@ -412,8 +413,6 @@
             document.getElementById('link-footer-policy').href = CONFIG.links.policy;
             document.getElementById('link-footer-offer').href = CONFIG.links.offer;
             document.getElementById('link-charity-tg').href = CONFIG.links.charityTelegram;
-            document.getElementById('link-support-tg').href = CONFIG.links.supportTelegram;
-            document.getElementById('link-support-vk').href = CONFIG.links.supportVk;
 
             document.getElementById('video-source').src = CONFIG.media.demoVideo;
             document.getElementById('total-dogs-count').innerText = CONFIG.charity.totalDogs;
