@@ -44,6 +44,7 @@
             
             <nav class="flex items-center space-x-3 sm:space-x-6 text-xs sm:text-sm font-semibold">
                 <a href="#select-program" class="text-slate-300 hover:text-white transition px-2 py-1">Диагностика</a>
+                <a href="#pdf-section" class="text-slate-300 hover:text-white transition px-2 py-1">Пример отчета</a>
                 <a href="#support" class="text-slate-300 hover:text-white transition px-2 py-1">Поддержка</a>
                 <a href="#charity" class="text-amber-400 hover:text-amber-300 transition px-2 py-1 flex items-center space-x-1">
                     <span>🐾</span>
@@ -84,10 +85,15 @@
                         </div>
                     </div>
 
-                    <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <!-- Кнопки действий (Выбрать класс + Посмотреть отчет PDF) -->
+                    <div class="pt-2 flex flex-wrap items-center gap-3">
                         <a href="#select-program" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-7 py-3 rounded-xl font-bold text-sm transition shadow-xl shadow-indigo-600/25 space-x-2">
                             <span>Выбрать свой класс</span>
                             <i class="fa-solid fa-arrow-down text-xs"></i>
+                        </a>
+                        <a href="#pdf-section" class="inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-3 rounded-xl font-bold text-sm transition border border-slate-700 space-x-2">
+                            <i class="fa-solid fa-file-pdf text-indigo-400"></i>
+                            <span>Посмотреть отчет PDF</span>
                         </a>
                     </div>
                 </div>
@@ -122,9 +128,8 @@
                 <h2 class="text-2xl sm:text-4xl font-extrabold text-white">Выберите вариант диагностики</h2>
             </div>
 
-            <!-- Табы переключения (скрыты 5 и 6 классы, а также экзамены по ТЗ) -->
+            <!-- Табы переключения -->
             <div class="space-y-5 mb-8">
-                <!-- Классы -->
                 <div class="flex flex-col items-center">
                     <span class="text-[11px] uppercase font-bold tracking-wider text-slate-500 mb-2">Школьная программа</span>
                     <div class="flex flex-wrap justify-center gap-2">
@@ -170,10 +175,7 @@
 
                     <div id="blocks-wrapper" class="hidden space-y-4 pt-2 transition-all">
                         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Что будет проверено в этой диагностике:</h4>
-                        
-                        <div id="blocks-container" class="grid md:grid-cols-2 gap-4 text-xs sm:text-sm">
-                            <!-- Динамический JS -->
-                        </div>
+                        <div id="blocks-container" class="grid md:grid-cols-2 gap-4 text-xs sm:text-sm"></div>
                     </div>
                 </div>
 
@@ -209,8 +211,8 @@
         </div>
     </section>
 
-    <!-- ЭКРАН 3: ИНТЕРАКТИВНЫЙ PDF И ПРЕИМУЩЕСТВА -->
-    <section class="py-12 border-t border-b border-slate-800/60">
+    <!-- ЭКРАН 3: ИНТЕРАКТИВНЫЙ PDF И ПРЕИМУЩЕСТВА (с id="pdf-section" для ссылки-якоря) -->
+    <section id="pdf-section" class="py-12 border-t border-b border-slate-800/60 scroll-mt-20">
         <div class="max-w-6xl mx-auto px-4">
             <div class="grid lg:grid-cols-12 gap-8 items-center">
                 
@@ -249,7 +251,6 @@
 
                 <!-- ПРАВАЯ КОЛОНКА: ОПИСАНИЕ И ПЛАШКА -->
                 <div class="lg:col-span-6 space-y-6">
-                    
                     <div class="space-y-4">
                         <div>
                             <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
@@ -281,15 +282,6 @@
                                 </div>
                                 <div class="text-slate-300 leading-snug">
                                     <strong class="text-white">Анализ слабых мест:</strong> Четкое понимание, какую тему нужно подтянуть в первую очередь.
-                                </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3">
-                                <div class="w-5 h-5 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
-                                    <i class="fa-solid fa-check text-[10px]"></i>
-                                </div>
-                                <div class="text-slate-300 leading-snug">
-                                    <strong class="text-white">Готовая точка А:</strong> Удобно показать репетитору или школьному учителю для составления плана занятий.
                                 </div>
                             </div>
                         </div>
@@ -346,7 +338,7 @@
         </div>
     </section>
 
-    <!-- ЭКРАН 5: СЛУЖБА ПОДДЕРЖКИ (Компактный вариант) -->
+    <!-- ЭКРАН 5: СЛУЖБА ПОДДЕРЖКИ -->
     <section id="support" class="py-8 bg-slate-900/40 border-t border-slate-800/60 scroll-mt-20">
         <div class="max-w-3xl mx-auto px-4 text-center space-y-3">
             <h3 class="text-xl sm:text-2xl font-bold text-white">Нужна помощь или возникли вопросы?</h3>
@@ -354,7 +346,6 @@
                 Столкнулись с трудностями при оплате или получении отчета? Напишите нам. Работаем ежедневно с 10:00 до 20:00 МСК.
             </p>
             
-            <!-- Контакты (Email и телефон в одну строку через разделитель) -->
             <div class="flex flex-wrap justify-center items-center gap-4 text-xs sm:text-sm font-semibold pt-1">
                 <a href="mailto:support@reshai360.ru" class="text-indigo-400 hover:text-indigo-300 transition flex items-center space-x-1.5">
                     <i class="fa-solid fa-envelope"></i>
@@ -367,7 +358,6 @@
                 </a>
             </div>
 
-            <!-- Компактные кнопки связи -->
             <div class="flex flex-wrap justify-center items-center gap-3 pt-2">
                 <a id="link-support-tg" href="https://t.me/leonovaru" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#229ED9] hover:bg-[#1d8cb0] text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md shadow-[#229ED9]/20">
                     <i class="fa-brands fa-telegram text-base"></i>
@@ -400,10 +390,10 @@
             initCharityCounter();
             initVideo();
             initPdfViewer();
-            selectOption('10'); // Установлен доступный 10 класс по умолчанию
+            selectOption('10');
         });
 
-        // Инициализация вынесенных ссылок из CONFIG
+        // Инициализация ссылок и исправленный запуск видео с вызовом video.load()
         function initLinks() {
             if (typeof CONFIG === 'undefined') return;
 
@@ -413,7 +403,15 @@
             document.getElementById('link-footer-offer').href = CONFIG.links.offer;
             document.getElementById('link-charity-tg').href = CONFIG.links.charityTelegram;
 
-            document.getElementById('video-source').src = CONFIG.media.demoVideo;
+            // Настройка видео источника и принудительная загрузка
+            const video = document.getElementById('demo-video');
+            const videoSource = document.getElementById('video-source');
+            if (video && videoSource && CONFIG.media.demoVideo) {
+                videoSource.src = CONFIG.media.demoVideo;
+                video.load(); // Важно для динамического обновления источника
+                video.play().catch(e => console.log("Автозапуск заблокирован браузером:", e));
+            }
+
             document.getElementById('total-dogs-count').innerText = CONFIG.charity.totalDogs;
         }
 
@@ -608,7 +606,6 @@
             `).join('');
         }
 
-        // Простая утилита для экранирования выводимых данных (защита от XSS)
         function escapeHtml(str) {
             return String(str)
                 .replace(/&/g, '&amp;')
