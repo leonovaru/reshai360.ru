@@ -35,7 +35,7 @@
         <span class="inline-block animate-bounce">🐾</span>
     </div>
 
-    <!-- ЛИПКАЯ ПЛАШКА СВЕРХУ ПРИ СКРОЛЛЕ (оставлены только Диагностика и Приют) -->
+    <!-- ЛИПКАЯ ПЛАШКА СВЕРХУ ПРИ СКРОЛЛЕ -->
     <div id="sticky-bar" class="fixed top-7 left-0 right-0 z-40 bg-[#090d16]/95 backdrop-blur-md border-b border-indigo-500/30 py-2.5 px-4 shadow-2xl transition-all duration-300">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <a href="#" class="flex items-center space-x-3">
@@ -96,7 +96,7 @@
                     </div>
                 </div>
 
-                <!-- Правый блок: Видео смартфона -->
+                <!-- Правый блок: Видео смартфона (без кнопки звука) -->
                 <div class="lg:col-span-5 flex justify-center">
                     <div class="phone-mockup relative w-[200px] sm:w-[230px] h-[400px] sm:h-[460px] rounded-[32px] p-2 bg-slate-900 border-4 border-slate-800 shadow-2xl overflow-hidden mx-auto">
                         <div class="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-3.5 bg-slate-950 rounded-full z-20 flex items-center justify-center">
@@ -108,9 +108,6 @@
                                 <source id="video-source" src="" type="video/mp4">
                                 Ваш браузер не поддерживает видео.
                             </video>
-                            <button onclick="toggleVideoSound()" class="absolute bottom-3 right-3 bg-slate-950/80 hover:bg-slate-900 text-white p-2.5 rounded-full border border-slate-700/80 transition z-20">
-                                <i id="sound-icon" class="fa-solid fa-volume-xmark text-xs"></i>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -454,7 +451,7 @@
             }
         }
 
-        // Устойчивый рендеринг PDF через PDF.js с защитой от CORS и ошибок путей
+        // Рендеринг PDF через PDF.js
         let pdfDoc = null;
         let currentPdfPage = 1;
         let pageRendering = false;
@@ -598,13 +595,6 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
-        }
-
-        function toggleVideoSound() {
-            const video = document.getElementById('demo-video');
-            const icon = document.getElementById('sound-icon');
-            video.muted = !video.muted;
-            icon.className = video.muted ? "fa-solid fa-volume-xmark text-xs" : "fa-solid fa-volume-high text-xs text-indigo-400";
         }
 
         function handleSubmit(e) {
