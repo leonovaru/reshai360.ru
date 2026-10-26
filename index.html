@@ -309,28 +309,37 @@
         <div class="max-w-3xl mx-auto px-4 relative z-10">
             <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-slate-900/90 shadow-2xl text-center space-y-6">
                 
-                <div class="space-y-2">
+                <!-- Логотип приюта и заголовок -->
+                <div class="flex flex-col items-center space-y-4">
+                    <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-amber-500/50 shadow-lg shadow-amber-500/10">
+                        <img src="dog_logo.jpg" alt="Приют Собачий мир" class="w-full h-full object-cover">
+                    </div>
+                    
                     <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
-                        🐾 Социальная миссия
+                        🐾 Социальная миссия проекта
                     </span>
+                    
                     <h2 class="text-2xl sm:text-3xl font-black text-white">
-                        Сколько собак нам удалось накормить сегодня?
+                        Помогаем хвостикам вместе
                     </h2>
+                    
                     <p class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl mx-auto">
-                        С каждой купленной диагностики мы отправляем 100 ₽ в приют «Собачий мир» (г. Красноярск). Это ровно 1 день сытой жизни для одного хвостика.
+                        С каждой проданной диагностики мы переводим <strong class="text-amber-400">100 ₽</strong> в фонд помощи бездомным животным <strong class="text-white">«Собачий мир»</strong> (г. Красноярск). Приобретая диагностику для себя, вы одновременно дарите день сытой жизни одному из подопечных приюта.
                     </p>
                 </div>
 
-                <div class="bg-slate-950/90 rounded-2xl py-6 px-4 border border-slate-800/90 flex items-center justify-center text-center">
-                    <div class="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                        <span id="fed-dogs-count">0</span> из <span id="total-dogs-count">880</span> собак приюта
+                <!-- Информационная плашка вместо фальшивого счетчика -->
+                <div class="bg-slate-950/90 rounded-2xl py-5 px-6 border border-slate-800/90 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-amber-400 text-2xl">🍲</div>
+                        <div>
+                            <div class="text-white font-bold text-sm">Прозрачная помощь</div>
+                            <div class="text-slate-400 text-xs">Отчеты о переводах публикуются в канале приюта</div>
+                        </div>
                     </div>
-                </div>
-
-                <div class="pt-1">
-                    <a id="link-charity-tg" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 text-xs sm:text-sm font-semibold text-amber-400 hover:text-amber-300 underline underline-offset-4 transition">
-                        <i class="fa-brands fa-telegram text-base"></i>
-                        <span>Перейти в Telegram-канал приюта «Собачий мир»</span>
+                    <a id="link-charity-tg" href="https://t.me/sobachiy_mir_krsk" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2.5 rounded-xl font-bold text-xs transition shrink-0">
+                        <i class="fa-brands fa-telegram text-sm"></i>
+                        <span>Канал приюта</span>
                     </a>
                 </div>
 
