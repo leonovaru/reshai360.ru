@@ -307,28 +307,32 @@
     <!-- ЭКРАН 4: БЛОК БЛАГОТВОРИТЕЛЬНОСТИ -->
     <section id="charity" class="py-12 border-t border-slate-800/60 bg-gradient-to-b from-[#090d16] via-[#0f172a] to-[#090d16] relative overflow-hidden scroll-mt-20">
         <div class="max-w-3xl mx-auto px-4 relative z-10">
-            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-slate-900/90 shadow-2xl text-center space-y-6">
+            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-slate-900/90 shadow-2xl space-y-6">
                 
-                <!-- Логотип приюта и заголовок -->
-                <div class="flex flex-col items-center space-y-4">
-                    <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-amber-500/50 shadow-lg shadow-amber-500/10">
+                <!-- Шапка: на ПК слева фото, справа в 2 строчки текст; на мобилках по центру -->
+                <div class="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
+                    <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-amber-500/50 shadow-lg shadow-amber-500/10 shrink-0 mx-auto sm:mx-0">
                         <img src="dog_logo.jpg" alt="Приют Собачий мир" class="w-full h-full object-cover">
                     </div>
                     
-                    <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
-                        🐾 Социальная миссия проекта
-                    </span>
-                    
-                    <h2 class="text-2xl sm:text-3xl font-black text-white">
-                        Помогаем хвостикам вместе
-                    </h2>
-                    
-                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl mx-auto">
-                        С каждой проданной диагностики мы переводим <strong class="text-amber-400">100 ₽</strong> в фонд помощи бездомным животным <strong class="text-white">«Собачий мир»</strong> (г. Красноярск). Приобретая диагностику для себя, вы одновременно дарите день сытой жизни одному из подопечных приюта.
-                    </p>
+                    <div class="space-y-1.5 flex-1">
+                        <span class="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                            <span>🐾</span>
+                            <span>Социальная миссия проекта</span>
+                        </span>
+                        
+                        <h2 class="text-2xl sm:text-3xl font-black text-white leading-tight">
+                            Помогаем хвостикам вместе
+                        </h2>
+                    </div>
                 </div>
 
-                <!-- Информационная плашка вместо фальшивого счетчика -->
+                <!-- Основной текст внизу -->
+                <p class="text-slate-300 text-xs sm:text-sm leading-relaxed text-center sm:text-left">
+                    С каждой проданной диагностики мы переводим <strong class="text-amber-400">100 ₽</strong> в фонд помощи бездомным животным <strong class="text-white">«Собачий мир»</strong> (г. Красноярск). Приобретая диагностику для себя, вы одновременно дарите день сытой жизни одному из подопечных приюта.
+                </p>
+
+                <!-- Информационная плашка -->
                 <div class="bg-slate-950/90 rounded-2xl py-5 px-6 border border-slate-800/90 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
                     <div class="flex items-center space-x-3">
                         <div class="text-amber-400 text-2xl">🍲</div>
@@ -337,7 +341,7 @@
                             <div class="text-slate-400 text-xs">Отчеты о переводах публикуются в канале приюта</div>
                         </div>
                     </div>
-                    <a id="link-charity-tg" href="https://t.me/sobachiy_mir_krsk" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2.5 rounded-xl font-bold text-xs transition shrink-0">
+                    <a id="link-charity-tg" href="https://t.me/sobachiy_mir_krsk" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py.5 rounded-xl font-bold text-xs transition shrink-0">
                         <i class="fa-brands fa-telegram text-sm"></i>
                         <span>Канал приюта</span>
                     </a>
@@ -346,7 +350,7 @@
             </div>
         </div>
     </section>
-
+    
     <!-- ЭКРАН 5: СЛУЖБА ПОДДЕРЖКИ -->
     <section id="support" class="py-8 bg-slate-900/40 border-t border-slate-800/60 scroll-mt-20">
         <div class="max-w-3xl mx-auto px-4 text-center space-y-3">
