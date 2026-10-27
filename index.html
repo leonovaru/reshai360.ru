@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru" class="scroll-smooth">
 <head>
-    <script src="https://yookassa.ru/checkout-widget/v1/checkout-widget.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Решай360.ру — Полный аудит знаний по математике</title>
@@ -600,71 +599,50 @@
                 .replace(/'/g, '&#039;');
         }
 
-        // Обработка отправки формы и вызов ЮKassa
+        // Обработка отправки формы и вызов ЮKassa (через надежный редирект)
         async function handleSubmit(e) {
-    e.preventDefault();
+            e.preventDefault();
 
-    const studentName = document.getElementById('student-name').value.trim();
-    const email = document.getElementById('student-email').value.trim();
-    const submitBtn = e.target.querySelector('button[type="submit"]');
+            const studentName = document.getElementById('student-name').value.trim();
+            const email = document.getElementById('student-email').value.trim();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
 
-    if (!studentName || !email) {
-        alert('Пожалуйста, заполните имя и email');
-        return;
-    }
+            if (!studentName || !email) {
+                alert('Пожалуйста, заполните имя и email');
+                return;
+            }
 
-    const originalBtnContent = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Создание платежа...`;
+            const originalBtnContent = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Создание платежа...`;
 
-    try {
-        // 1. Создаем платеж на бэкенде (в functions/api/create-payment.js)
-        const response = await fetch('/api/create-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                studentName: studentName, 
-                email: email, 
-                productKey: currentSelectedProductKey 
-            })
-        });
+            try {
+                const response = await fetch('/api/create-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        studentName: studentName, 
+                        email: email, 
+                        productKey: currentSelectedProductKey 
+                    })
+                });
 
-        const data = await response.json();
+                const data = await response.json();
 
-        if (data.confirmationToken) {
-            // 2. Открываем встроенный виджет ЮKassa прямо на сайте
-            const checkout = new YooCheckout({
-                confirmationToken: data.confirmationToken,
-                return_url: `https://reshai360.ru/success.html?productKey=${currentSelectedProductKey}&email=${encodeURIComponent(email)}&studentName=${encodeURIComponent(studentName)}`,
-                customization: {
-                    // Отключаем лишнее оформление, если поддерживается
-                    modal: true
+                if (data.confirmationUrl) {
+                    window.location.href = data.confirmationUrl; // Перенаправление на оплату в ЮKassa
+                } else {
+                    alert(data.message || 'Ошибка создания платежа');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnContent;
                 }
-            });
-
-            checkout.render('payment-form-container').then(() => {
-                // Виджет успешно открылся
+            } catch (err) {
+                console.error(err);
+                alert('Произошла ошибка соединения с платежным шлюзом.');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnContent;
-            });
-
-            // Либо можно открыть в модальном окне виджета:
-            checkout.on('success', () => {
-                window.location.href = `https://reshai360.ru/success.html?productKey=${currentSelectedProductKey}&email=${encodeURIComponent(email)}&studentName=${encodeURIComponent(studentName)}`;
-            });
-
-        } else {
-            alert(data.message || 'Ошибка создания платежа');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnContent;
+            }
         }
-    } catch (err) {
-        console.error(err);
-        alert('Произошла ошибка соединения с платежным шлюзом.');
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnContent;
-    }
-}
     </script>
 </body>
 </html>
