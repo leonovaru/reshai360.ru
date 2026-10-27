@@ -5,28 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Диагностический тест по математике | 11 класс</title>
   
-  <!-- Яндекс.Метрика -->
+  <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш номер счетчика) -->
   <script type="text/javascript" >
      (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
      m[i].l=1*new Date();
      for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
      (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
      ym(YOUR_COUNTER_ID, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true });
   </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/YOUR_COUNTER_ID" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 
-  <!-- MathJax SVG -->
+  <!-- MathJax SVG с локальным кешем шрифтов -->
   <script>
     window.MathJax = {
       tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
       svg: { fontCache: 'local' },
-      options: { renderActions: { assistiveMML: [], addMenu: [] } }
+      options: {
+        renderActions: {
+          assistiveMML: [],
+          addMenu: []
+        }
+      }
     };
   </script>
   <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
   
-  <!-- Библиотеки генерации PDF -->
+  <!-- Библиотеки генерации PDF из canvas (html2canvas + jsPDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -51,11 +56,14 @@
     .option-label { display: flex; align-items: flex-start; gap: 10px; background: #fff; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; line-height: 1.4; }
     .option-label:hover { background: #eff6ff; }
     .option-label input[type="radio"] { margin-top: 3px; flex-shrink: 0; }
+    .option-label span { flex: 1; word-break: break-word; }
     .input-row { display: flex; align-items: center; gap: 8px; max-width: 350px; margin-top: 10px; }
-    .text-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1em; box-sizing: border-box; }
+    .text-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1em; box-sizing: border-box; margin-top: 0; }
     .text-input:disabled { background-color: #e2e8f0; cursor: not-allowed; color: #475569; }
-    .btn-minus-toggle { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 6px; width: 44px; height: 42px; font-weight: bold; font-size: 1.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .btn-minus-toggle { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 6px; width: 44px; height: 42px; font-weight: bold; font-size: 1.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s; flex-shrink: 0; }
+    .btn-minus-toggle:hover { background: #e2e8f0; border-color: #94a3b8; }
     .btn-minus-toggle.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+    .btn-minus-toggle:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
     .btn-check { background: var(--primary-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 12px; transition: 0.2s; }
     .btn-check:hover { background: #1d4ed8; }
     .feedback { display: inline-block; margin-left: 15px; font-weight: bold; font-size: 1.05em; }
@@ -63,12 +71,15 @@
     .btn-final:hover { background: #15803d; }
     .btn-pdf { display: inline-block; background: var(--primary-dark); color: #fff; border: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 1.05em; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .btn-pdf:hover:not(:disabled) { background: var(--primary-blue); }
-    .btn-pdf:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.8; }
+    .btn-pdf:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.8; box-shadow: none; }
+    mjx-container[jax="SVG"] { display: inline-block !important; margin: 0 2px !important; }
+    mjx-container[jax="SVG"] svg { overflow: visible !important; vertical-align: middle !important; max-width: none !important; }
+    mjx-assistive-mml, .mjx-assistive-mml { display: none !important; visibility: hidden !important; }
     #result-wrapper { max-width: 900px; margin: 20px auto; display: none; padding: 0 15px; box-sizing: border-box; }
     .screen-section-title { color: var(--primary-dark); border-bottom: 2px solid var(--primary-blue); padding-bottom: 8px; font-size: 1.25em; margin: 30px 0 15px 0; }
     #pdf-export-container { position: fixed; top: 0; left: 0; z-index: -9999; opacity: 0; pointer-events: none; width: 794px !important; }
     .pdf-page { width: 794px !important; height: 1122px !important; background: #ffffff !important; padding: 25px 40px !important; box-sizing: border-box !important; margin: 0 auto !important; position: relative !important; overflow: hidden !important; font-size: 15px !important; }
-    #result-screen .pdf-page { width: 100% !important; max-width: 794px; height: auto !important; padding: 20px !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
+    #result-screen .pdf-page { width: 100% !important; max-width: 794px; height: auto !important; min-height: auto !important; padding: 20px !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
     .pdf-header-title { font-size: 1.35em; font-weight: 800; color: #1b2a4a; margin: 0 0 12px 0; }
     .pdf-score-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; gap: 15px; flex-wrap: wrap; }
     .pdf-student-info { font-size: 0.95em; color: #1e293b; line-height: 1.5; }
@@ -78,19 +89,20 @@
     .pdf-score-main { font-size: 1.3em; font-weight: 800; color: #1b365d; }
     .pdf-analytics-title { font-size: 1em; font-weight: 700; color: #1b365d; margin-bottom: 6px; border-bottom: 2px solid #2563eb; padding-bottom: 3px; }
     .pdf-progress-row { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
-    .pdf-progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+    .pdf-progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; font-weight: 700; color: #1e293b; margin-bottom: 6px; gap: 15px; }
     .pdf-progress-track { height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
     .pdf-progress-fill { height: 100%; border-radius: 6px; }
     .bg-green { background-color: #22c55e; }
     .bg-yellow { background-color: #eab308; }
     .bg-red { background-color: #ef4444; }
-    .pdf-topics-container { display: flex; gap: 12px; margin-top: 8px; }
+    .pdf-topics-container { display: flex; flex-direction: row !important; gap: 12px; margin-top: 8px; }
     .pdf-topics-box { flex: 1; border-radius: 8px; padding: 10px 12px; font-size: 0.72em; line-height: 1.35; max-height: 480px; overflow: hidden; }
     .pdf-topics-box.repeat { background: #fefce8; border: 1px solid #fde047; color: #713f12; }
     .pdf-topics-box.repeat h4 { margin: 0 0 4px 0; color: #a16207; font-size: 0.95em; }
     .pdf-topics-box.study { background: #fef2f2; border: 1px solid #fca5a5; color: #7f1d1d; }
     .pdf-topics-box.study h4 { margin: 0 0 4px 0; color: #b91c1c; font-size: 0.95em; }
     .pdf-topics-box ol { margin: 0; padding-left: 16px; }
+    .pdf-topics-box li { margin-bottom: 2px; }
     .detail-section-title { margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); border-bottom: 2px solid #2563eb; padding-bottom: 5px; font-size: 1.05em; }
     .pdf-card { background: #ffffff; border-left: 4px solid #cbd5e1; border-radius: 5px; padding: 10px 14px; margin-bottom: 10px; position: relative; }
     .pdf-card.correct { border-left-color: #16a34a; background: #f0fdf4; }
@@ -98,7 +110,7 @@
     .pdf-card.skipped { border-left-color: #dc2626; background: #fef2f2; }
     .pdf-q { font-weight: 600; margin-bottom: 4px; color: #1e293b; font-size: 0.9em; line-height: 1.35; }
     .pdf-ans { font-size: 0.85em; color: #475569; line-height: 1.4; padding-right: 95px; }
-    .badge { position: absolute; bottom: 10px; right: 12px; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+    .badge { position: absolute; bottom: 10px; right: 12px; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; white-space: nowrap; }
     .badge-ok { background: #dcfce7; color: #15803d; }
     .badge-err { background: #fef9c3; color: #a16207; }
     .badge-skip { background: #fee2e2; color: #b91c1c; }
@@ -115,7 +127,8 @@
         <li>Решайте задания самостоятельно и не пытайтесь угадывать ответы наугад.</li>
         <li>Если в ответе получается десятичная дробь, используйте запятую (например, <strong>2,5</strong>).</li>
         <li>Чтобы ввести отрицательное число, нажмите на кнопку <strong>«±»</strong> рядом с полем ввода.</li>
-        <li><strong>Важно:</strong> тест доступен для прохождения только один раз. Не закрывайте страницу до завершения.</li>
+        <li>Все ваши проверенные ответы и прогресс сохраняются.</li>
+        <li><strong>Важно:</strong> не закрывайте и не покидайте страницу во время прохождения теста.</li>
       </ul>
     </div>
     <div id="quiz-container"></div>
@@ -133,34 +146,42 @@
 
 <script>
   let studentData = { fullName: "Ученик", email: "" };
+  let currentToken = "";
   let generatedPdfBlob = null;
 
-  window.addEventListener('DOMContentLoaded', () => {
-    // Проверка безопасности: доступ разрешен только через успешную оплату / валидный localStorage
-    const savedName = localStorage.getItem('studentName');
-    const savedEmail = localStorage.getItem('studentEmail');
-    const isCompleted = localStorage.getItem('testCompleted_11');
+  // Проверка токена при загрузке страницы (защита от пересылки и повторного прохождения)
+  window.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    currentToken = params.get('token') || localStorage.getItem('testToken');
 
-    if (isCompleted === 'true') {
-      document.body.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #090d16; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
-          <div style="background: #1e293b; padding: 30px; border-radius: 12px; max-width: 400px; border: 1px solid #334155;">
-            <h2 style="color: #f87171; margin-bottom: 10px;">Доступ закрыт</h2>
-            <p style="color: #94a3b8; font-size: 0.95em;">Этот диагностический тест уже был успешно пройден и сдан. Повторное прохождение по ссылке недоступно.</p>
-          </div>
-        </div>
-      `;
-      return;
-    }
-
-    if (!savedName || !savedEmail) {
-      alert("Не обнаружены данные сессии. Пожалуйста, пройдите оплату на главной странице.");
+    if (!currentToken) {
+      alert("Доступ запрещен. Требуется оплата диагностики.");
       window.location.href = "index.html";
       return;
     }
 
-    studentData.fullName = savedName;
-    studentData.email = savedEmail;
+    try {
+      const response = await fetch('/api/verify-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: currentToken })
+      });
+      const result = await response.json();
+
+      if (!result.valid) {
+        alert(result.message || "Ссылка недействительна или уже была использована.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      if (result.data) {
+        studentData.fullName = result.data.studentName || localStorage.getItem('studentName') || "Ученик";
+        studentData.email = result.data.email || localStorage.getItem('studentEmail') || "";
+      }
+    } catch (err) {
+      console.error("Ошибка проверки токена:", err);
+    }
+
     renderQuiz();
   });
 
@@ -172,7 +193,11 @@
     const input = document.getElementById(qId);
     if (!input || input.disabled) return;
     let val = input.value.trim();
-    input.value = val.startsWith('-') ? val.substring(1) : '-' + val;
+    if (val.startsWith('-')) {
+      input.value = val.substring(1);
+    } else {
+      input.value = '-' + val;
+    }
     updateMinusBtnState(qId);
   }
 
@@ -393,7 +418,6 @@
         theme.questions.forEach((qDef, qIdx) => {
           qDef.checkCount = 0;
           qDef.attemptsHistory = [];
-
           const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
           html += `<div class="card" id="card_${qId}">`;
           html += `<div class="question-title">${qIndex}. ${qDef.q}</div>`;
@@ -477,7 +501,8 @@
         const feedEl = document.getElementById(`feed_${qId}`);
         if (feedEl) feedEl.innerHTML = "<span style='color: #16a34a'>Верно! ✅</span>";
         if (qDef.type === "radio") {
-          document.getElementsByName(qId).forEach(el => el.disabled = true);
+          const els = document.getElementsByName(qId);
+          els.forEach(el => el.disabled = true);
         } else {
           const inputEl = document.getElementById(qId);
           if (inputEl) inputEl.disabled = true;
@@ -525,14 +550,6 @@
   }
 
   async function checkAll() {
-    // Устанавливаем флаг завершения теста в localStorage (предотвращает повторное открытие)
-    localStorage.setItem('testCompleted_11', 'true');
-
-    // Фиксируем цель в Яндекс.Метрике: Тест решен до конца
-    if (typeof ym !== 'undefined') {
-      ym(YOUR_COUNTER_ID, 'reachGoal', 'test_completed');
-    }
-
     let totalCorrect = 0;
     let totalQuestions = 0;
     let pdfAnalyticsRowsHtml = "";
@@ -553,9 +570,7 @@
 
         theme.questions.forEach((qDef, qIdx) => {
           checkSingle(bIdx, tIdx, qIdx, true); 
-
           if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано") {
-            if (!qDef.checkCount) qDef.checkCount = 0;
             if (!qDef.attemptsHistory || qDef.attemptsHistory.length === 0) {
               qDef.attemptsHistory = [qDef.userText];
             }
@@ -575,6 +590,9 @@
             badgeStatus = "Верно ✅";
             badgeClass = "badge-ok";
           } else if (qDef.isCorrect && isGuessedByBruteForce) {
+            statusClass = "incorrect";
+            badgeStatus = "Перебор ⚠️";
+            badgeClass = "badge-err";
             topicsToRepeatSet.add(cleanThemeName);
           } else if (isSkipped) {
             statusClass = "skipped";
@@ -582,27 +600,29 @@
             badgeClass = "badge-skip";
             topicsToStudySet.add(cleanThemeName);
           } else {
+            statusClass = "incorrect";
+            badgeStatus = "Ошибка ⚠️";
+            badgeClass = "badge-err";
             topicsToRepeatSet.add(cleanThemeName);
           }
 
-          let attemptsList = qDef.attemptsHistory && qDef.attemptsHistory.length > 0 ? qDef.attemptsHistory.join(" ➔ ") : qDef.userText;
+          let attemptsList = qDef.attemptsHistory && qDef.attemptsHistory.length > 0 ? qDef.attemptsHistory.join(" ➔ ") : (isSkipped ? "Нет попыток" : qDef.userText);
+          const checkCountVal = qDef.checkCount || 0;
 
           const cardHtml = `
             <div class="pdf-card ${statusClass}">
               <div class="pdf-q">${qIndex}. ${qDef.q}</div>
               <div class="pdf-ans">
-                <b>Попыток ввода:</b> ${qDef.checkCount || 0} | <b>Ответ:</b> ${attemptsList}<br>
+                <b>Попыток ввода:</b> ${checkCountVal} | <b>Ответ:</b> ${attemptsList}<br>
                 <b>Правильный ответ:</b> ${qDef.correctText}
               </div>
               <span class="badge ${badgeClass}">${badgeStatus}</span>
             </div>
           `;
-
           screenCardsHtml += cardHtml;
           pdfCardsArray.push(cardHtml);
           qIndex++;
         });
-
         blockCorrect += themeCorrect;
         blockTotal += themeTotal;
       });
@@ -621,7 +641,6 @@
           </div>
         </div>
       `;
-
       totalCorrect += blockCorrect;
       totalQuestions += blockTotal;
     });
@@ -630,8 +649,8 @@
     const topicsToRepeat = Array.from(topicsToRepeatSet);
     const topicsToStudy = Array.from(topicsToStudySet);
 
-    let repeatBoxHtml = topicsToRepeat.length > 0 ? `<ol>${topicsToRepeat.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin:0;">Ошибок в решенных заданиях нет.</p>`;
-    let studyBoxHtml = topicsToStudy.length > 0 ? `<ol>${topicsToStudy.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin:0;">Пропущенных заданий нет.</p>`;
+    let repeatBoxHtml = topicsToRepeat.length > 0 ? `<ol>${topicsToRepeat.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Ошибок в решенных заданиях нет.</p>`;
+    let studyBoxHtml = topicsToStudy.length > 0 ? `<ol>${topicsToStudy.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Пропущенных заданий нет.</p>`;
 
     const pdfTopicsSplitHtml = `
       <div class="pdf-topics-container">
@@ -667,7 +686,7 @@
       ${pdfTopicsSplitHtml}
     `;
 
-    document.getElementById("result-screen").innerHTML = `
+    const screenResultHtml = `
       <div class="pdf-page" style="position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; margin-bottom: 25px;">
         ${firstPageHtml}
       </div>
@@ -678,22 +697,79 @@
       ${screenCardsHtml}
     `;
 
+    document.getElementById("result-screen").innerHTML = screenResultHtml;
+
+    let measureContainer = document.createElement('div');
+    measureContainer.style.cssText = 'position: fixed; top: 0; left: -9999px; width: 714px; visibility: hidden; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;';
+    document.body.appendChild(measureContainer);
+
+    let detailPagesCards = [];
+    let currentPageCards = [];
+    const MAX_PAGE_CONTENT_HEIGHT = 1000;
+
+    for (let i = 0; i < pdfCardsArray.length; i++) {
+      let testCards = [...currentPageCards, pdfCardsArray[i]];
+      measureContainer.innerHTML = `<h3 class="detail-section-title">Результаты выполнения заданий</h3>` + testCards.join('');
+      await safeTypeset(measureContainer);
+      let currentHeight = measureContainer.offsetHeight;
+
+      if (currentHeight > MAX_PAGE_CONTENT_HEIGHT && currentPageCards.length > 0) {
+        detailPagesCards.push(currentPageCards);
+        currentPageCards = [pdfCardsArray[i]];
+      } else {
+        currentPageCards.push(pdfCardsArray[i]);
+      }
+    }
+    if (currentPageCards.length > 0) detailPagesCards.push(currentPageCards);
+    document.body.removeChild(measureContainer);
+
+    const totalPages = 1 + detailPagesCards.length;
+    let pagesHtml = `<div class="pdf-page">${firstPageHtml}<div class="page-footer">Диагностический отчет | Страница 1 из ${totalPages}</div></div>`;
+
+    let cardGlobalIndex = 0;
+    detailPagesCards.forEach((pageCards, p) => {
+      const pageNum = p + 2;
+      const startQ = cardGlobalIndex + 1;
+      const endQ = cardGlobalIndex + pageCards.length;
+      cardGlobalIndex += pageCards.length;
+
+      pagesHtml += `
+        <div class="pdf-page">
+          <h3 class="detail-section-title">Результаты выполнения заданий (Задания ${startQ}–${endQ})</h3>
+          ${pageCards.join("")}
+          <div class="page-footer">Диагностический отчет | Страница ${pageNum} из ${totalPages}</div>
+        </div>
+      `;
+    });
+
+    document.getElementById("result-pdf").innerHTML = pagesHtml;
     document.getElementById("main-container").style.display = "none";
     document.getElementById("result-wrapper").style.display = "block";
     window.scrollTo(0, 0);
 
-    // Генерация и отправка отчетов на бэкенд
-    setTimeout(async () => {
-      try {
-        generatedPdfBlob = await buildPerfectPdfBlob();
-        const downloadBtn = document.getElementById("downloadPdfBtn");
-        if (downloadBtn) {
-          downloadBtn.disabled = false;
-          downloadBtn.innerText = "📄 Скачать PDF-отчет";
-        }
+    await new Promise(resolve => setTimeout(resolve, 150));
+    await safeTypeset(document.getElementById("result-screen"));
+    await new Promise(resolve => setTimeout(resolve, 200));
+    await safeTypeset(document.getElementById("result-pdf"));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-        // Автоматическая отправка отчета в TG и на Email через бэкенд
+    const downloadBtn = document.getElementById("downloadPdfBtn");
+    try {
+      generatedPdfBlob = await buildPerfectPdfBlob();
+      if (downloadBtn) {
+        downloadBtn.disabled = false;
+        downloadBtn.innerText = "📄 Скачать PDF-отчет";
+      }
+
+      // Фиксируем цель Яндекс.Метрики: Тест решен до конца
+      if (typeof ym !== 'undefined') {
+        ym(YOUR_COUNTER_ID, 'reachGoal', 'test_completed');
+      }
+
+      // Отправляем PDF на сервер (в Telegram и на Email)
+      if (currentToken && studentData.email) {
         const formData = new FormData();
+        formData.append('token', currentToken);
         formData.append('email', studentData.email);
         formData.append('name', studentData.fullName);
         formData.append('score', totalCorrect);
@@ -704,10 +780,12 @@
           method: 'POST',
           body: formData
         });
-      } catch (err) {
-        console.error("Ошибка при генерации или отправке отчета:", err);
       }
-    }, 500);
+
+    } catch (err) {
+      console.error("Ошибка при генерации/отправке PDF:", err);
+      if (downloadBtn) downloadBtn.innerText = "⚠️ Ошибка генерации PDF";
+    }
   }
 </script>
 </body>
