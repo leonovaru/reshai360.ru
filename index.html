@@ -9,84 +9,133 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- PDF.js CDN для просмотра PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Внешний файл данных и конфигурации -->
     <script src="config.js"></script>
-    <!-- Яндекс.Метрика -->
+
+    <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш реальный номер счетчика) -->
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
        m[i].l=1*new Date();
        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
        (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
        ym(YOUR_COUNTER_ID, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true });
     </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/YOUR_COUNTER_ID" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+
     <style>
-        body { background-color: #090d16; color: #f1f5f9; }
-        .glass-panel { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .phone-mockup { box-shadow: 0 0 50px rgba(99, 102, 241, 0.2); }
+        body {
+            background-color: #090d16;
+            color: #f1f5f9;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .phone-mockup {
+            box-shadow: 0 0 50px rgba(99, 102, 241, 0.2);
+        }
     </style>
 </head>
 <body class="font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col justify-between pt-20">
 
-    <!-- ВЕРХНЯЯ ПЛАШКА -->
+    <!-- ВЕРХНЯЯ ПЛАШКА О БЛАГОТВОРИТЕЛЬНОСТИ -->
     <div class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white text-xs sm:text-sm font-bold py-1.5 px-4 text-center flex items-center justify-center space-x-2 shadow-md">
         <span class="inline-block animate-bounce">🐾</span>
         <span>1 диагностика = 1 сытый пёсик</span>
         <span class="inline-block animate-bounce">🐾</span>
     </div>
 
+    <!-- ЛИПКАЯ ПЛАШКА СВЕРХУ ПРИ СКРОЛЛЕ -->
     <div id="sticky-bar" class="fixed top-7 left-0 right-0 z-40 bg-[#090d16]/95 backdrop-blur-md border-b border-indigo-500/30 py-2.5 px-4 shadow-2xl transition-all duration-300">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <a href="#" class="flex items-center space-x-3">
                 <span class="text-lg sm:text-xl font-black tracking-wider bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">РЕШАЙ360</span>
             </a>
+            
             <nav class="flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm font-semibold">
                 <a href="#select-program" class="text-slate-300 hover:text-white transition px-2 py-1">Диагностика</a>
                 <a href="#charity" class="text-amber-400 hover:text-amber-300 transition px-2 py-1 flex items-center space-x-1">
-                    <span>🐾</span><span>Приют</span>
+                    <span>🐾</span>
+                    <span>Приют</span>
                 </a>
             </nav>
         </div>
     </div>
 
-    <!-- ЭКРАН 1: HERO -->
+    <!-- ЭКРАН 1: HERO SECTION -->
     <section class="py-6 lg:py-10 min-h-[calc(100vh-5rem)] flex flex-col justify-center relative overflow-hidden">
         <div class="max-w-6xl mx-auto px-4 w-full">
             <div class="grid lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+                
+                <!-- Левый блок: Оффер -->
                 <div class="lg:col-span-7 space-y-4 text-left">
                     <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight">
                         Пробник, контрольная или ВПР показывают балл.<br>
                         <span class="bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">Решай360 показывает пробелы.</span>
                     </h1>
+                    
                     <p class="text-slate-300 text-xs sm:text-sm lg:text-base font-normal leading-relaxed max-w-xl">
                         Проверь знания по всей пройденной программе. Получи развернутую PDF-карту: что освоено идеально, где скрыты ошибки и детальные результаты каждого задания.
                     </p>
+
+                    <div class="flex flex-wrap gap-2 pt-1 text-xs font-medium text-slate-300">
+                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
+                            <i class="fa-solid fa-laptop-mobile text-indigo-400"></i>
+                            <span>С любого устройства</span>
+                        </div>
+                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
+                            <i class="fa-solid fa-floppy-disk text-indigo-400"></i>
+                            <span>Сохраняет прогресс</span>
+                        </div>
+                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
+                            <i class="fa-solid fa-file-pdf text-indigo-400"></i>
+                            <span>Отчет в PDF А4</span>
+                        </div>
+                    </div>
+
+                    <!-- Кнопки действий -->
                     <div class="pt-2 flex flex-wrap items-center gap-3">
                         <a href="#select-program" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-7 py-3 rounded-xl font-bold text-sm transition shadow-xl shadow-indigo-600/25 space-x-2">
                             <span>Выбрать свой класс</span>
                             <i class="fa-solid fa-arrow-down text-xs"></i>
                         </a>
+                        <a href="#pdf-section" class="inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-3 rounded-xl font-bold text-sm transition border border-slate-700 space-x-2">
+                            <i class="fa-solid fa-file-pdf text-indigo-400"></i>
+                            <span>Посмотреть отчет PDF</span>
+                        </a>
                     </div>
                 </div>
+
+                <!-- Правый блок: Видео смартфона -->
                 <div class="lg:col-span-5 flex justify-center">
                     <div class="phone-mockup relative w-[200px] sm:w-[230px] h-[400px] sm:h-[460px] rounded-[32px] p-2 bg-slate-900 border-4 border-slate-800 shadow-2xl overflow-hidden mx-auto">
+                        <div class="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-3.5 bg-slate-950 rounded-full z-20 flex items-center justify-center">
+                            <div class="w-6 h-1 bg-slate-800 rounded-full"></div>
+                        </div>
+                        
                         <div class="relative w-full h-full rounded-[26px] overflow-hidden bg-slate-950 flex items-center justify-center">
-                            <video id="demo-video" autoplay muted loop playsinline webkit-playsinline preload="auto" class="w-full h-full object-cover">
+                            <video id="demo-video" autoplay muted loop playsinline webkit-playsinline preload="auto" x5-playsinline="true" class="w-full h-full object-cover">
                                 <source id="video-source" src="" type="video/mp4">
+                                Ваш браузер не поддерживает видео.
                             </video>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
 
-    <!-- ЭКРАН 2: ВЫБОР КЛАССА И ОПЛАТА -->
+    <!-- ЭКРАН 2: ВЫБОР ДИАГНОСТИКИ И ОПЛАТА -->
     <section id="select-program" class="py-12 border-t border-slate-800/60 scroll-mt-10">
         <div class="max-w-5xl mx-auto px-4">
             <div class="text-center mb-8 space-y-2">
                 <h2 class="text-2xl sm:text-4xl font-extrabold text-white">Выберите вариант диагностики</h2>
             </div>
+
+            <!-- Табы переключения -->
             <div class="space-y-5 mb-8">
                 <div class="flex flex-col items-center">
                     <span class="text-[11px] uppercase font-bold tracking-wider text-slate-500 mb-2">Школьная программа</span>
@@ -100,13 +149,22 @@
                 </div>
             </div>
 
+            <!-- КАРТОЧКА ВЫБРАННОЙ ДИАГНОСТИКИ -->
             <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 max-w-4xl mx-auto shadow-2xl">
+                
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-6 mb-6">
                     <div>
                         <div class="flex items-center space-x-2">
-                            <span id="badge-text" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">Полный аудит</span>
+                            <span id="badge-text" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
+                                Полный аудит
+                            </span>
+                            <span id="fipi-badge" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 hidden">
+                                <i class="fa-solid fa-award mr-1"></i>Соответствует спецификации ФИПИ
+                            </span>
                         </div>
-                        <h3 id="card-title" class="text-2xl sm:text-3xl font-extrabold text-white mt-2">Готовность к 11 классу</h3>
+                        <h3 id="card-title" class="text-2xl sm:text-3xl font-extrabold text-white mt-2">
+                            Готовность к 10 классу
+                        </h3>
                         <p id="card-desc" class="text-xs text-slate-400 mt-1">Проверяем знания за курс</p>
                     </div>
                     <div class="text-left sm:text-right">
@@ -115,7 +173,21 @@
                     </div>
                 </div>
 
-                <form id="checkout-form" onsubmit="handleSubmit(event)" class="space-y-4">
+                <!-- Сворачиваемая программа диагностики -->
+                <div class="space-y-3">
+                    <button type="button" onclick="toggleProgramBlocks()" id="toggle-blocks-btn" class="inline-flex items-center space-x-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-4 py-2.5 rounded-xl border border-indigo-500/30 transition">
+                        <i id="toggle-blocks-icon" class="fa-solid fa-chevron-down text-xs"></i>
+                        <span id="toggle-blocks-text">Посмотреть программу диагностики</span>
+                    </button>
+
+                    <div id="blocks-wrapper" class="hidden space-y-4 pt-2 transition-all">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Что будет проверено в этой диагностике:</h4>
+                        <div id="blocks-container" class="grid md:grid-cols-2 gap-4 text-xs sm:text-sm"></div>
+                    </div>
+                </div>
+
+                <!-- Форма заказа -->
+                <form id="checkout-form" onsubmit="handleSubmit(event)" class="mt-8 pt-6 border-t border-slate-800 space-y-4">
                     <div class="grid sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-slate-400 mb-1.5">Ваше имя</label>
@@ -126,80 +198,438 @@
                             <input type="email" id="student-email" required placeholder="student@mail.ru" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm">
                         </div>
                     </div>
+
                     <div class="flex items-start space-x-2.5 pt-2 text-xs text-slate-400">
                         <input type="checkbox" id="consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
                         <label for="consent" class="text-[11px] leading-tight text-slate-400">
                             Я даю согласие на обработку персональных данных и принимаю условия 
-                            <a id="link-policy" href="policy.html" target="_blank" class="underline hover:text-indigo-400">Политики конфиденциальности</a> 
-                            и <a id="link-offer" href="offer.html" target="_blank" class="underline hover:text-indigo-400">Публичной оферты</a>.
+                            <a id="link-policy" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Политики конфиденциальности</a> 
+                            и <a id="link-offer" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Публичной оферты</a>.
                         </label>
                     </div>
+
                     <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition shadow-xl shadow-indigo-600/25 text-base mt-4 flex items-center justify-center space-x-2">
                         <span>Перейти к оплате</span>
                         <i class="fa-solid fa-arrow-right text-xs"></i>
                     </button>
                 </form>
+
             </div>
         </div>
     </section>
 
-    <!-- БЛАГОТВОРИТЕЛЬНОСТЬ -->
-    <section id="charity" class="py-12 border-t border-slate-800/60 bg-gradient-to-b from-[#090d16] via-[#0f172a] to-[#090d16]">
-        <div class="max-w-3xl mx-auto px-4">
-            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-slate-900/90 shadow-2xl space-y-6 text-center sm:text-left">
-                <h2 class="text-2xl sm:text-3xl font-black text-white">Помогаем хвостикам вместе 🐾</h2>
-                <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                    С каждой проданной диагностики мы переводим 100 ₽ в фонд помощи бездомным животным «Собачий мир» (г. Красноярск).
+    <!-- ЭКРАН 3: ИНТЕРАКТИВНЫЙ PDF И ПРЕИМУЩЕСТВА -->
+    <section id="pdf-section" class="py-12 border-t border-b border-slate-800/60 scroll-mt-20">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid lg:grid-cols-12 gap-8 items-center">
+                
+                <!-- ЛЕВАЯ КОЛОНКА: ИНТЕРАКТИВНЫЙ PDF В КАРТОЧКЕ -->
+                <div class="lg:col-span-6 flex justify-center">
+                    <div class="w-full max-w-[440px] bg-[#0d1322] border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col items-center">
+                        
+                        <!-- Оболочка документа -->
+                        <div id="canvas-wrapper" class="w-full bg-white rounded-2xl overflow-hidden min-h-[460px] flex items-center justify-center relative shadow-lg border border-slate-700/50">
+                            <div id="pdf-loading" class="text-slate-600 text-xs flex items-center space-x-2 p-6 text-center">
+                                <i class="fa-solid fa-spinner fa-spin text-indigo-600 text-base"></i>
+                                <span>Загрузка страниц отчета...</span>
+                            </div>
+                            <canvas id="pdf-canvas" class="max-w-full h-auto hidden" oncontextmenu="return false;"></canvas>
+                        </div>
+
+                        <!-- Нижняя панель навигации -->
+                        <div class="w-full mt-4 flex items-center justify-between px-2">
+                            <button id="prev-page" onclick="changePage(-1)" class="px-4 py-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700/60 rounded-xl font-bold text-xs transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-2">
+                                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                                <span>Назад</span>
+                            </button>
+
+                            <span class="text-xs text-slate-300 font-semibold tracking-wide">
+                                Страница <span id="page-num" class="font-bold text-white">1</span> из <span id="page-count" class="font-bold text-slate-400">--</span>
+                            </span>
+
+                            <button id="next-page" onclick="changePage(1)" class="px-4 py-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700/60 rounded-xl font-bold text-xs transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-2">
+                                <span>Вперед</span>
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ПРАВАЯ КОЛОНКА: ОПИСАНИЕ И ПЛАШКА -->
+                <div class="lg:col-span-6 space-y-6">
+                    <div class="space-y-4">
+                        <div>
+                            <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
+                                📄 Наглядный PDF-документ
+                            </span>
+                        </div>
+
+                        <h2 class="text-2xl sm:text-4xl font-extrabold text-white leading-tight">
+                            Диагностический отчет результатов
+                        </h2>
+
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            Полная техническая карта выполнения тестирования. Покажет точность решений по каждому из ключевых блоков математики и выявит характер выполненных задач.
+                        </p>
+
+                        <div class="space-y-3 pt-2 text-xs sm:text-sm">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-5 h-5 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
+                                    <i class="fa-solid fa-check text-[10px]"></i>
+                                </div>
+                                <div class="text-slate-300 leading-snug">
+                                    <strong class="text-white">Детализация по всем темам:</strong> Сравнение ответа ученика с верным эталоном и точная фиксация статуса выполнения.
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3">
+                                <div class="w-5 h-5 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
+                                    <i class="fa-solid fa-check text-[10px]"></i>
+                                </div>
+                                <div class="text-slate-300 leading-snug">
+                                    <strong class="text-white">Анализ слабых мест:</strong> Четкое понимание, какую тему нужно подтянуть в первую очередь.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Нижняя плашка -->
+                    <div class="glass-panel p-5 rounded-2xl border border-indigo-500/20 bg-indigo-950/20 space-y-2">
+                        <h3 class="text-sm sm:text-base font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-exclamation text-amber-400 text-xs"></i>
+                            <span>Почему обычные тесты не дают полной картины?</span>
+                        </h3>
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            На школьной контрольной, ВПР или тестовом пробнике легко получить случайный высокий балл, если выпадут легкие темы. При этом слабые места останутся скрыты до самого дня экзамена. В <strong class="text-indigo-400">Решай360</strong> проверка идет по всей пройденной программе за прошлые годы.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ЭКРАН 4: БЛОК БЛАГОТВОРИТЕЛЬНОСТИ -->
+    <section id="charity" class="py-12 border-t border-slate-800/60 bg-gradient-to-b from-[#090d16] via-[#0f172a] to-[#090d16] relative overflow-hidden scroll-mt-20">
+        <div class="max-w-3xl mx-auto px-4 relative z-10">
+            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-slate-900/90 shadow-2xl space-y-6">
+                
+                <!-- Шапка -->
+                <div class="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
+                    <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-amber-500/50 shadow-lg shadow-amber-500/10 shrink-0 mx-auto sm:mx-0">
+                        <img src="dog_logo.jpg" alt="Приют Собачий мир" class="w-full h-full object-cover">
+                    </div>
+                    
+                    <div class="space-y-1.5 flex-1">
+                        <span class="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                            <span>🐾</span>
+                            <span>Социальная миссия проекта</span>
+                        </span>
+                        
+                        <h2 class="text-2xl sm:text-3xl font-black text-white leading-tight">
+                            Помогаем хвостикам вместе
+                        </h2>
+                    </div>
+                </div>
+
+                <!-- Основной текст -->
+                <p class="text-slate-300 text-xs sm:text-sm leading-relaxed text-center sm:text-left">
+                    С каждой проданной диагностики мы переводим <strong class="text-amber-400">100 ₽</strong> в фонд помощи бездомным животным <strong class="text-white">«Собачий мир»</strong> (г. Красноярск). Приобретая диагностику для себя, вы одновременно дарите день сытой жизни одному из подопечных приюта.
                 </p>
-                <a href="https://t.me/sobachiy_mir_krsk" target="_blank" class="inline-flex items-center space-x-2 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-4 py-2.5 rounded-xl font-bold text-xs">
-                    <i class="fa-brands fa-telegram"></i><span>Канал приюта</span>
+
+                <!-- Информационная плашка -->
+                <div class="bg-slate-950/90 rounded-2xl py-5 px-6 border border-slate-800/90 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-amber-400 text-2xl">🍲</div>
+                        <div>
+                            <div class="text-white font-bold text-sm">Прозрачная помощь</div>
+                            <div class="text-slate-400 text-xs">Отчеты о переводах публикуются в канале приюта</div>
+                        </div>
+                    </div>
+                    <a id="link-charity-tg" href="https://t.me/sobachiy_mir_krsk" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2.5 rounded-xl font-bold text-xs transition shrink-0">
+                        <i class="fa-brands fa-telegram text-sm"></i>
+                        <span>Канал приюта</span>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+    
+    <!-- ЭКРАН 5: СЛУЖБА ПОДДЕРЖКИ -->
+    <section id="support" class="py-8 bg-slate-900/40 border-t border-slate-800/60 scroll-mt-20">
+        <div class="max-w-3xl mx-auto px-4 text-center space-y-3">
+            <h3 class="text-xl sm:text-2xl font-bold text-white">Нужна помощь или возникли вопросы?</h3>
+            <p class="text-slate-300 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
+                Столкнулись с трудностями при оплате или получении отчета? Напишите нам. Работаем ежедневно с 10:00 до 20:00 МСК.
+            </p>
+            
+            <div class="flex flex-wrap justify-center items-center gap-4 text-xs sm:text-sm font-semibold pt-1">
+                <a href="mailto:support@reshai360.ru" class="text-indigo-400 hover:text-indigo-300 transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>support@reshai360.ru</span>
+                </a>
+                <span class="text-slate-700">•</span>
+                <a href="tel:+789044766535" class="text-indigo-400 hover:text-indigo-300 transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>8 (904) 476-65-35</span>
+                </a>
+            </div>
+
+            <div class="flex flex-wrap justify-center items-center gap-3 pt-2">
+                <a id="link-support-tg" href="https://t.me/leonovaru" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#229ED9] hover:bg-[#1d8cb0] text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md shadow-[#229ED9]/20">
+                    <i class="fa-brands fa-telegram text-base"></i>
+                    <span>Telegram</span>
+                </a>
+                <a id="link-support-vk" href="https://vk.ru/leonovaru" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#0077FF] hover:bg-[#0066cc] text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md shadow-[#0077FF]/20">
+                    <i class="fa-brands fa-vk text-base"></i>
+                    <span>ВКонтакте</span>
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- ПОДДЕРЖКА -->
-    <section id="support" class="py-8 bg-slate-900/40 border-t border-slate-800/60 text-center space-y-3">
-        <h3 class="text-xl font-bold text-white">Служба поддержки</h3>
-        <p class="text-slate-300 text-xs">ИП Леонова Марина Игоревна | ИНН: 721402977833</p>
-        <div class="flex justify-center items-center gap-3 pt-2">
-            <a href="https://t.me/leonovaru" target="_blank" class="bg-[#229ED9] text-white px-5 py-2.5 rounded-xl font-bold text-xs flex items-center space-x-2">
-                <i class="fa-brands fa-telegram"></i><span>@leonovaru</span>
-            </a>
-            <a href="https://vk.ru/leonovaru" target="_blank" class="bg-[#0077FF] text-white px-5 py-2.5 rounded-xl font-bold text-xs flex items-center space-x-2">
-                <i class="fa-brands fa-vk"></i><span>ВКонтакте</span>
-            </a>
+    <!-- ФУТЕР -->
+    <footer class="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500">
+        <div class="max-w-6xl mx-auto px-4 space-y-3">
+            <div>© 2026 РЕШАЙ360.РУ. Независимый аудит знаний по математике. Все права защищены.</div>
+            <div class="flex justify-center space-x-4 text-slate-400">
+                <a id="link-footer-policy" href="#" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition">Политика конфиденциальности</a>
+                <span>•</span>
+                <a id="link-footer-offer" href="#" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition">Публичная оферта</a>
+            </div>
         </div>
-    </section>
-
-    <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-        © 2026 РЕШАЙ360.РУ. Все права защищены.
     </footer>
 
+    <!-- СКРИПТЫ -->
     <script>
-        let currentSelectedProductKey = '11';
-        document.addEventListener('DOMContentLoaded', () => { selectOption('11'); });
+        let currentSelectedProductKey = '10'; // по умолчанию 10 класс
 
+        document.addEventListener('DOMContentLoaded', () => {
+            initLinks();
+            initVideo();
+            initPdfViewer();
+            selectOption('10');
+        });
+
+        function initLinks() {
+            if (typeof CONFIG === 'undefined') return;
+
+            document.getElementById('link-policy').href = CONFIG.links.policy;
+            document.getElementById('link-offer').href = CONFIG.links.offer;
+            document.getElementById('link-footer-policy').href = CONFIG.links.policy;
+            document.getElementById('link-footer-offer').href = CONFIG.links.offer;
+            document.getElementById('link-charity-tg').href = CONFIG.links.charityTelegram;
+
+            const video = document.getElementById('demo-video');
+            const videoSource = document.getElementById('video-source');
+            if (video && videoSource && CONFIG.media.demoVideo) {
+                videoSource.src = CONFIG.media.demoVideo;
+                video.load();
+                video.play().catch(e => console.log("Автозапуск заблокирован браузером:", e));
+            }
+        }
+
+        function initVideo() {
+            const video = document.getElementById('demo-video');
+            if (video) {
+                video.muted = true;
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        const playOnTouch = () => { video.play(); };
+                        document.addEventListener('touchstart', playOnTouch, { once: true });
+                        document.addEventListener('click', playOnTouch, { once: true });
+                    });
+                }
+            }
+        }
+
+        function toggleProgramBlocks() {
+            const wrapper = document.getElementById('blocks-wrapper');
+            const text = document.getElementById('toggle-blocks-text');
+            const icon = document.getElementById('toggle-blocks-icon');
+            
+            if (wrapper.classList.contains('hidden')) {
+                wrapper.classList.remove('hidden');
+                text.innerText = "Скрыть программу диагностики";
+                icon.className = "fa-solid fa-chevron-up text-xs";
+            } else {
+                wrapper.classList.add('hidden');
+                text.innerText = "Посмотреть программу диагностики";
+                icon.className = "fa-solid fa-chevron-down text-xs";
+            }
+        }
+
+        // Рендеринг PDF через PDF.js
+        let pdfDoc = null;
+        let currentPdfPage = 1;
+        let pageRendering = false;
+        let pageNumPending = null;
+
+        function initPdfViewer() {
+            if (typeof pdfjsLib === 'undefined') return;
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+            const pdfFile = (typeof CONFIG !== 'undefined' && CONFIG.media && CONFIG.media.pdfReport) ? CONFIG.media.pdfReport : 'report.pdf';
+            
+            pdfjsLib.getDocument(pdfFile).promise.then(function(doc) {
+                pdfDoc = doc;
+                document.getElementById('page-count').textContent = pdfDoc.numPages;
+                renderPdfPage(currentPdfPage);
+            }).catch(function(err) {
+                console.warn("Первичная загрузка PDF не удалась, пробую альтернативный путь:", err);
+                pdfjsLib.getDocument(encodeURIComponent(pdfFile)).promise.then(function(doc) {
+                    pdfDoc = doc;
+                    document.getElementById('page-count').textContent = pdfDoc.numPages;
+                    renderPdfPage(currentPdfPage);
+                }).catch(function(e) {
+                    console.error("Ошибка загрузки PDF:", e);
+                    const loadingElem = document.getElementById('pdf-loading');
+                    if (loadingElem) {
+                        loadingElem.innerHTML = `
+                            <div class="text-rose-400 text-xs p-4 text-center space-y-2">
+                                <div><b>Файл «${pdfFile}» не найден или заблокирован.</b></div>
+                                <div style="color:#94a3b8; font-size:11px; line-height:1.4;">
+                                    Если вы открываете сайт с компьютера (через <code>file://</code>), браузер блокирует чтение локальных PDF из-за безопасности CORS. Опубликуйте сайт в Cloudflare Pages — там всё будет работать идеально!
+                                </div>
+                            </div>`;
+                    }
+                });
+            });
+        }
+
+        function renderPdfPage(num) {
+            if (!pdfDoc) return;
+            pageRendering = true;
+            pdfDoc.getPage(num).then(function(page) {
+                const wrapper = document.getElementById('canvas-wrapper');
+                const canvas = document.getElementById('pdf-canvas');
+                const ctx = canvas.getContext('2d');
+
+                const pixelRatio = window.devicePixelRatio || 1;
+                const unscaledViewport = page.getViewport({ scale: 1 });
+                const maxWidth = Math.min(wrapper.clientWidth - 20, 420);
+                
+                const baseScale = maxWidth / unscaledViewport.width;
+                const viewport = page.getViewport({ scale: baseScale * pixelRatio });
+
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                canvas.style.width = `${maxWidth}px`;
+                canvas.style.height = `${viewport.height / pixelRatio}px`;
+
+                const renderContext = { canvasContext: ctx, viewport: viewport };
+                const renderTask = page.render(renderContext);
+
+                renderTask.promise.then(function() {
+                    pageRendering = false;
+                    const loadingElem = document.getElementById('pdf-loading');
+                    if (loadingElem) loadingElem.classList.add('hidden');
+                    canvas.classList.remove('hidden');
+                    if (pageNumPending !== null) {
+                        renderPdfPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                });
+            });
+
+            document.getElementById('page-num').textContent = num;
+            document.getElementById('prev-page').disabled = (num <= 1);
+            document.getElementById('next-page').disabled = (num >= pdfDoc.numPages);
+        }
+
+        function queueRenderPdfPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPdfPage(num);
+            }
+        }
+
+        function changePage(delta) {
+            if (!pdfDoc) return;
+            const newPage = currentPdfPage + delta;
+            if (newPage >= 1 && newPage <= pdfDoc.numPages) {
+                currentPdfPage = newPage;
+                queueRenderPdfPage(currentPdfPage);
+            }
+        }
+
+        window.addEventListener('resize', function() {
+            if (pdfDoc) queueRenderPdfPage(currentPdfPage);
+        });
+
+        // Выбор варианта программы
         function selectOption(key) {
-            currentSelectedProductKey = key;
+            currentSelectedProductKey = key; // сохраняем выбор для отправки в api
+
             document.querySelectorAll('.opt-btn').forEach(btn => {
                 btn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition";
             });
+
             const activeBtn = document.getElementById(`btn-${key}`);
-            if (activeBtn) activeBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg transition";
+            if (activeBtn) {
+                activeBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
+            }
+
+            const data = (typeof CONFIG !== 'undefined' && CONFIG.programs[key]) ? CONFIG.programs[key] : null;
+            if (!data) return;
+
+            document.getElementById('badge-text').innerText = data.badge;
+            document.getElementById('card-title').innerText = data.title;
+            document.getElementById('card-desc').innerText = data.desc;
+            document.getElementById('card-price').innerText = data.price;
+
+            const fipiBadge = document.getElementById('fipi-badge');
+            if (data.fipi) {
+                fipiBadge.classList.remove('hidden');
+            } else {
+                fipiBadge.classList.add('hidden');
+            }
+
+            const container = document.getElementById('blocks-container');
+            container.innerHTML = data.blocks.map(b => `
+                <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 space-y-2">
+                    <div class="font-bold text-white text-xs sm:text-sm text-indigo-300">${escapeHtml(b.name)}</div>
+                    <ul class="space-y-1 text-slate-400 text-xs">
+                        ${b.items.map(item => `<li>• ${escapeHtml(item)}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
         }
 
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Обработка отправки формы и вызов ЮKassa (через надежный редирект)
         async function handleSubmit(e) {
             e.preventDefault();
+
             const studentName = document.getElementById('student-name').value.trim();
             const email = document.getElementById('student-email').value.trim();
             const submitBtn = e.target.querySelector('button[type="submit"]');
 
-            // Цель Метрики: клик по оплате
+            if (!studentName || !email) {
+                alert('Пожалуйста, заполните имя и email');
+                return;
+            }
+
+            // Фиксация цели Яндекс.Метрики: клик по кнопке оплаты
             if (typeof ym !== 'undefined') {
                 ym(YOUR_COUNTER_ID, 'reachGoal', 'click_pay');
             }
 
+            const originalBtnContent = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Создание платежа...`;
 
@@ -207,21 +637,27 @@
                 const response = await fetch('/api/create-payment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ studentName, email, productKey: currentSelectedProductKey })
+                    body: JSON.stringify({ 
+                        studentName: studentName, 
+                        email: email, 
+                        productKey: currentSelectedProductKey 
+                    })
                 });
+
                 const data = await response.json();
+
                 if (data.confirmationUrl) {
-                    window.location.href = data.confirmationUrl;
+                    window.location.href = data.confirmationUrl; // Перенаправление на оплату в ЮKassa
                 } else {
                     alert(data.message || 'Ошибка создания платежа');
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Перейти к оплате';
+                    submitBtn.innerHTML = originalBtnContent;
                 }
             } catch (err) {
                 console.error(err);
-                alert('Ошибка соединения с платежным шлюзом.');
+                alert('Произошла ошибка соединения с платежным шлюзом.');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Перейти к оплате';
+                submitBtn.innerHTML = originalBtnContent;
             }
         }
     </script>
