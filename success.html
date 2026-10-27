@@ -1,42 +1,41 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>5
+<head>
     <meta charset="UTF-8">
-    <title>Проверка оплаты — Решай360</title>
+    <title>Переход к тесту — Решай360</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#090d16] text-white flex items-center justify-center h-screen">
-    <div class="text-center space-y-4 p-6 max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
-        <div class="inline-block animate-spin text-indigo-500 text-4xl mb-2">
+    <div class="text-center space-y-3 p-6 max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
+        <div class="inline-block animate-spin text-indigo-500 text-3xl mb-1">
             <i class="fa-solid fa-spinner"></i>
         </div>
-        <h1 class="text-xl font-bold">Оплата успешно завершена!</h1>
-        <p id="status-text" class="text-sm text-slate-400">Готовим вашу диагностику, открываем доступ...</p>
+        <h1 class="text-lg font-bold">Оплата прошла успешно!</h1>
+        <p class="text-xs text-slate-400">Открываем вашу диагностику...</p>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
-        // Получаем параметры из URL, которые передала ЮKassa при возврате
         const urlParams = new URLSearchParams(window.location.search);
         const productKey = urlParams.get('productKey');
         const email = urlParams.get('email');
         const studentName = urlParams.get('studentName');
 
-        // Маппинг ключей продуктов на файлы тестов из вашей таблицы
+        // Словарь соответствия ключей продуктов и файлов тестов
         const testFiles = {
-            'class_9': 'test-9-class.html',
-            'class_10': 'test-10-class.html',
-            'class_11_base': 'test-11-base.html',
-            'class_11_prof': 'test-11-prof.html'
+            '7': 'test_7.html',
+            '8': 'test_8.html',
+            '9': 'test_9.html',
+            '10': 'test_10.html',
+            '11': 'test_11.html'
         };
 
         const targetFile = testFiles[productKey] || 'index.html';
 
-        // Делаем небольшую паузу (2 сек), чтобы вебхук ЮKassa успел отработать на сервере и создать токен
+        // Мгновенный переход к тесту через 1 секунду
         setTimeout(() => {
-            // Перенаправляем на файл теста, передавая имя и почту для автозаполнения
             window.location.href = `${targetFile}?name=${encodeURIComponent(studentName)}&email=${encodeURIComponent(email)}`;
-        }, 2000);
+        }, 1000);
     </script>
 </body>
 </html>
