@@ -30,23 +30,22 @@ export async function onRequestPost(context) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        amount: { value: `${product.price}.00`, currency: 'RUB' },
-        confirmation: {
-          type: 'redirect',
-          return_url: `https://reshai360.ru/success.html?productKey=${productKey}&email=${encodeURIComponent(email)}&studentName=${encodeURIComponent(studentName)}`
-        },
-        capture: true,
-        description: `${product.title} (${email})`,
-        metadata: { studentName, email, productKey },
-        receipt: {
-          customer: { email: email },
-          items: [{
-            description: product.title,
-            quantity: '1.00',
             amount: { value: `${product.price}.00`, currency: 'RUB' },
-            vat_code: '1'
-          }]
-        }
+            confirmation: {
+                type: 'embedded' // Указываем встроенный тип для виджета
+            },
+            capture: true,
+            description: `${product.title} (${email})`,
+            metadata: { studentName, email, productKey },
+            receipt: {
+                customer: { email: email },
+                items: [{
+                    description: product.title,
+                    quantity: '1.00',
+                    amount: { value: `${product.price}.00`, currency: 'RUB' },
+                    vat_code: '1'
+                }]
+            }
       })
     });
 
