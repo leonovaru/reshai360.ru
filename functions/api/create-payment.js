@@ -50,11 +50,13 @@ export async function onRequestPost(context) {
     });
 
     const payment = await response.json();
-    if (!payment.confirmation) throw new Error('Ошибка связи с ЮKassa');
+if (!payment.confirmation || !payment.confirmation.confirmation_token) {
+    throw new Error('Ошибка связи с ЮKassa');
+}
 
-    return new Response(JSON.stringify({ confirmationUrl: payment.confirmation.confirmation_url }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+return new Response(JSON.stringify({ confirmationToken: payment.confirmation.confirmation_token }), {
+    headers: { 'Content-Type': 'application/json' }
+});
 
   } catch (error) {
     return new Response(JSON.stringify({ message: error.message }), { status: 500 });
