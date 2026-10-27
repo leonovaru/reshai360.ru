@@ -1,648 +1,1040 @@
 <!DOCTYPE html>
-<html lang="ru" class="scroll-smooth">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Решай360.ру — Полный аудит знаний по математике</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- PDF.js CDN для просмотра PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <!-- Внешний файл данных и конфигурации -->
-    <script src="config.js"></script>
-    <style>
-        body {
-            background-color: #090d16;
-            color: #f1f5f9;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Диагностический тест по математике | 11 класс</title>
+  
+  <!-- MathJax SVG с локальным кешем шрифтов -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
+      svg: { fontCache: 'local' },
+      options: {
+        renderActions: {
+          assistiveMML: [], // Отключаем скрытый MML слой, убирая наложение формул в PDF
+          addMenu: []
         }
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .phone-mockup {
-            box-shadow: 0 0 50px rgba(99, 102, 241, 0.2);
-        }
-    </style>
-</head>
-<body class="font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col justify-between pt-20">
+      }
+    };
+  </script>
+  <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  
+  <!-- Библиотеки генерации PDF из canvas (html2canvas + jsPDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- ВЕРХНЯЯ ПЛАШКА О БЛАГОТВОРИТЕЛЬНОСТИ -->
-    <div class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white text-xs sm:text-sm font-bold py-1.5 px-4 text-center flex items-center justify-center space-x-2 shadow-md">
-        <span class="inline-block animate-bounce">🐾</span>
-        <span>1 диагностика = 1 сытый пёсик</span>
-        <span class="inline-block animate-bounce">🐾</span>
-    </div>
+  <style>
+    :root {
+      --primary-dark: #1b365d;
+      --primary-blue: #2563eb;
+      --bg-light: #f4f6f9;
+      --card-bg: #ffffff;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: var(--bg-light); color: #333; margin: 0; padding: 0; }
 
-    <!-- ЛИПКАЯ ПЛАШКА СВЕРХУ ПРИ СКРОЛЛЕ -->
-    <div id="sticky-bar" class="fixed top-7 left-0 right-0 z-40 bg-[#090d16]/95 backdrop-blur-md border-b border-indigo-500/30 py-2.5 px-4 shadow-2xl transition-all duration-300">
-        <div class="max-w-6xl mx-auto flex items-center justify-between">
-            <a href="#" class="flex items-center space-x-3">
-                <span class="text-lg sm:text-xl font-black tracking-wider bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">РЕШАЙ360</span>
-            </a>
-            
-            <nav class="flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm font-semibold">
-                <a href="#select-program" class="text-slate-300 hover:text-white transition px-2 py-1">Диагностика</a>
-                <a href="#charity" class="text-amber-400 hover:text-amber-300 transition px-2 py-1 flex items-center space-x-1">
-                    <span>🐾</span>
-                    <span>Приют</span>
-                </a>
-            </nav>
-        </div>
-    </div>
+    .container { max-width: 900px; margin: 40px auto; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 
-    <!-- ЭКРАН 1: HERO SECTION -->
-    <section class="py-6 lg:py-10 min-h-[calc(100vh-5rem)] flex flex-col justify-center relative overflow-hidden">
-        <div class="max-w-6xl mx-auto px-4 w-full">
-            <div class="grid lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-                
-                <!-- Левый блок: Оффер -->
-                <div class="lg:col-span-7 space-y-4 text-left">
-                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight">
-                        Пробник, контрольная или ВПР показывают балл.<br>
-                        <span class="bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">Решай360 показывает пробелы.</span>
-                    </h1>
-                    
-                    <p class="text-slate-300 text-xs sm:text-sm lg:text-base font-normal leading-relaxed max-w-xl">
-                        Проверь знания по всей пройденной программе. Получи развернутую PDF-карту: что освоено идеально, где скрыты ошибки и детальные результаты каждого задания.
-                    </p>
+    /* Памятка вверху теста */
+    .top-instruction {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 25px;
+      color: #334155;
+      font-size: 0.95em;
+      line-height: 1.6;
+    }
+    .top-instruction-title {
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 4px;
+    }
+    .top-instruction ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .top-instruction li {
+      margin-bottom: 3px;
+    }
 
-                    <div class="flex flex-wrap gap-2 pt-1 text-xs font-medium text-slate-300">
-                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
-                            <i class="fa-solid fa-laptop-mobile text-indigo-400"></i>
-                            <span>С любого устройства</span>
-                        </div>
-                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
-                            <i class="fa-solid fa-floppy-disk text-indigo-400"></i>
-                            <span>Сохраняет прогресс</span>
-                        </div>
-                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
-                            <i class="fa-solid fa-file-pdf text-indigo-400"></i>
-                            <span>Отчет в PDF А4</span>
-                        </div>
-                    </div>
-
-                    <!-- Кнопки действий -->
-                    <div class="pt-2 flex flex-wrap items-center gap-3">
-                        <a href="#select-program" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-7 py-3 rounded-xl font-bold text-sm transition shadow-xl shadow-indigo-600/25 space-x-2">
-                            <span>Выбрать свой класс</span>
-                            <i class="fa-solid fa-arrow-down text-xs"></i>
-                        </a>
-                        <a href="#pdf-section" class="inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-3 rounded-xl font-bold text-sm transition border border-slate-700 space-x-2">
-                            <i class="fa-solid fa-file-pdf text-indigo-400"></i>
-                            <span>Посмотреть отчет PDF</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Правый блок: Видео смартфона -->
-                <div class="lg:col-span-5 flex justify-center">
-                    <div class="phone-mockup relative w-[200px] sm:w-[230px] h-[400px] sm:h-[460px] rounded-[32px] p-2 bg-slate-900 border-4 border-slate-800 shadow-2xl overflow-hidden mx-auto">
-                        <div class="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-3.5 bg-slate-950 rounded-full z-20 flex items-center justify-center">
-                            <div class="w-6 h-1 bg-slate-800 rounded-full"></div>
-                        </div>
-                        
-                        <div class="relative w-full h-full rounded-[26px] overflow-hidden bg-slate-950 flex items-center justify-center">
-                            <video id="demo-video" autoplay muted loop playsinline webkit-playsinline preload="auto" x5-playsinline="true" class="w-full h-full object-cover">
-                                <source id="video-source" src="" type="video/mp4">
-                                Ваш браузер не поддерживает видео.
-                            </video>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- ЭКРАН 2: ВЫБОР ДИАГНОСТИКИ И ОПЛАТА -->
-    <section id="select-program" class="py-12 border-t border-slate-800/60 scroll-mt-10">
-        <div class="max-w-5xl mx-auto px-4">
-            <div class="text-center mb-8 space-y-2">
-                <h2 class="text-2xl sm:text-4xl font-extrabold text-white">Выберите вариант диагностики</h2>
-            </div>
-
-            <!-- Табы переключения -->
-            <div class="space-y-5 mb-8">
-                <div class="flex flex-col items-center">
-                    <span class="text-[11px] uppercase font-bold tracking-wider text-slate-500 mb-2">Школьная программа</span>
-                    <div class="flex flex-wrap justify-center gap-2">
-                        <button onclick="selectOption('7')" id="btn-7" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">7 класс</button>
-                        <button onclick="selectOption('8')" id="btn-8" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">8 класс</button>
-                        <button onclick="selectOption('9')" id="btn-9" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">9 класс</button>
-                        <button onclick="selectOption('10')" id="btn-10" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">10 класс</button>
-                        <button onclick="selectOption('11')" id="btn-11" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">11 класс</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- КАРТОЧКА ВЫБРАННОЙ ДИАГНОСТИКИ -->
-            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 max-w-4xl mx-auto shadow-2xl">
-                
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-6 mb-6">
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <span id="badge-text" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
-                                Полный аудит
-                            </span>
-                            <span id="fipi-badge" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 hidden">
-                                <i class="fa-solid fa-award mr-1"></i>Соответствует спецификации ФИПИ
-                            </span>
-                        </div>
-                        <h3 id="card-title" class="text-2xl sm:text-3xl font-extrabold text-white mt-2">
-                            Готовность к 10 классу
-                        </h3>
-                        <p id="card-desc" class="text-xs text-slate-400 mt-1">Проверяем знания за курс</p>
-                    </div>
-                    <div class="text-left sm:text-right">
-                        <div id="card-price" class="text-3xl sm:text-4xl font-black text-white">1000 ₽</div>
-                        <div class="text-xs text-slate-400 mt-1">Доступ к тесту сразу после оплаты</div>
-                    </div>
-                </div>
-
-                <!-- Сворачиваемая программа диагностики -->
-                <div class="space-y-3">
-                    <button type="button" onclick="toggleProgramBlocks()" id="toggle-blocks-btn" class="inline-flex items-center space-x-2 text-xs font-bold text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-4 py-2.5 rounded-xl border border-indigo-500/30 transition">
-                        <i id="toggle-blocks-icon" class="fa-solid fa-chevron-down text-xs"></i>
-                        <span id="toggle-blocks-text">Посмотреть программу диагностики</span>
-                    </button>
-
-                    <div id="blocks-wrapper" class="hidden space-y-4 pt-2 transition-all">
-                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Что будет проверено в этой диагностике:</h4>
-                        <div id="blocks-container" class="grid md:grid-cols-2 gap-4 text-xs sm:text-sm"></div>
-                    </div>
-                </div>
-
-                <!-- Форма заказа -->
-                <form id="checkout-form" onsubmit="handleSubmit(event)" class="mt-8 pt-6 border-t border-slate-800 space-y-4">
-                    <div class="grid sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Ваше имя</label>
-                            <input type="text" id="student-name" required placeholder="Александр" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Email (сюда придет PDF-отчет)</label>
-                            <input type="email" id="student-email" required placeholder="student@mail.ru" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm">
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-2.5 pt-2 text-xs text-slate-400">
-                        <input type="checkbox" id="consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
-                        <label for="consent" class="text-[11px] leading-tight text-slate-400">
-                            Я даю согласие на обработку персональных данных и принимаю условия 
-                            <a id="link-policy" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Политики конфиденциальности</a> 
-                            и <a id="link-offer" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Публичной оферты</a>.
-                        </label>
-                    </div>
-
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition shadow-xl shadow-indigo-600/25 text-base mt-4 flex items-center justify-center space-x-2">
-                        <span>Перейти к оплате</span>
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </button>
-                </form>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- ЭКРАН 3: ИНТЕРАКТИВНЫЙ PDF И ПРЕИМУЩЕСТВА -->
-    <section id="pdf-section" class="py-12 border-t border-b border-slate-800/60 scroll-mt-20">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="grid lg:grid-cols-12 gap-8 items-center">
-                
-                <!-- ЛЕВАЯ КОЛОНКА: ИНТЕРАКТИВНЫЙ PDF В КАРТОЧКЕ -->
-                <div class="lg:col-span-6 flex justify-center">
-                    <div class="w-full max-w-[440px] bg-[#0d1322] border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col items-center">
-                        
-                        <!-- Оболочка документа -->
-                        <div id="canvas-wrapper" class="w-full bg-white rounded-2xl overflow-hidden min-h-[460px] flex items-center justify-center relative shadow-lg border border-slate-700/50">
-                            <div id="pdf-loading" class="text-slate-600 text-xs flex items-center space-x-2 p-6 text-center">
-                                <i class="fa-solid fa-spinner fa-spin text-indigo-600 text-base"></i>
-                                <span>Загрузка страниц отчета...</span>
-                            </div>
-                            <canvas id="pdf-canvas" class="max-w-full h-auto hidden" oncontextmenu="return false;"></canvas>
-                        </div>
-
-                        <!-- Нижняя панель навигации -->
-                        <div class="w-full mt-4 flex items-center justify-between px-2">
-                            <button id="prev-page" onclick="changePage(-1)" class="px-4 py-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700/60 rounded-xl font-bold text-xs transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-2">
-                                <i class="fa-solid fa-chevron-left text-[10px]"></i>
-                                <span>Назад</span>
-                            </button>
-
-                            <span class="text-xs text-slate-300 font-semibold tracking-wide">
-                                Страница <span id="page-num" class="font-bold text-white">1</span> из <span id="page-count" class="font-bold text-slate-400">--</span>
-                            </span>
-
-                            <button id="next-page" onclick="changePage(1)" class="px-4 py-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700/60 rounded-xl font-bold text-xs transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-2">
-                                <span>Вперед</span>
-                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- ПРАВАЯ КОЛОНКА: ОПИСАНИЕ И ПЛАШКА -->
-                <div class="lg:col-span-6 space-y-6">
-                    <div class="space-y-4">
-                        <div>
-                            <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
-                                📄 Наглядный PDF-документ
-                            </span>
-                        </div>
-
-                        <h2 class="text-2xl sm:text-4xl font-extrabold text-white leading-tight">
-                            Диагностический отчет результатов
-                        </h2>
-
-                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                            Полная техническая карта выполнения тестирования. Покажет точность решений по каждому из ключевых блоков математики и выявит характер выполненных задач.
-                        </p>
-
-                        <div class="space-y-3 pt-2 text-xs sm:text-sm">
-                            <div class="flex items-start space-x-3">
-                                <div class="w-5 h-5 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
-                                    <i class="fa-solid fa-check text-[10px]"></i>
-                                </div>
-                                <div class="text-slate-300 leading-snug">
-                                    <strong class="text-white">Детализация по всем темам:</strong> Сравнение ответа ученика с верным эталоном и точная фиксация статуса выполнения.
-                                </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3">
-                                <div class="w-5 h-5 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
-                                    <i class="fa-solid fa-check text-[10px]"></i>
-                                </div>
-                                <div class="text-slate-300 leading-snug">
-                                    <strong class="text-white">Анализ слабых мест:</strong> Четкое понимание, какую тему нужно подтянуть в первую очередь.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Нижняя плашка -->
-                    <div class="glass-panel p-5 rounded-2xl border border-indigo-500/20 bg-indigo-950/20 space-y-2">
-                        <h3 class="text-sm sm:text-base font-bold text-white flex items-center space-x-2">
-                            <i class="fa-solid fa-circle-exclamation text-amber-400 text-xs"></i>
-                            <span>Почему обычные тесты не дают полной картины?</span>
-                        </h3>
-                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                            На школьной контрольной, ВПР или тестовом пробнике легко получить случайный высокий балл, если выпадут легкие темы. При этом слабые места останутся скрыты до самого дня экзамена. В <strong class="text-indigo-400">Решай360</strong> проверка идет по всей пройденной программе за прошлые годы.
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- ЭКРАН 4: БЛОК БЛАГОТВОРИТЕЛЬНОСТИ -->
-    <section id="charity" class="py-12 border-t border-slate-800/60 bg-gradient-to-b from-[#090d16] via-[#0f172a] to-[#090d16] relative overflow-hidden scroll-mt-20">
-        <div class="max-w-3xl mx-auto px-4 relative z-10">
-            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-slate-900/90 shadow-2xl space-y-6">
-                
-                <!-- Шапка -->
-                <div class="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
-                    <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-amber-500/50 shadow-lg shadow-amber-500/10 shrink-0 mx-auto sm:mx-0">
-                        <img src="dog_logo.jpg" alt="Приют Собачий мир" class="w-full h-full object-cover">
-                    </div>
-                    
-                    <div class="space-y-1.5 flex-1">
-                        <span class="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
-                            <span>🐾</span>
-                            <span>Социальная миссия проекта</span>
-                        </span>
-                        
-                        <h2 class="text-2xl sm:text-3xl font-black text-white leading-tight">
-                            Помогаем хвостикам вместе
-                        </h2>
-                    </div>
-                </div>
-
-                <!-- Основной текст -->
-                <p class="text-slate-300 text-xs sm:text-sm leading-relaxed text-center sm:text-left">
-                    С каждой проданной диагностики мы переводим <strong class="text-amber-400">100 ₽</strong> в фонд помощи бездомным животным <strong class="text-white">«Собачий мир»</strong> (г. Красноярск). Приобретая диагностику для себя, вы одновременно дарите день сытой жизни одному из подопечных приюта.
-                </p>
-
-                <!-- Информационная плашка -->
-                <div class="bg-slate-950/90 rounded-2xl py-5 px-6 border border-slate-800/90 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
-                    <div class="flex items-center space-x-3">
-                        <div class="text-amber-400 text-2xl">🍲</div>
-                        <div>
-                            <div class="text-white font-bold text-sm">Прозрачная помощь</div>
-                            <div class="text-slate-400 text-xs">Отчеты о переводах публикуются в канале приюта</div>
-                        </div>
-                    </div>
-                    <a id="link-charity-tg" href="https://t.me/sobachiy_mir_krsk" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2.5 rounded-xl font-bold text-xs transition shrink-0">
-                        <i class="fa-brands fa-telegram text-sm"></i>
-                        <span>Канал приюта</span>
-                    </a>
-                </div>
-
-            </div>
-        </div>
-    </section>
+    /* Оформление карточек во время теста */
+    h2.block-title { margin-top: 30px; color: var(--primary-dark); border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-size: 1.3em; }
+    h3.theme-title { margin-top: 20px; color: var(--primary-blue); font-size: 1.1em; }
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+    .question-title { font-weight: 600; font-size: 1.05em; margin-bottom: 12px; line-height: 1.5; }
     
-    <!-- ЭКРАН 5: СЛУЖБА ПОДДЕРЖКИ -->
-    <section id="support" class="py-8 bg-slate-900/40 border-t border-slate-800/60 scroll-mt-20">
-        <div class="max-w-3xl mx-auto px-4 text-center space-y-3">
-            <h3 class="text-xl sm:text-2xl font-bold text-white">Нужна помощь или возникли вопросы?</h3>
-            <p class="text-slate-300 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-                Столкнулись с трудностями при оплате или получении отчета? Напишите нам. Работаем ежедневно с 10:00 до 20:00 МСК.
-            </p>
-            
-            <div class="flex flex-wrap justify-center items-center gap-4 text-xs sm:text-sm font-semibold pt-1">
-                <a href="mailto:support@reshai360.ru" class="text-indigo-400 hover:text-indigo-300 transition flex items-center space-x-1.5">
-                    <i class="fa-solid fa-envelope"></i>
-                    <span>support@reshai360.ru</span>
-                </a>
-                <span class="text-slate-700">•</span>
-                <a href="tel:+789044766535" class="text-indigo-400 hover:text-indigo-300 transition flex items-center space-x-1.5">
-                    <i class="fa-solid fa-phone"></i>
-                    <span>8 (904) 476-65-35</span>
-                </a>
+    /* Варианты ответов */
+    .options { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .option-label { 
+      display: flex; 
+      align-items: flex-start; 
+      gap: 10px;
+      background: #fff; 
+      padding: 10px 12px; 
+      border: 1px solid #cbd5e1; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      line-height: 1.4;
+    }
+    .option-label:hover { background: #eff6ff; }
+    .option-label input[type="radio"] { margin-top: 3px; flex-shrink: 0; }
+    .option-label span { flex: 1; word-break: break-word; }
+
+    /* Контейнер для поля ввода и компактной кнопки знака */
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 350px;
+      margin-top: 10px;
+    }
+    .text-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1em; box-sizing: border-box; margin-top: 0; }
+    .text-input:disabled { background-color: #e2e8f0; cursor: not-allowed; color: #475569; }
+    
+    /* Компактная кнопка переключения плюса/минуса */
+    .btn-minus-toggle {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      width: 44px;
+      height: 42px;
+      font-weight: bold;
+      font-size: 1.1em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-minus-toggle:hover { background: #e2e8f0; border-color: #94a3b8; }
+    .btn-minus-toggle.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+    .btn-minus-toggle:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+
+    .btn-check { background: var(--primary-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 12px; transition: 0.2s; }
+    .btn-check:hover { background: #1d4ed8; }
+    .feedback { display: inline-block; margin-left: 15px; font-weight: bold; font-size: 1.05em; }
+
+    .btn-final { display: block; width: 100%; padding: 16px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.2s; }
+    .btn-final:hover { background: #15803d; }
+
+    .btn-pdf { display: inline-block; background: var(--primary-dark); color: #fff; border: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 1.05em; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .btn-pdf:hover:not(:disabled) { background: var(--primary-blue); }
+    .btn-pdf:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.8; box-shadow: none; }
+
+    mjx-container[jax="SVG"] { display: inline-block !important; margin: 0 2px !important; }
+    mjx-container[jax="SVG"] svg { overflow: visible !important; vertical-align: middle !important; max-width: none !important; }
+
+    /* Предотвращение наложения слоев MathJax в PDF */
+    mjx-assistive-mml, .mjx-assistive-mml { display: none !important; visibility: hidden !important; }
+
+    /* ========================================================= */
+    /* 1. ЭКРАННЫЙ ИНТЕРФЕЙС И PDF-ОТЧЕТ                          */
+    /* ========================================================= */
+    #result-wrapper { max-width: 900px; margin: 20px auto; display: none; padding: 0 15px; box-sizing: border-box; }
+    
+    .screen-section-title { color: var(--primary-dark); border-bottom: 2px solid var(--primary-blue); padding-bottom: 8px; font-size: 1.25em; margin: 30px 0 15px 0; }
+
+    /* ========================================================= */
+    /* 2. СТРОГИЙ A4-МАКЕТ ДЛЯ PDF (СКРЫТЫЙ)                      */
+    /* ========================================================= */
+    #pdf-export-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -9999;
+      opacity: 0;
+      pointer-events: none;
+      width: 794px !important;
+      -webkit-text-size-adjust: 100% !important;
+      text-size-adjust: 100% !important;
+    }
+
+    .pdf-page {
+      width: 794px !important;
+      height: 1122px !important;
+      background: #ffffff !important;
+      padding: 25px 40px !important;
+      box-sizing: border-box !important;
+      margin: 0 auto !important;
+      border-radius: 0 !important;
+      position: relative !important;
+      overflow: hidden !important;
+      font-size: 15px !important;
+    }
+
+    /* Адаптивность карты результатов на экране телефона */
+    #result-screen .pdf-page {
+      width: 100% !important;
+      max-width: 794px;
+      height: auto !important;
+      min-height: auto !important;
+      padding: 20px !important;
+      margin: 0 auto 20px auto !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border-radius: 12px;
+    }
+
+    .pdf-header-title {
+      font-size: 1.35em;
+      font-weight: 800;
+      color: #1b2a4a;
+      margin: 0 0 12px 0;
+    }
+
+    /* Верхняя карточка с новой компоновкой (слева данные, справа результат) */
+    .pdf-score-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .pdf-student-info {
+      font-size: 0.95em;
+      color: #1e293b;
+      line-height: 1.5;
+    }
+    .pdf-student-info strong {
+      color: var(--primary-dark);
+    }
+    .pdf-score-right {
+      text-align: right;
+    }
+    .pdf-score-label { font-size: 0.85em; color: #64748b; margin-bottom: 2px; }
+    .pdf-score-main { font-size: 1.3em; font-weight: 800; color: #1b365d; }
+
+    .pdf-analytics-title { font-size: 1em; font-weight: 700; color: #1b365d; margin-bottom: 6px; border-bottom: 2px solid #2563eb; padding-bottom: 3px; }
+    
+    .pdf-progress-row {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .pdf-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9em;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 6px;
+      gap: 15px;
+    }
+    
+    .pdf-progress-header span:last-child {
+      white-space: nowrap;
+    }
+
+    .pdf-progress-track {
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .pdf-progress-fill { height: 100%; border-radius: 6px; }
+    .bg-green { background-color: #22c55e; }
+    .bg-yellow { background-color: #eab308; }
+    .bg-red { background-color: #ef4444; }
+
+    .pdf-topics-container {
+      display: flex;
+      flex-direction: row !important;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .pdf-topics-box {
+      flex: 1;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.72em;
+      line-height: 1.35;
+      max-height: 480px;
+      overflow: hidden;
+    }
+    .pdf-topics-box.repeat {
+      background: #fefce8;
+      border: 1px solid #fde047;
+      color: #713f12;
+    }
+    .pdf-topics-box.repeat h4 { margin: 0 0 4px 0; color: #a16207; font-size: 0.95em; }
+    
+    .pdf-topics-box.study {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #7f1d1d;
+    }
+    .pdf-topics-box.study h4 { margin: 0 0 4px 0; color: #b91c1c; font-size: 0.95em; }
+
+    .pdf-topics-box ol { margin: 0; padding-left: 16px; }
+    .pdf-topics-box li { margin-bottom: 2px; }
+
+    .detail-section-title { margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); border-bottom: 2px solid #2563eb; padding-bottom: 5px; font-size: 1.05em; }
+
+    .pdf-card {
+      background: #ffffff;
+      border-left: 4px solid #cbd5e1;
+      border-radius: 5px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      position: relative;
+    }
+    .pdf-card.correct { border-left-color: #16a34a; background: #f0fdf4; }
+    .pdf-card.incorrect { border-left-color: #eab308; background: #fefce8; }
+    .pdf-card.skipped { border-left-color: #dc2626; background: #fef2f2; }
+
+    .pdf-q { font-weight: 600; margin-bottom: 4px; color: #1e293b; font-size: 0.9em; line-height: 1.35; }
+    .pdf-ans { font-size: 0.85em; color: #475569; line-height: 1.4; padding-right: 95px; }
+    
+    .badge {
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75em;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    .badge-ok { background: #dcfce7; color: #15803d; }
+    .badge-err { background: #fef9c3; color: #a16207; }
+    .badge-skip { background: #fee2e2; color: #b91c1c; }
+
+    .page-footer {
+      position: absolute;
+      bottom: 10px;
+      left: 40px;
+      right: 40px;
+      text-align: center;
+      font-size: 0.72em;
+      color: #94a3b8;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 4px;
+    }
+
+    @media screen and (max-width: 600px) {
+      .container { padding: 15px; margin: 10px auto; }
+      .btn-pdf { width: 100%; box-sizing: border-box; text-align: center; font-size: 1em; padding: 14px; }
+      .pdf-topics-container { flex-direction: column !important; }
+      .pdf-score-right { text-align: left; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container" id="main-container">
+  <!-- Экран теста -->
+  <div id="quiz-screen" style="display: block;">
+    <div class="top-instruction">
+      <div class="top-instruction-title">📋 Правила прохождения теста:</div>
+      <ul>
+        <li>Решайте задания самостоятельно и не пытайтесь угадывать ответы наугад.</li>
+        <li>Если в ответе получается десятичная дробь, используйте запятую (например, <strong>2,5</strong>).</li>
+        <li>Чтобы ввести отрицательное число, нажмите на кнопку <strong>«±»</strong> рядом с полем ввода.</li>
+        <li>Все ваши проверенные ответы и прогресс сохраняются.</li>
+        <li><strong>Важно:</strong> не закрывайте и не покидайте страницу во время прохождения теста, чтобы не потерять результаты.</li>
+      </ul>
+    </div>
+
+    <div id="quiz-container"></div>
+
+    <button class="btn-final" id="finishBtn" onclick="checkAll()">Завершить и посмотреть результаты</button>
+  </div>
+</div>
+
+<!-- 1. РЕЗУЛЬТАТЫ НА ЭКРАНЕ -->
+<div id="result-wrapper">
+  <div id="result-screen"></div>
+</div>
+
+<!-- 2. СКРЫТЫЙ СТРОГИЙ БЛОК A4 ДЛЯ СКАЧИВАНИЯ -->
+<div id="pdf-export-container">
+  <div id="result-pdf"></div>
+</div>
+
+<script>
+  // Объект для хранения данных ученика из localStorage
+  let studentData = { fullName: "Ученик", email: "" };
+  let generatedPdfBlob = null;
+
+  window.addEventListener('DOMContentLoaded', () => {
+    // Безопасно получаем данные из памяти браузера вместо параметров URL
+    const userName = localStorage.getItem('studentName');
+    const userEmail = localStorage.getItem('studentEmail');
+
+    if (userName) {
+      studentData.fullName = userName;
+    }
+    if (userEmail) {
+      studentData.email = userEmail;
+    }
+    renderQuiz();
+  });
+
+  function escapeHtml(text) {
+    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  // Функция переключения знака плюс/минус
+  function toggleMinus(qId) {
+    const input = document.getElementById(qId);
+    if (!input || input.disabled) return;
+    
+    let val = input.value.trim();
+    if (val.startsWith('-')) {
+      input.value = val.substring(1);
+    } else {
+      input.value = '-' + val;
+    }
+    updateMinusBtnState(qId);
+  }
+
+  function updateMinusBtnState(qId) {
+    const input = document.getElementById(qId);
+    const btn = document.getElementById(`btn_toggle_${qId}`);
+    if (input && btn) {
+      if (input.value.trim().startsWith('-')) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    }
+  }
+
+  window.onbeforeunload = function() {
+    return "Вы уверены, что хотите покинуть страницу?";
+  };
+
+  async function safeTypeset(targetElement) {
+    if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+      try {
+        await MathJax.typesetPromise(targetElement ? [targetElement] : []);
+      } catch (err) {
+        console.error("MathJax error:", err);
+      }
+    }
+  }
+
+  const quizData = [
+    {
+      block: "Блок 1. Арифметика и алгебра",
+      themes: [
+        {
+          theme: "1. Вычисления, проценты и рациональные дроби",
+          questions: [
+            { type: "text", a: "2,5", q: "Вычислите значение выражения: \\(\\frac{2{,}4 \\cdot 0{,}5}{0{,}3} - 1{,}5\\)" },
+            { type: "text", a: "20", q: "Цена товара снизилась с 2000 рублей до 1600 рублей. На сколько процентов снизилась цена?" }
+          ]
+        },
+        {
+          theme: "2. Степени, корни и логарифмы",
+          questions: [
+            { type: "text", a: "4", q: "Найдите значение выражения: \\(\\log_2 48 - \\log_2 3\\)" },
+            { type: "text", a: "300", q: "Вычислите: \\(\\sqrt[3]{27 \\cdot 10^6}\\)" }
+          ]
+        },
+        {
+          theme: "3. Тригонометрические преобразования",
+          questions: [
+            { type: "text", a: "-0,6", q: "Найдите \\(\\cos \\alpha\\), если \\(\\sin \\alpha = 0{,}8\\) и \\(\\alpha \\in \\left(\\frac{\\pi}{2}; \\pi\\right)\\)." },
+            { type: "radio", a: 0, q: "Упростите выражение: \\(\\frac{\\sin 2\\alpha}{2\\cos \\alpha}\\)", options: ["\\(\\sin \\alpha\\)", "\\(\\cos \\alpha\\)", "\\(2\\sin \\alpha\\)", "\\(1\\)"] }
+          ]
+        }
+      ]
+    },
+    {
+      block: "Блок 2. Уравнения и системы",
+      themes: [
+        {
+          theme: "4. Рациональные уравнения",
+          questions: [
+            { type: "text", a: "-3", q: "Решите уравнение: \\(\\frac{x^2 - 9}{x - 3} = 0\\)" },
+            { type: "text", a: "2", q: "Найдите наибольший корень уравнения: \\(x^3 - 4x = 0\\)" }
+          ]
+        },
+        {
+          theme: "5. Показательные и логарифмические уравнения",
+          questions: [
+            { type: "text", a: "2", q: "Решите уравнение: \\(3^{x+1} - 3^x = 18\\)" },
+            { type: "text", a: "5", q: "Решите уравнение: \\(\\log_3 (2x - 1) = 2\\)" }
+          ]
+        },
+        {
+          theme: "6. Тригонометрические уравнения",
+          questions: [
+            { type: "text", a: "30", q: "Найдите наименьший положительный корень уравнения \\(\\sin x = \\frac{1}{2}\\) (в градусах)." },
+            { type: "text", a: "2", q: "Укажите количество корней уравнения \\(\\cos x = 0\\) на отрезке \\([0; 2\\pi]\\)." }
+          ]
+        },
+        {
+          theme: "7. Системы уравнений",
+          questions: [
+            { type: "text", a: "4", q: "Решите систему \\(\\begin{cases} x + y = 5 \\\\ x^2 - y^2 = 15 \\end{cases}\\). В ответ запишите значение \\(x \\cdot y\\)." },
+            { type: "text", a: "1", q: "Решите систему \\(\\begin{cases} y - x = 2 \\\\ y = x^2 \\end{cases}\\). Запишите сумму всех \\(x\\)-координат решений." }
+          ]
+        }
+      ]
+    },
+    {
+      block: "Блок 3. Неравенства и функции",
+      themes: [
+        {
+          theme: "8. Неравенства и их системы",
+          questions: [
+            { type: "text", a: "2", q: "Решите неравенство методом интервалов: \\(\\frac{(x-2)(x+5)}{x-1} \\le 0\\). Укажите наименьшее натуральное решение." },
+            { type: "text", a: "0", q: "Решите показательное неравенство: \\(2^{3-x} > 4\\). Укажите наибольшее целое решение." }
+          ]
+        },
+        {
+          theme: "9. Элементарные функции и их свойства",
+          questions: [
+            { type: "radio", a: 0, q: "Найдите область определения функции \\(y = \\log_2 (6 - 2x)\\).", options: ["\\(x < 3\\)", "\\(x > 3\\)", "\\(x \\le 3\\)", "\\(x \\neq 3\\)"] },
+            { type: "text", a: "3", q: "Найдите наибольшее значение функции \\(y = -x^2 + 4x - 1\\)." }
+          ]
+        },
+        {
+          theme: "10. Начала математического анализа",
+          questions: [
+            { type: "text", a: "0", q: "Найдите значение производной функции \\(f(x) = x^3 - 3x^2 + 5\\) в точке \\(x_0 = 2\\)." },
+            { type: "text", a: "3", q: "Найдите точку минимума функции \\(y = x^2 - 6x + 10\\)." }
+          ]
+        }
+      ]
+    },
+    {
+      block: "Блок 4. Последовательности, комбинаторика и вероятность",
+      themes: [
+        {
+          theme: "11. Прогрессии",
+          questions: [
+            { type: "text", a: "210", q: "В арифметической прогрессии \\(a_1 = 3\\), а разность \\(d = 4\\). Найдите сумму первых 10 членов \\(S_{10}\\)." },
+            { type: "text", a: "54", q: "В геометрической прогрессии \\(b_1 = 2\\), знаменатель \\(q = 3\\). Найдите четвертый член \\(b_4\\)." }
+          ]
+        },
+        {
+          theme: "12. Комбинаторика и теория вероятностей",
+          questions: [
+            { type: "text", a: "24", q: "Сколькими способами можно расставить 4 разные книги на полке?" },
+            { type: "text", a: "0,4", q: "В урне 4 белых и 6 черных шаров. Какова вероятность случайным образом вытащить белый шар?" }
+          ]
+        }
+      ]
+    },
+    {
+      block: "Блок 5. Планиметрия",
+      themes: [
+        {
+          theme: "13. Треугольники",
+          questions: [
+            { type: "text", a: "7", q: "В треугольнике \\(ABC\\) стороны \\(AB = 5\\), \\(BC = 8\\), а угол между ними \\(\\angle B = 60^\\circ\\). Найдите третью сторону \\(AC\\)." },
+            { type: "text", a: "24", q: "В прямоугольном треугольнике гипотенуза равна 10, а один из катетов — 6. Найдите площадь треугольника." }
+          ]
+        },
+        {
+          theme: "14. Четырехугольники и многоугольники",
+          questions: [
+            { type: "text", a: "24", q: "Найдите площадь ромба, если его диагонали равны 6 и 8." },
+            { type: "text", a: "13", q: "Основания равнобедренной трапеции равны 8 и 18, а высота равна 12. Найдите боковую сторону трапеции." }
+          ]
+        },
+        {
+          theme: "15. Окружность и круг",
+          questions: [
+            { type: "text", a: "100", q: "Из точки \\(A\\) к окружности проведены касательные \\(AB\\) и \\(AC\\). Градусная мера вписанного угла, опирающегося на ту же дугу \\(BC\\), равна \\(50^\\circ\\). Найдите центральный угол, опирающийся на эту дугу." },
+            { type: "text", a: "8", q: "Радиус окружности равен 5. Найдите длину хорды, удаленной от центра окружности на расстояние 3." }
+          ]
+        },
+        {
+          theme: "16. Векторы и координаты на плоскости",
+          questions: [
+            { type: "radio", a: 0, q: "Даны векторы \\(\\vec{a}(3; -4)\\) и \\(\\vec{b}(1; 2)\\). Найдите координаты вектора \\(\\vec{c} = 2\\vec{a} + \\vec{b}\\).", options: ["\\((7; -6)\\)", "\\((7; -2)\\)", "\\((5; -6)\\)", "\\((6; -8)\\)"] },
+            { type: "text", a: "10", q: "Найдите скалярное произведение векторов \\(\\vec{a}(2; 3)\\) и \\(\\vec{b}(-1; 4)\\)." }
+          ]
+        }
+      ]
+    },
+    {
+      block: "Блок 6. Стереометрия",
+      themes: [
+        {
+          theme: "17. Аксиомы стереометрии и следствия из них",
+          questions: [
+            { type: "radio", a: 1, q: "Сколькими различными плоскостями можно провести прямую через три точки, не лежащие на одной прямой?", options: ["Ни одной", "Ровно одной", "Бесконечно многими", "Двумя"] },
+            { type: "radio", a: 0, q: "Две различные плоскости пересекаются по прямой \\(l\\). Точка \\(A\\) принадлежит обеим плоскостям. Лежит ли точка \\(A\\) на прямой \\(l\\)?", options: ["Да", "Нет", "Зависит от угла между плоскостями"] }
+          ]
+        },
+        {
+          theme: "18. Параллельность прямых и плоскостей",
+          questions: [
+            { type: "radio", a: 1, q: "Прямая \\(a\\) параллельна прямой \\(b\\), лежащей в плоскости \\(\\alpha\\). Какое утверждение верное?", options: ["Прямая \\(a\\) всегда параллельна \\(\\alpha\\)", "Прямая \\(a\\) параллельна \\(\\alpha\\), если она не лежит в этой плоскости", "Прямая \\(a\\) пересекает \\(\\alpha\\)"] },
+            { type: "radio", a: 0, q: "Через середины сторон \\(AB\\) и \\(BC\\) треугольника \\(ABC\\) проведена прямая \\(MN\\). Каково взаимное расположение прямой \\(MN\\) и плоскости, содержащей сторону \\(AC\\), если \\(MN\\) не лежит в этой плоскости?", options: ["Параллельны", "Пересекаются", "Совпадают"] }
+          ]
+        },
+        {
+          theme: "19. Перпендикулярность прямых и плоскостей, ТТП",
+          questions: [
+            { type: "text", a: "3", q: "Из точки \\(A\\) к плоскости проведен перпендикуляр \\(AH = 4\\) см и наклонная \\(AB = 5\\) см. Найдите длину проекции \\(BH\\)." },
+            { type: "text", a: "10", q: "К плоскости квадрата \\(ABCD\\) со стороны \\(3\\sqrt{2}\\) проведён перпендикуляр \\(AK = 8\\). Найдите расстояние от точки \\(K\\) до вершины \\(C\\)." }
+          ]
+        },
+        {
+          theme: "20. Многогранники (призма, пирамида)",
+          questions: [
+            { type: "text", a: "45", q: "В правильной четырехугольной призме сторона основания равна 3, а высота равна 5. Найдите объем призмы." },
+            { type: "text", a: "24", q: "В правильной треугольной пирамиде площадь основания равна 12, а высота равна 6. Найдите объем пирамиды." }
+          ]
+        },
+        {
+          theme: "21. Тела вращения (цилиндр, конус, шар)",
+          questions: [
+            { type: "text", a: "36", q: "Осевое сечение цилиндра — квадрат со стороной 6. Найдите площадь боковой поверхности цилиндра (в ответе укажите \\(\\frac{S}{\\pi}\\))." },
+            { type: "text", a: "12", q: "Радиус основания конуса равен 3, а образующая равна 5. Найдите объем конуса (в ответе укажите \\(\\frac{V}{\\pi}\\))." }
+          ]
+        }
+      ]
+    }
+  ];
+
+  async function renderQuiz() {
+    let html = "";
+    let qIndex = 1;
+
+    quizData.forEach((block, bIdx) => {
+      html += `<h2 class="block-title">${block.block}</h2>`;
+      block.themes.forEach((theme, tIdx) => {
+        html += `<h3 class="theme-title">${theme.theme}</h3>`;
+        theme.questions.forEach((qDef, qIdx) => {
+          qDef.checkCount = 0;
+          qDef.attemptsHistory = [];
+
+          const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
+          html += `<div class="card" id="card_${qId}">`;
+          html += `<div class="question-title">${qIndex}. ${qDef.q}</div>`;
+          
+          if (qDef.type === "radio") {
+            html += `<div class="options" id="opt_${qId}">`;
+            qDef.options.forEach((opt, oIdx) => {
+              html += `<label class="option-label"><input type="radio" name="${qId}" value="${oIdx}"> <span>${opt}</span></label>`;
+            });
+            html += `</div>`;
+          } else {
+            html += `<div class="input-row">`;
+            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Введите ответ" oninput="this.value = this.value.replace(/[^0-9,\\-\\+\\*\\/]/g, ''); updateMinusBtnState('${qId}');">`;
+            html += `<button type="button" class="btn-minus-toggle" id="btn_toggle_${qId}" onclick="toggleMinus('${qId}')" title="Изменить знак (+/−)">±</button>`;
+            html += `</div>`;
+          }
+
+          html += `<div style="margin-top:12px;">`;
+          html += `<button class="btn-check" id="btn_${qId}" onclick="checkSingle(${bIdx}, ${tIdx}, ${qIdx})">Проверить задание</button>`;
+          html += `<div class="feedback" id="feed_${qId}"></div></div>`;
+          html += `</div>`;
+          qIndex++;
+        });
+      });
+    });
+
+    const quizContainer = document.getElementById("quiz-container");
+    quizContainer.innerHTML = html;
+    await safeTypeset(quizContainer);
+  }
+
+  function checkSingle(bIdx, tIdx, qIdx, silent = false) {
+    const qDef = quizData[bIdx].themes[tIdx].questions[qIdx];
+    const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
+    let userAns = "";
+    let formattedUserAns = "";
+
+    if (qDef.type === "radio") {
+      const els = document.getElementsByName(qId);
+      for (let el of els) { if (el.checked) userAns = el.value; }
+      formattedUserAns = (userAns !== "") ? qDef.options[parseInt(userAns)] : "Не выбрано";
+      qDef.correctText = qDef.options[qDef.a];
+    } else {
+      const inputEl = document.getElementById(qId);
+      userAns = inputEl ? inputEl.value.trim().replace(/\./g, ",") : "";
+      formattedUserAns = (userAns !== "") ? userAns : "Не введено";
+      qDef.correctText = qDef.a;
+    }
+
+    if (!silent) {
+      qDef.checkCount = (qDef.checkCount || 0) + 1;
+      if (userAns !== "") {
+        if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
+        qDef.attemptsHistory.push(formattedUserAns);
+      }
+    } else {
+      if (userAns !== "") {
+        if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
+        if (qDef.attemptsHistory.length === 0 || qDef.attemptsHistory[qDef.attemptsHistory.length - 1] !== formattedUserAns) {
+          qDef.attemptsHistory.push(formattedUserAns);
+        }
+      }
+    }
+
+    qDef.userText = formattedUserAns;
+
+    if (userAns === "") {
+      if (!silent) {
+        const feedEl = document.getElementById(`feed_${qId}`);
+        if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Ответ не введен!</span>";
+      }
+      qDef.isCorrect = false;
+      return;
+    }
+
+    const isRight = (qDef.type === "radio") ? (parseInt(userAns) === qDef.a) : (userAns === qDef.a);
+
+    if (isRight) {
+      qDef.isCorrect = true;
+      if (!silent) {
+        const feedEl = document.getElementById(`feed_${qId}`);
+        if (feedEl) feedEl.innerHTML = "<span style='color: #16a34a'>Верно! ✅</span>";
+
+        if (qDef.type === "radio") {
+          const els = document.getElementsByName(qId);
+          els.forEach(el => el.disabled = true);
+        } else {
+          const inputEl = document.getElementById(qId);
+          if (inputEl) inputEl.disabled = true;
+          const toggleBtn = document.getElementById(`btn_toggle_${qId}`);
+          if (toggleBtn) toggleBtn.disabled = true;
+        }
+
+        const btnEl = document.getElementById(`btn_${qId}`);
+        if (btnEl) btnEl.style.display = "none";
+      }
+    } else {
+      qDef.isCorrect = false;
+      if (!silent) {
+        const feedEl = document.getElementById(`feed_${qId}`);
+        if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Неверно ❌</span>";
+      }
+    }
+  }
+
+  async function buildPerfectPdfBlob() {
+    const { jsPDF } = window.jspdf;
+    const pdfContainer = document.getElementById("result-pdf");
+    const pages = pdfContainer.querySelectorAll(".pdf-page");
+    
+    const pdf = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: "a4",
+      compress: true
+    });
+
+    for (let i = 0; i < pages.length; i++) {
+      if (i > 0) pdf.addPage();
+      
+      const canvas = await html2canvas(pages[i], {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        windowWidth: 794
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      pdf.addImage(imgData, "JPEG", 0, 0, 210, 297);
+    }
+
+    return pdf.output("blob");
+  }
+
+  function downloadPDF() {
+    if (!generatedPdfBlob) return;
+    const url = URL.createObjectURL(generatedPdfBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Отчет_${studentData.fullName}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function checkAll() {
+    let totalCorrect = 0;
+    let totalQuestions = 0;
+    
+    let pdfAnalyticsRowsHtml = "";
+    let screenCardsHtml = "";
+    let pdfCardsArray = [];
+    
+    let topicsToRepeatSet = new Set();
+    let topicsToStudySet = new Set();
+    let qIndex = 1;
+
+    quizData.forEach((block, bIdx) => {
+      let blockCorrect = 0;
+      let blockTotal = 0;
+
+      block.themes.forEach((theme, tIdx) => {
+        let themeCorrect = 0;
+        let themeTotal = theme.questions.length;
+        const cleanThemeName = theme.theme.replace(/^\d+\.\s*/, '');
+
+        theme.questions.forEach((qDef, qIdx) => {
+          checkSingle(bIdx, tIdx, qIdx, true); 
+
+          if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано") {
+            if (!qDef.checkCount || qDef.checkCount === 0) {
+              qDef.checkCount = 0;
+            }
+            if (!qDef.attemptsHistory || qDef.attemptsHistory.length === 0) {
+              qDef.attemptsHistory = [qDef.userText];
+            }
+          }
+
+          if (qDef.isCorrect) {
+            themeCorrect++;
+          }
+
+          const isSkipped = (qDef.userText === "Не введено" || qDef.userText === "Не выбрано");
+          const isGuessedByBruteForce = (qDef.type === 'radio' && qDef.checkCount > 1);
+
+          let statusClass = "incorrect";
+          let badgeStatus = "Ошибка ⚠️";
+          let badgeClass = "badge-err";
+
+          if (qDef.isCorrect && !isGuessedByBruteForce) {
+            statusClass = "correct";
+            badgeStatus = "Верно ✅";
+            badgeClass = "badge-ok";
+          } else if (qDef.isCorrect && isGuessedByBruteForce) {
+            statusClass = "incorrect";
+            badgeStatus = "Перебор ⚠️";
+            badgeClass = "badge-err";
+            topicsToRepeatSet.add(cleanThemeName);
+          } else if (isSkipped) {
+            statusClass = "skipped";
+            badgeStatus = "Не решено ❌";
+            badgeClass = "badge-skip";
+            topicsToStudySet.add(cleanThemeName);
+          } else {
+            statusClass = "incorrect";
+            badgeStatus = "Ошибка ⚠️";
+            badgeClass = "badge-err";
+            topicsToRepeatSet.add(cleanThemeName);
+          }
+
+          let attemptsList = "";
+          if (qDef.attemptsHistory && qDef.attemptsHistory.length > 0) {
+            attemptsList = qDef.attemptsHistory.join(" ➔ ");
+          } else if (!isSkipped) {
+            attemptsList = qDef.userText;
+          } else {
+            attemptsList = "Нет попыток";
+          }
+
+          const checkCountVal = qDef.checkCount || 0;
+
+          const cardHtml = `
+            <div class="pdf-card ${statusClass}">
+              <div class="pdf-q">${qIndex}. ${qDef.q}</div>
+              <div class="pdf-ans">
+                <b>Попыток ввода:</b> ${checkCountVal} | <b>Ответ:</b> ${attemptsList}<br>
+                <b>Правильный ответ:</b> ${qDef.correctText}
+              </div>
+              <span class="badge ${badgeClass}">${badgeStatus}</span>
             </div>
+          `;
 
-            <div class="flex flex-wrap justify-center items-center gap-3 pt-2">
-                <a id="link-support-tg" href="https://t.me/leonovaru" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#229ED9] hover:bg-[#1d8cb0] text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md shadow-[#229ED9]/20">
-                    <i class="fa-brands fa-telegram text-base"></i>
-                    <span>Telegram</span>
-                </a>
-                <a id="link-support-vk" href="https://vk.ru/leonovaru" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#0077FF] hover:bg-[#0066cc] text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md shadow-[#0077FF]/20">
-                    <i class="fa-brands fa-vk text-base"></i>
-                    <span>ВКонтакте</span>
-                </a>
-            </div>
-        </div>
-    </section>
+          screenCardsHtml += cardHtml;
+          pdfCardsArray.push(cardHtml);
 
-    <!-- ФУТЕР -->
-    <footer class="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500">
-        <div class="max-w-6xl mx-auto px-4 space-y-3">
-            <div>© 2026 РЕШАЙ360.РУ. Независимый аудит знаний по математике. Все права защищены.</div>
-            <div class="flex justify-center space-x-4 text-slate-400">
-                <a id="link-footer-policy" href="#" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition">Политика конфиденциальности</a>
-                <span>•</span>
-                <a id="link-footer-offer" href="#" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition">Публичная оферта</a>
-            </div>
-        </div>
-    </footer>
-
-    <!-- СКРИПТЫ -->
-    <script>
-        let currentSelectedProductKey = '10'; // по умолчанию 10 класс
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initLinks();
-            initVideo();
-            initPdfViewer();
-            selectOption('10');
+          qIndex++;
         });
 
-        function initLinks() {
-            if (typeof CONFIG === 'undefined') return;
+        blockCorrect += themeCorrect;
+        blockTotal += themeTotal;
+      });
 
-            document.getElementById('link-policy').href = CONFIG.links.policy;
-            document.getElementById('link-offer').href = CONFIG.links.offer;
-            document.getElementById('link-footer-policy').href = CONFIG.links.policy;
-            document.getElementById('link-footer-offer').href = CONFIG.links.offer;
-            document.getElementById('link-charity-tg').href = CONFIG.links.charityTelegram;
+      const blockPercent = Math.round((blockCorrect / blockTotal) * 100);
+      let fillClass = "bg-green";
+      if (blockPercent < 50) {
+        fillClass = "bg-red";
+      } else if (blockPercent < 70) {
+        fillClass = "bg-yellow";
+      }
 
-            const video = document.getElementById('demo-video');
-            const videoSource = document.getElementById('video-source');
-            if (video && videoSource && CONFIG.media.demoVideo) {
-                videoSource.src = CONFIG.media.demoVideo;
-                video.load();
-                video.play().catch(e => console.log("Автозапуск заблокирован браузером:", e));
-            }
-        }
+      pdfAnalyticsRowsHtml += `
+        <div class="pdf-progress-row">
+          <div class="pdf-progress-header">
+            <span>${block.block}</span>
+            <span>${blockPercent}%</span>
+          </div>
+          <div class="pdf-progress-track">
+            <div class="pdf-progress-fill ${fillClass}" style="width: ${blockPercent}%"></div>
+          </div>
+        </div>
+      `;
 
-        function initVideo() {
-            const video = document.getElementById('demo-video');
-            if (video) {
-                video.muted = true;
-                const playPromise = video.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(() => {
-                        const playOnTouch = () => { video.play(); };
-                        document.addEventListener('touchstart', playOnTouch, { once: true });
-                        document.addEventListener('click', playOnTouch, { once: true });
-                    });
-                }
-            }
-        }
+      totalCorrect += blockCorrect;
+      totalQuestions += blockTotal;
+    });
 
-        function toggleProgramBlocks() {
-            const wrapper = document.getElementById('blocks-wrapper');
-            const text = document.getElementById('toggle-blocks-text');
-            const icon = document.getElementById('toggle-blocks-icon');
-            
-            if (wrapper.classList.contains('hidden')) {
-                wrapper.classList.remove('hidden');
-                text.innerText = "Скрыть программу диагностики";
-                icon.className = "fa-solid fa-chevron-up text-xs";
-            } else {
-                wrapper.classList.add('hidden');
-                text.innerText = "Посмотреть программу диагностики";
-                icon.className = "fa-solid fa-chevron-down text-xs";
-            }
-        }
+    const percent = Math.round((totalCorrect / totalQuestions) * 100);
 
-        // Рендеринг PDF через PDF.js
-        let pdfDoc = null;
-        let currentPdfPage = 1;
-        let pageRendering = false;
-        let pageNumPending = null;
+    const topicsToRepeat = Array.from(topicsToRepeatSet);
+    const topicsToStudy = Array.from(topicsToStudySet);
 
-        function initPdfViewer() {
-            if (typeof pdfjsLib === 'undefined') return;
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    let repeatBoxHtml = topicsToRepeat.length > 0 
+      ? `<ol>${topicsToRepeat.map(t => `<li>${t}</li>`).join('')}</ol>`
+      : `<p style="margin: 0;">Ошибок в решенных заданиях нет.</p>`;
 
-            const pdfFile = (typeof CONFIG !== 'undefined' && CONFIG.media && CONFIG.media.pdfReport) ? CONFIG.media.pdfReport : 'report.pdf';
-            
-            pdfjsLib.getDocument(pdfFile).promise.then(function(doc) {
-                pdfDoc = doc;
-                document.getElementById('page-count').textContent = pdfDoc.numPages;
-                renderPdfPage(currentPdfPage);
-            }).catch(function(err) {
-                console.warn("Первичная загрузка PDF не удалась, пробую альтернативный путь:", err);
-                pdfjsLib.getDocument(encodeURIComponent(pdfFile)).promise.then(function(doc) {
-                    pdfDoc = doc;
-                    document.getElementById('page-count').textContent = pdfDoc.numPages;
-                    renderPdfPage(currentPdfPage);
-                }).catch(function(e) {
-                    console.error("Ошибка загрузки PDF:", e);
-                    const loadingElem = document.getElementById('pdf-loading');
-                    if (loadingElem) {
-                        loadingElem.innerHTML = `
-                            <div class="text-rose-400 text-xs p-4 text-center space-y-2">
-                                <div><b>Файл «${pdfFile}» не найден или заблокирован.</b></div>
-                                <div style="color:#94a3b8; font-size:11px; line-height:1.4;">
-                                    Если вы открываете сайт с компьютера (через <code>file://</code>), браузер блокирует чтение локальных PDF из-за безопасности CORS. Опубликуйте сайт в Cloudflare Pages — там всё будет работать идеально!
-                                </div>
-                            </div>`;
-                    }
-                });
-            });
-        }
+    let studyBoxHtml = topicsToStudy.length > 0
+      ? `<ol>${topicsToStudy.map(t => `<li>${t}</li>`).join('')}</ol>`
+      : `<p style="margin: 0;">Пропущенных заданий нет.</p>`;
 
-        function renderPdfPage(num) {
-            if (!pdfDoc) return;
-            pageRendering = true;
-            pdfDoc.getPage(num).then(function(page) {
-                const wrapper = document.getElementById('canvas-wrapper');
-                const canvas = document.getElementById('pdf-canvas');
-                const ctx = canvas.getContext('2d');
+    const pdfTopicsSplitHtml = `
+      <div class="pdf-topics-container">
+        <div class="pdf-topics-box repeat">
+          <h4>⚠️ Темы для повторения (ошибки / перебор):</h4>
+          ${repeatBoxHtml}
+        </div>
+        <div class="pdf-topics-box study">
+          <h4>📌 Темы для изучения (не решено):</h4>
+          ${studyBoxHtml}
+        </div>
+      </div>
+    `;
 
-                const pixelRatio = window.devicePixelRatio || 1;
-                const unscaledViewport = page.getViewport({ scale: 1 });
-                const maxWidth = Math.min(wrapper.clientWidth - 20, 420);
-                
-                const baseScale = maxWidth / unscaledViewport.width;
-                const viewport = page.getViewport({ scale: baseScale * pixelRatio });
+    const now = new Date();
+    const testDateStr = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
+    const firstPageHtml = `
+      <h1 class="pdf-header-title">Диагностическая карта знаний</h1>
 
-                canvas.style.width = `${maxWidth}px`;
-                canvas.style.height = `${viewport.height / pixelRatio}px`;
+      <div class="pdf-score-card">
+        <div class="pdf-student-info">
+          11 класс<br>
+          <strong>Ученик:</strong> ${escapeHtml(studentData.fullName)}<br>
+          Дата прохождения: ${testDateStr}
+        </div>
+        <div class="pdf-score-right">
+          <div class="pdf-score-label">Итоговый результат</div>
+          <div class="pdf-score-main">${totalCorrect} из ${totalQuestions} (${percent}%)</div>
+        </div>
+      </div>
 
-                const renderContext = { canvasContext: ctx, viewport: viewport };
-                const renderTask = page.render(renderContext);
+      <div class="pdf-analytics-title">Результат диагностики</div>
+      <div>
+        ${pdfAnalyticsRowsHtml}
+      </div>
 
-                renderTask.promise.then(function() {
-                    pageRendering = false;
-                    const loadingElem = document.getElementById('pdf-loading');
-                    if (loadingElem) loadingElem.classList.add('hidden');
-                    canvas.classList.remove('hidden');
-                    if (pageNumPending !== null) {
-                        renderPdfPage(pageNumPending);
-                        pageNumPending = null;
-                    }
-                });
-            });
+      ${pdfTopicsSplitHtml}
+    `;
 
-            document.getElementById('page-num').textContent = num;
-            document.getElementById('prev-page').disabled = (num <= 1);
-            document.getElementById('next-page').disabled = (num >= pdfDoc.numPages);
-        }
+    const screenResultHtml = `
+      <div class="pdf-page" style="position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; margin-bottom: 25px;">
+        ${firstPageHtml}
+      </div>
 
-        function queueRenderPdfPage(num) {
-            if (pageRendering) {
-                pageNumPending = num;
-            } else {
-                renderPdfPage(num);
-            }
-        }
+      <div style="text-align: center; margin: 25px 0 35px 0;">
+        <button id="downloadPdfBtn" class="btn-pdf" disabled onclick="downloadPDF()">⏳ Формирование PDF...</button>
+      </div>
 
-        function changePage(delta) {
-            if (!pdfDoc) return;
-            const newPage = currentPdfPage + delta;
-            if (newPage >= 1 && newPage <= pdfDoc.numPages) {
-                currentPdfPage = newPage;
-                queueRenderPdfPage(currentPdfPage);
-            }
-        }
+      <h3 class="screen-section-title">Детализация ответов</h3>
+      ${screenCardsHtml}
+    `;
 
-        window.addEventListener('resize', function() {
-            if (pdfDoc) queueRenderPdfPage(currentPdfPage);
-        });
+    document.getElementById("result-screen").innerHTML = screenResultHtml;
 
-        // Выбор варианта программы
-        function selectOption(key) {
-            currentSelectedProductKey = key; // сохраняем выбор для отправки в api
+    let measureContainer = document.createElement('div');
+    measureContainer.style.cssText = 'position: fixed; top: 0; left: -9999px; width: 714px; visibility: hidden; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;';
+    document.body.appendChild(measureContainer);
 
-            document.querySelectorAll('.opt-btn').forEach(btn => {
-                btn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition";
-            });
+    let detailPagesCards = [];
+    let currentPageCards = [];
+    const MAX_PAGE_CONTENT_HEIGHT = 1000;
 
-            const activeBtn = document.getElementById(`btn-${key}`);
-            if (activeBtn) {
-                activeBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
-            }
+    for (let i = 0; i < pdfCardsArray.length; i++) {
+      let testCards = [...currentPageCards, pdfCardsArray[i]];
+      measureContainer.innerHTML = `<h3 class="detail-section-title">Результаты выполнения заданий</h3>` + testCards.join('');
+      await safeTypeset(measureContainer);
+      
+      let currentHeight = measureContainer.offsetHeight;
 
-            const data = (typeof CONFIG !== 'undefined' && CONFIG.programs[key]) ? CONFIG.programs[key] : null;
-            if (!data) return;
+      if (currentHeight > MAX_PAGE_CONTENT_HEIGHT && currentPageCards.length > 0) {
+        detailPagesCards.push(currentPageCards);
+        currentPageCards = [pdfCardsArray[i]];
+      } else {
+        currentPageCards.push(pdfCardsArray[i]);
+      }
+    }
+    if (currentPageCards.length > 0) {
+      detailPagesCards.push(currentPageCards);
+    }
+    document.body.removeChild(measureContainer);
 
-            document.getElementById('badge-text').innerText = data.badge;
-            document.getElementById('card-title').innerText = data.title;
-            document.getElementById('card-desc').innerText = data.desc;
-            document.getElementById('card-price').innerText = data.price;
+    const totalPages = 1 + detailPagesCards.length;
 
-            const fipiBadge = document.getElementById('fipi-badge');
-            if (data.fipi) {
-                fipiBadge.classList.remove('hidden');
-            } else {
-                fipiBadge.classList.add('hidden');
-            }
+    let pagesHtml = `
+      <div class="pdf-page">
+        ${firstPageHtml}
+        <div class="page-footer">Диагностический отчет | Страница 1 из ${totalPages}</div>
+      </div>
+    `;
 
-            const container = document.getElementById('blocks-container');
-            container.innerHTML = data.blocks.map(b => `
-                <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 space-y-2">
-                    <div class="font-bold text-white text-xs sm:text-sm text-indigo-300">${escapeHtml(b.name)}</div>
-                    <ul class="space-y-1 text-slate-400 text-xs">
-                        ${b.items.map(item => `<li>• ${escapeHtml(item)}</li>`).join('')}
-                    </ul>
-                </div>
-            `).join('');
-        }
+    let cardGlobalIndex = 0;
+    detailPagesCards.forEach((pageCards, p) => {
+      const pageNum = p + 2;
+      const startQ = cardGlobalIndex + 1;
+      const endQ = cardGlobalIndex + pageCards.length;
+      cardGlobalIndex += pageCards.length;
 
-        function escapeHtml(str) {
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
+      pagesHtml += `
+        <div class="pdf-page">
+          <h3 class="detail-section-title">Результаты выполнения заданий (Задания ${startQ}–${endQ})</h3>
+          ${pageCards.join("")}
+          <div class="page-footer">Диагностический отчет | Страница ${pageNum} из ${totalPages}</div>
+        </div>
+      `;
+    });
 
-        // Обработка отправки формы и вызов ЮKassa (через надежный редирект)
-        async function handleSubmit(e) {
-            e.preventDefault();
+    const resultPdfContainer = document.getElementById("result-pdf");
+    resultPdfContainer.innerHTML = pagesHtml;
 
-            const studentName = document.getElementById('student-name').value.trim();
-            const email = document.getElementById('student-email').value.trim();
-            const submitBtn = e.target.querySelector('button[type="submit"]');
+    document.getElementById("main-container").style.display = "none";
+    document.getElementById("result-wrapper").style.display = "block";
 
-            if (!studentName || !email) {
-                alert('Пожалуйста, заполните имя и email');
-                return;
-            }
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 
-            const originalBtnContent = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Создание платежа...`;
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await safeTypeset(document.getElementById("result-screen"));
+    await new Promise(resolve => setTimeout(resolve, 200));
+    await safeTypeset(resultPdfContainer);
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-            try {
-                const response = await fetch('/api/create-payment', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        studentName: studentName, 
-                        email: email, 
-                        productKey: currentSelectedProductKey 
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.confirmationUrl) {
-                    window.location.href = data.confirmationUrl; // Перенаправление на оплату в ЮKassa
-                } else {
-                    alert(data.message || 'Ошибка создания платежа');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnContent;
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Произошла ошибка соединения с платежным шлюзом.');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnContent;
-            }
-        }
-    </script>
+    const downloadBtn = document.getElementById("downloadPdfBtn");
+    try {
+      generatedPdfBlob = await buildPerfectPdfBlob();
+      if (downloadBtn) {
+        downloadBtn.disabled = false;
+        downloadBtn.innerText = "📄 Скачать PDF-отчет";
+      }
+    } catch (err) {
+      console.error("Ошибка при генерации PDF:", err);
+      if (downloadBtn) {
+        downloadBtn.innerText = "⚠️ Ошибка генерации PDF";
+      }
+    }
+  }
+</script>
 </body>
 </html>
