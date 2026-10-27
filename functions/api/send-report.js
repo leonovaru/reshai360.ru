@@ -3,6 +3,7 @@ export async function onRequestPost(context) {
 
   try {
     const formData = await request.formData();
+    const token = formData.get('token');
     const email = formData.get('email');
     const name = formData.get('name');
     const score = formData.get('score');
@@ -11,7 +12,17 @@ export async function onRequestPost(context) {
 
     const percent = Math.round((parseInt(score) / parseInt(total)) * 100);
 
-    // 1. Отправка отчета в ваш Telegram-бот
+    // 1. Помечаем токен как полностью завершенный в KV-хранилище, чтобы закрыть доступ
+    if (token && env.TEST_TOKENS) {
+      const tokenDataRaw = await env.TEST_TOKENS.get(token);
+      if (tokenDataRaw) {
+        const tokenData = JSON.parse(tokenDataRaw);
+        tokenData.isCompleted = true;
+        await env.TEST_TOKENS.put(token, JSON.stringify(tokenData));
+      }
+    }
+
+    // 2. Отправка отчета в ваш Telegram-бот
     if (env.TG_BOT_TOKEN && env.TG_CHAT_ID) {
       const tgFormData = new FormData();
       tgFormData.append('chat_id', env.TG_CHAT_ID);
@@ -27,7 +38,7 @@ export async function onRequestPost(context) {
       });
     }
 
-    // 2. Отправка письма ученику через Resend API
+    // 3. Отправка письма ученику через Resend API
     if (env.RESEND_API_KEY && pdfFile) {
       const pdfBuffer = await pdfFile.arrayBuffer();
       const base64Pdf = btoa(String.fromCharCode(...new Uint8Array(pdfBuffer)));
@@ -44,14 +55,8 @@ export async function onRequestPost(context) {
           subject: `Результаты независимой диагностики по математике (11 класс) — ${name}`,
           html: `
             <p>Здравствуйте, <b>${name}</b>!</p>
-            <p>Вы успешно прошли независимую диагностику знаний по математике за 11 класс на платформе <b>Решай360</b>.</p>
-            <p>Во вложении к этому письму находится ваш подробный PDF-отчет.</p>
-            <p><b>В отчете вы найдете:</b></p>
-            <ul>
-              <li>Наглядную карту освоения ключевых тем ЕГЭ / школьной программы;</li>
-              <li>Подробный разбор допущенных ошибок;</li>
-              <li>Рекомендации по темам, на которые стоит обратить внимание в первую очередь.</li>
-            </ul>
+            <p>Вы успешно завершили независимую диагностику знаний по математике за 11 класс на платформе <b>Решай360</b>.</p>
+            <p>Во вложении к этому письму находится ваш подробный PDF-отчет с анализом результатов и рекомендациями.</p>
             <p>С уважением,<br>Команда независимой диагностики <b>Решай360</b><br><a href="https://reshai360.ru">reshai360.ru</a></p>
           `,
           attachments: [
