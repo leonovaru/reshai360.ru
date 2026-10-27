@@ -4,7 +4,6 @@ export async function onRequestPost(context) {
   try {
     const { studentName, email, productKey } = await request.json();
 
-    // База продуктов (для тестов стоит 1 рубль, потом поменяете на 1000)
     const PRODUCTS = {
       '7': { title: 'Диагностика — 7 класс', price: 1, file: 'test_7.html' },
       '8': { title: 'Диагностика — 8 класс', price: 1, file: 'test_8.html' },
@@ -32,8 +31,8 @@ export async function onRequestPost(context) {
         amount: { value: `${product.price}.00`, currency: 'RUB' },
         confirmation: {
           type: 'redirect',
-          // Возвращаем пользователя на страницу success.html с переданными параметрами
-          return_url: `https://reshai360.ru/success.html?productKey=${productKey}&email=${encodeURIComponent(email)}&studentName=${encodeURIComponent(studentName)}`
+          // Передаем только productKey, а персональные данные сохранятся в метаданных платежа для вебхука
+          return_url: `https://reshai360.ru/success.html?productKey=${productKey}`
         },
         capture: true,
         description: `${product.title} (${email})`,
@@ -50,17 +49,24 @@ export async function onRequestPost(context) {
       })
     });
 
-    const payment = await response.json();
-    if (!payment.confirmation || !payment.confirmation.confirmation_url) {
-      throw new Error('Ошибка связи с ЮKassa');
+    // Ваше замечание: проверяем статус ответа от ЮKassa
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Ошибка ЮKassa API:', response.status, errorText);
+      return new Response(JSON.stringify({ message: 'Ошибка платежной системы. Попробуйте позже.' }), { status: 502 });
     }
 
-    // Возвращаем ссылку для редиректа на оплату
+    const payment = await response.json();
+    if (!payment.confirmation || !payment.confirmation.confirmation_url) {
+      throw new Error('Некорректный ответ от платежного шлюза');
+    }
+
     return new Response(JSON.stringify({ confirmationUrl: payment.confirmation.confirmation_url }), {
       headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
-    return new Response(JSON.stringify({ message: error.message }), { status: 500 });
+    console.error('Create payment error:', error);
+    return new Response(JSON.stringify({ message: 'Внутренняя ошибка сервера' }), { status: 500 });
   }
 }
