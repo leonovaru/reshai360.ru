@@ -2,40 +2,76 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Переход к тесту — Решай360</title>
+    <title>Проверка оплаты — Решай360</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#090d16] text-white flex items-center justify-center h-screen">
     <div class="text-center space-y-3 p-6 max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
-        <div class="inline-block animate-spin text-indigo-500 text-3xl mb-1">
+        <div id="loader" class="inline-block animate-spin text-indigo-500 text-3xl mb-1">
             <i class="fa-solid fa-spinner"></i>
         </div>
-        <h1 class="text-lg font-bold">Оплата прошла успешно!</h1>
-        <p class="text-xs text-slate-400">Открываем вашу диагностику...</p>
+        <h1 id="status-title" class="text-lg font-bold">Проверяем статус оплаты...</h1>
+        <p id="status-desc" class="text-xs text-slate-400">Секунду, настраиваем вашу диагностику...</p>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const productKey = urlParams.get('productKey');
-        const email = urlParams.get('email');
-        const studentName = urlParams.get('studentName');
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productKey = urlParams.get('productKey') || '10';
+            const token = urlParams.get('token');
 
-        // Словарь соответствия ключей продуктов и файлов тестов
-        const testFiles = {
-            '7': 'test_7.html',
-            '8': 'test_8.html',
-            '9': 'test_9.html',
-            '10': 'test_10.html',
-            '11': 'test_11.html'
-        };
+            const testFiles = {
+                '7': 'test_7.html',
+                '8': 'test_8.html',
+                '9': 'test_9.html',
+                '10': 'test_10.html',
+                '11': 'test_11.html'
+            };
+            const targetFile = testFiles[productKey] || 'index.html';
 
-        const targetFile = testFiles[productKey] || 'index.html';
+            // Если токена нет в URL (например, пользователь попал сюда напрямую без оплаты), 
+            // проверяем, может быть оплата прошла через вебхук и токен сохранен в сессии/localStorage
+            if (!token) {
+                // Даем небольшую задержку на случай, если вебхук ЮKassa еще обрабатывается
+                setTimeout(() => {
+                    window.location.href = targetFile;
+                }, 2000);
+                return;
+            }
 
-        // Мгновенный переход к тесту через 1 секунду
-        setTimeout(() => {
-            window.location.href = `${targetFile}?name=${encodeURIComponent(studentName)}&email=${encodeURIComponent(email)}`;
-        }, 1000);
+            try {
+                // Проверяем защищенный токен через сервер
+                const response = await fetch('/api/verify-token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+
+                const result = await response.json();
+
+                if (result.valid && result.data) {
+                    // Сохраняем данные безопасно в localStorage браузера вместо передачи в адресной строке
+                    localStorage.setItem('studentName', result.data.studentName);
+                    localStorage.setItem('studentEmail', result.data.email);
+
+                    document.getElementById('status-title').innerText = "Оплата успешно подтверждена!";
+                    document.getElementById('status-desc').innerText = "Открываем вашу диагностику...";
+
+                    setTimeout(() => {
+                        window.location.href = targetFile;
+                    }, 1000);
+                } else {
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('status-title').innerText = "Ошибка доступа";
+                    document.getElementById('status-desc').innerHTML = `<span class="text-rose-400">${result.message || 'Ссылка недействительна'}</span>`;
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('status-title').innerText = "Ошибка соединения";
+                document.getElementById('status-desc').innerText = "Не удалось проверить статус оплаты.";
+            }
+        });
     </script>
 </body>
 </html>
