@@ -96,7 +96,7 @@
                     </div>
                 </div>
 
-                <!-- Правый блок: Видео смартфона (без кнопки звука) -->
+                <!-- Правый блок: Видео смартфона -->
                 <div class="lg:col-span-5 flex justify-center">
                     <div class="phone-mockup relative w-[200px] sm:w-[230px] h-[400px] sm:h-[460px] rounded-[32px] p-2 bg-slate-900 border-4 border-slate-800 shadow-2xl overflow-hidden mx-auto">
                         <div class="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-3.5 bg-slate-950 rounded-full z-20 flex items-center justify-center">
@@ -156,7 +156,7 @@
                         <p id="card-desc" class="text-xs text-slate-400 mt-1">Проверяем знания за курс</p>
                     </div>
                     <div class="text-left sm:text-right">
-                        <div id="card-price" class="text-3xl sm:text-4xl font-black text-white">790 ₽</div>
+                        <div id="card-price" class="text-3xl sm:text-4xl font-black text-white">1000 ₽</div>
                         <div class="text-xs text-slate-400 mt-1">Доступ к тесту сразу после оплаты</div>
                     </div>
                 </div>
@@ -179,11 +179,11 @@
                     <div class="grid sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-slate-400 mb-1.5">Ваше имя</label>
-                            <input type="text" required placeholder="Александр" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm">
+                            <input type="text" id="student-name" required placeholder="Александр" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-400 mb-1.5">Email (сюда придет PDF-отчет)</label>
-                            <input type="email" required placeholder="student@mail.ru" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm">
+                            <input type="email" id="student-email" required placeholder="student@mail.ru" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm">
                         </div>
                     </div>
 
@@ -304,7 +304,7 @@
         <div class="max-w-3xl mx-auto px-4 relative z-10">
             <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-slate-900/90 shadow-2xl space-y-6">
                 
-                <!-- Шапка: на ПК слева фото, справа в 2 строчки текст -->
+                <!-- Шапка -->
                 <div class="flex flex-col sm:flex-row items-center sm:items-center gap-5 text-center sm:text-left">
                     <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-amber-500/50 shadow-lg shadow-amber-500/10 shrink-0 mx-auto sm:mx-0">
                         <img src="dog_logo.jpg" alt="Приют Собачий мир" class="w-full h-full object-cover">
@@ -322,7 +322,7 @@
                     </div>
                 </div>
 
-                <!-- Основной текст внизу -->
+                <!-- Основной текст -->
                 <p class="text-slate-300 text-xs sm:text-sm leading-relaxed text-center sm:text-left">
                     С каждой проданной диагностики мы переводим <strong class="text-amber-400">100 ₽</strong> в фонд помощи бездомным животным <strong class="text-white">«Собачий мир»</strong> (г. Красноярск). Приобретая диагностику для себя, вы одновременно дарите день сытой жизни одному из подопечных приюта.
                 </p>
@@ -393,6 +393,8 @@
 
     <!-- СКРИПТЫ -->
     <script>
+        let currentSelectedProductKey = '10'; // по умолчанию 10 класс
+
         document.addEventListener('DOMContentLoaded', () => {
             initLinks();
             initVideo();
@@ -400,7 +402,6 @@
             selectOption('10');
         });
 
-        // Инициализация ссылок и видео
         function initLinks() {
             if (typeof CONFIG === 'undefined') return;
 
@@ -434,7 +435,6 @@
             }
         }
 
-        // Переключение блоков программы
         function toggleProgramBlocks() {
             const wrapper = document.getElementById('blocks-wrapper');
             const text = document.getElementById('toggle-blocks-text');
@@ -553,6 +553,8 @@
 
         // Выбор варианта программы
         function selectOption(key) {
+            currentSelectedProductKey = key; // сохраняем выбор для отправки в api
+
             document.querySelectorAll('.opt-btn').forEach(btn => {
                 btn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition";
             });
@@ -597,9 +599,49 @@
                 .replace(/'/g, '&#039;');
         }
 
-        function handleSubmit(e) {
+        // Обработка отправки формы и вызов ЮKassa
+        async function handleSubmit(e) {
             e.preventDefault();
-            alert("Формирование платежа... Переход в платежный шлюз.");
+
+            const studentName = document.getElementById('student-name').value.trim();
+            const email = document.getElementById('student-email').value.trim();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            if (!studentName || !email) {
+                alert('Пожалуйста, заполните имя и email');
+                return;
+            }
+
+            const originalBtnContent = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Создание платежа...`;
+
+            try {
+                const response = await fetch('/api/create-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        studentName: studentName, 
+                        email: email, 
+                        productKey: currentSelectedProductKey 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.confirmationUrl) {
+                    window.location.href = data.confirmationUrl; // Перенаправление на ЮKassa
+                } else {
+                    alert(data.message || 'Ошибка создания платежа');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnContent;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Произошла ошибка соединения с платежным шлюзом.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
+            }
         }
     </script>
 </body>
