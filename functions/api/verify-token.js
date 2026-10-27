@@ -12,15 +12,16 @@ export async function onRequestPost(context) {
 
     const tokenData = JSON.parse(tokenDataRaw);
 
-    if (tokenData.isUsed) {
-      return new Response(JSON.stringify({ valid: false, message: 'Эта ссылка уже была использована для прохождения теста. Пересылка запрещена.' }), {
+    // Защита: если тест уже решен по этой ссылке, блокируем повторный вход
+    if (tokenData.isCompleted) {
+      return new Response(JSON.stringify({ valid: false, message: 'Тест по этой ссылке уже был решен. Повторный доступ запрещен.' }), {
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // Помечаем токен как использованный (защита от повторного открытия)
+    // Помечаем токен как использованный
     tokenData.isUsed = true;
-    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
+    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData));
 
     return new Response(JSON.stringify({ valid: true, data: tokenData }), {
       headers: { 'Content-Type': 'application/json' }
