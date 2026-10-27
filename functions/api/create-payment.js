@@ -33,7 +33,7 @@ export async function onRequestPost(context) {
         amount: { value: `${product.price}.00`, currency: 'RUB' },
         confirmation: {
           type: 'redirect',
-          return_url: `https://reshai360.ru/${product.file}?name=${encodeURIComponent(studentName)}&email=${encodeURIComponent(email)}`
+          return_url: `https://reshai360.ru/success.html?productKey=${productKey}&email=${encodeURIComponent(email)}&studentName=${encodeURIComponent(studentName)}`
         },
         capture: true,
         description: `${product.title} (${email})`,
