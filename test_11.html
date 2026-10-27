@@ -365,14 +365,20 @@
 </div>
 
 <script>
-  let studentData = { fullName: "Ученик" };
+  // Объект для хранения данных ученика, получаемых из URL параметров
+  let studentData = { fullName: "Ученик", email: "" };
   let generatedPdfBlob = null;
 
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const userName = params.get('name');
+    const userEmail = params.get('email');
+
     if (userName) {
       studentData.fullName = decodeURIComponent(userName);
+    }
+    if (userEmail) {
+      studentData.email = decodeURIComponent(userEmail);
     }
     renderQuiz();
   });
@@ -786,7 +792,7 @@
           // Гарантируем учет попыток ввода, даже если кнопку «Проверить» не нажимали отдельно
           if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано") {
             if (!qDef.checkCount || qDef.checkCount === 0) {
-              qDef.checkCount = 1;
+              qDef.checkCount = 0; // Оставляем 0, если кнопку проверить не нажимали, но ответ зафиксирован
             }
             if (!qDef.attemptsHistory || qDef.attemptsHistory.length === 0) {
               qDef.attemptsHistory = [qDef.userText];
