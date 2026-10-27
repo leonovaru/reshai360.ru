@@ -4,13 +4,13 @@ export async function onRequestPost(context) {
   try {
     const { studentName, email, productKey } = await request.json();
 
-    // Единая цена 1000 рублей или гибкая сетка
+    // Защищенный серверный список продуктов с ценой 1000 ₽
     const PRODUCTS = {
       '7': { title: 'Диагностика — 7 класс', price: 1000, file: 'test-7.html' },
       '8': { title: 'Диагностика — 8 класс', price: 1000, file: 'test-8.html' },
       '9': { title: 'Диагностика — 9 класс (ОГЭ)', price: 1000, file: 'test-9.html' },
       '10': { title: 'Диагностика — 10 класс', price: 1000, file: 'test-10.html' },
-      '11': { title: 'Диагностика — 11 класс (ЕГЭ)', price: 1000, file: 'test-11.html' }
+      '11': { title: 'Диагностика — 11 класс', price: 1000, file: 'test-11.html' }
     };
 
     const product = PRODUCTS[productKey];
@@ -18,6 +18,7 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ message: 'Выбран неизвестный класс' }), { status: 400 });
     }
 
+    // Авторизация в ЮKassa через переменные окружения Cloudflare
     const credentials = btoa(`${env.YOKASSA_SHOP_ID}:${env.YOKASSA_SECRET_KEY}`);
     const idempotenceKey = crypto.randomUUID();
 
@@ -32,7 +33,7 @@ export async function onRequestPost(context) {
         amount: { value: `${product.price}.00`, currency: 'RUB' },
         confirmation: {
           type: 'redirect',
-          return_url: `https://reshai360.ru/${product.file}`
+          return_url: `https://reshai360.ru/${product.file}?name=${encodeURIComponent(studentName)}&email=${encodeURIComponent(email)}`
         },
         capture: true,
         description: `${product.title} (${email})`,
