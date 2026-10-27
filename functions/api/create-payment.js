@@ -4,12 +4,13 @@ export async function onRequestPost(context) {
   try {
     const { studentName, email, productKey } = await request.json();
 
-    // Доверенная база продуктов и цен на сервере
+    // Единая цена 1000 рублей или гибкая сетка
     const PRODUCTS = {
-      'class_9': { title: 'Диагностика — 9 класс (ОГЭ)', price: 990, file: 'test-9-class.html' },
-      'class_10': { title: 'Диагностика — 10 класс', price: 1190, file: 'test-10-class.html' },
-      'class_11_base': { title: 'Диагностика — 11 класс (ЕГЭ База)', price: 1390, file: 'test-11-base.html' },
-      'class_11_prof': { title: 'Диагностика — 11 класс (ЕГЭ Профиль)', price: 1490, file: 'test-11-prof.html' }
+      '7': { title: 'Диагностика — 7 класс', price: 1000, file: 'test-7.html' },
+      '8': { title: 'Диагностика — 8 класс', price: 1000, file: 'test-8.html' },
+      '9': { title: 'Диагностика — 9 класс (ОГЭ)', price: 1000, file: 'test-9.html' },
+      '10': { title: 'Диагностика — 10 класс', price: 1000, file: 'test-10.html' },
+      '11': { title: 'Диагностика — 11 класс (ЕГЭ)', price: 1000, file: 'test-11.html' }
     };
 
     const product = PRODUCTS[productKey];
@@ -17,7 +18,6 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ message: 'Выбран неизвестный класс' }), { status: 400 });
     }
 
-    // Авторизация в ЮKassa через скрытые переменные окружения
     const credentials = btoa(`${env.YOKASSA_SHOP_ID}:${env.YOKASSA_SECRET_KEY}`);
     const idempotenceKey = crypto.randomUUID();
 
