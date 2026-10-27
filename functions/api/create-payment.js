@@ -6,11 +6,11 @@ export async function onRequestPost(context) {
 
     // Защищенный серверный список продуктов с ценой 1000 ₽
     const PRODUCTS = {
-      '7': { title: 'Диагностика — 7 класс', price: 1000, file: 'test-7.html' },
-      '8': { title: 'Диагностика — 8 класс', price: 1000, file: 'test-8.html' },
-      '9': { title: 'Диагностика — 9 класс (ОГЭ)', price: 1000, file: 'test-9.html' },
-      '10': { title: 'Диагностика — 10 класс', price: 1000, file: 'test-10.html' },
-      '11': { title: 'Диагностика — 11 класс', price: 1000, file: 'test-11.html' }
+      '7': { title: 'Диагностика — 7 класс', price: 1, file: 'test-7.html' },
+      '8': { title: 'Диагностика — 8 класс', price: 1, file: 'test-8.html' },
+      '9': { title: 'Диагностика — 9 класс (ОГЭ)', price: 1, file: 'test-9.html' },
+      '10': { title: 'Диагностика — 10 класс', price: 1, file: 'test-10.html' },
+      '11': { title: 'Диагностика — 11 класс', price: 1, file: 'test-11.html' }
     };
 
     const product = PRODUCTS[productKey];
