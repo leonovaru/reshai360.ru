@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <title>Проверка оплаты — Решай360</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Яндекс.Метрика -->
+    <script type="text/javascript" >
+       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+       m[i].l=1*new Date();
+       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+       ym(YOUR_COUNTER_ID, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true });
+    </script>
 </head>
 <body class="bg-[#090d16] text-white flex items-center justify-center h-screen">
     <div class="text-center space-y-3 p-6 max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
@@ -18,7 +28,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const productKey = urlParams.get('productKey') || '10';
+            const productKey = urlParams.get('productKey') || '11';
             const token = urlParams.get('token');
 
             const testFiles = {
@@ -28,20 +38,16 @@
                 '10': 'test_10.html',
                 '11': 'test_11.html'
             };
-            const targetFile = testFiles[productKey] || 'index.html';
+            const targetFile = testFiles[productKey] || 'test_11.html';
 
-            // Если токена нет в URL (например, пользователь попал сюда напрямую без оплаты), 
-            // проверяем, может быть оплата прошла через вебхук и токен сохранен в сессии/localStorage
             if (!token) {
-                // Даем небольшую задержку на случай, если вебхук ЮKassa еще обрабатывается
-                setTimeout(() => {
-                    window.location.href = targetFile;
-                }, 2000);
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('status-title').innerText = "Ошибка доступа";
+                document.getElementById('status-desc').innerHTML = `<span class="text-rose-400">Отсутствует защищенный токен оплаты.</span>`;
                 return;
             }
 
             try {
-                // Проверяем защищенный токен через сервер
                 const response = await fetch('/api/verify-token', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -51,9 +57,15 @@
                 const result = await response.json();
 
                 if (result.valid && result.data) {
-                    // Сохраняем данные безопасно в localStorage браузера вместо передачи в адресной строке
+                    // Сохраняем данные безопасно в памяти браузера
                     localStorage.setItem('studentName', result.data.studentName);
                     localStorage.setItem('studentEmail', result.data.email);
+                    localStorage.removeItem('testCompleted_11'); // Сбрасываем флаг завершения
+
+                    // Фиксируем цель в Метрике: Успешная оплата
+                    if (typeof ym !== 'undefined') {
+                        ym(YOUR_COUNTER_ID, 'reachGoal', 'successful_payment');
+                    }
 
                     document.getElementById('status-title').innerText = "Оплата успешно подтверждена!";
                     document.getElementById('status-desc').innerText = "Открываем вашу диагностику...";
@@ -68,6 +80,7 @@
                 }
             } catch (err) {
                 console.error(err);
+                document.getElementById('loader').style.display = 'none';
                 document.getElementById('status-title').innerText = "Ошибка соединения";
                 document.getElementById('status-desc').innerText = "Не удалось проверить статус оплаты.";
             }
