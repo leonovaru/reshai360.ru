@@ -28,6 +28,9 @@ export async function onRequestPost({ request, env }) {
 
     const promo = JSON.parse(raw);
     const now = Date.now();
+    if (promo.expiresAt && promo.expiresAt <= now) {
+      return Response.json({ valid: false, message: "Срок действия промокода закончился." }, { status: 410 });
+    }
     if (promo.used) {
       return Response.json({ valid: false, message: "Этот промокод уже использован." }, { status: 409 });
     }
