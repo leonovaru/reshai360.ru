@@ -10,7 +10,7 @@
     <!-- PDF.js CDN для просмотра PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Внешний файл данных и конфигурации -->
-    <script src="config.js"></script>
+    <script src="config.js?v=20261029-2"></script>
 
     <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш реальный номер счетчика) -->
     <script type="text/javascript" >
@@ -618,19 +618,14 @@
             const levelHint = document.getElementById('level-hint');
 
             document.querySelectorAll('.opt-btn').forEach(btn => {
-                btn.className = btn.className
-                    .replace(/border-indigo-500/g, 'border-slate-800')
-                    .replace(/bg-indigo-600/g, 'bg-slate-900')
-                    .replace(/text-white/g, 'text-slate-400')
-                    .replace(/shadow-lg shadow-indigo-600\/30/g, '');
+                btn.classList.remove('border-indigo-500', 'bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/30');
+                btn.classList.add('border-slate-800', 'bg-slate-900', 'text-slate-400');
             });
 
             const activeGradeBtn = document.getElementById('btn-' + gradeKey);
             if (activeGradeBtn) {
-                activeGradeBtn.className = activeGradeBtn.className
-                    .replace(/border-slate-800/g, 'border-indigo-500')
-                    .replace(/bg-slate-900/g, 'bg-indigo-600')
-                    .replace(/text-slate-400/g, 'text-white') + ' shadow-lg shadow-indigo-600/30';
+                activeGradeBtn.classList.remove('border-slate-800', 'bg-slate-900', 'text-slate-400');
+                activeGradeBtn.classList.add('border-indigo-500', 'bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/30');
             }
 
             if (levelSelector) levelSelector.classList.toggle('hidden', gradeKey !== '11');
@@ -652,22 +647,21 @@
             }
 
             const productKey = key;
-            const data = (typeof CONFIG !== 'undefined' && CONFIG.programs) ? CONFIG.programs[productKey] : null;
+            const config = window.CONFIG || (typeof CONFIG !== 'undefined' ? CONFIG : null);
+            const data = (config && config.programs) ? config.programs[productKey] : null;
             if (!data) {
                 currentSelectedProductKey = null;
                 document.getElementById('pay-button').disabled = true;
                 document.getElementById('blocks-container').innerHTML = '<div class="sm:col-span-2 text-rose-300 text-sm">Не удалось загрузить программу. Обновите страницу или попробуйте позже.</div>';
-                console.error('Не найдена программа диагностики:', productKey);
+                console.error('Не найдена программа диагностики:', productKey, 'CONFIG доступен:', !!config, 'Ключи:', config && config.programs ? Object.keys(config.programs) : []);
                 return;
             }
 
             currentSelectedProductKey = productKey;
             const activeLevelBtn = document.getElementById('btn-' + productKey);
             if (activeLevelBtn && isLevelKey) {
-                activeLevelBtn.className = activeLevelBtn.className
-                    .replace(/border-slate-800/g, 'border-indigo-500')
-                    .replace(/bg-slate-900/g, 'bg-indigo-600')
-                    .replace(/text-slate-400/g, 'text-white') + ' shadow-lg shadow-indigo-600/30';
+                activeLevelBtn.classList.remove('border-slate-800', 'bg-slate-900', 'text-slate-400');
+                activeLevelBtn.classList.add('border-indigo-500', 'bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/30');
             }
 
             document.getElementById('badge-text').innerText = data.badge || 'Диагностика знаний';
