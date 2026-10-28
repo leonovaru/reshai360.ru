@@ -182,15 +182,15 @@
                     <form id="checkout-form" onsubmit="handleSubmit(event)" class="mt-5 pt-5 border-t border-slate-800 space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="min-w-0">
-                                <label for="student-name" class="block text-xs font-semibold text-slate-300 mb-1.5">Ваше имя</label>
+                                <label for="student-name" class="block pl-3 text-xs font-semibold text-slate-300 mb-1.5">Ваше имя</label>
                                 <input type="text" id="student-name" required autocomplete="name" placeholder="Александр" class="w-full min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
                             </div>
                             <div class="min-w-0">
-                                <label for="student-email" class="block text-xs font-semibold text-slate-300 mb-1.5">Email для PDF-отчёта</label>
+                                <label for="student-email" class="block pl-3 text-xs font-semibold text-slate-300 mb-1.5">Email для PDF-отчёта</label>
                                 <input type="email" id="student-email" required autocomplete="email" placeholder="student@mail.ru" class="w-full min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
                             </div>
                         </div>
-                        <div class="rounded-xl border border-slate-700 bg-slate-950/70 p-2.5 space-y-2">
+                        <div class="space-y-2">
                             
                             <div class="flex gap-2">
                                 <input type="text" id="promo-code" maxlength="24" autocomplete="off" oninput="clearAppliedPromoCode()" placeholder="Введите промокод" class="min-w-0 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white uppercase placeholder:normal-case placeholder:text-slate-500 focus:outline-none focus:border-indigo-500">
@@ -389,6 +389,17 @@
         </div>
     </section>
     
+    <!-- Обратная связь от посетителей -->
+    <section id="site-feedback" class="py-10 border-t border-slate-800/60"><div class="max-w-3xl mx-auto px-4"><div class="glass-panel rounded-2xl p-5 sm:p-7 border border-indigo-500/20 space-y-4">
+      <div><p class="text-xs font-bold uppercase tracking-widest text-indigo-300 mb-1">Обратная связь</p><h2 class="text-xl sm:text-2xl font-extrabold text-white">Что нам улучшить в Решай360?</h2><p class="text-sm text-slate-300 mt-2 leading-relaxed">Подскажите, какие темы или продукты вам нужны, что стоит изменить в заданиях, отчётах или прохождении диагностики. Мы читаем каждое сообщение и используем предложения для развития платформы.</p></div>
+      <form id="site-feedback-form" class="grid sm:grid-cols-2 gap-3">
+        <div><label for="site-feedback-name" class="block text-xs font-semibold text-slate-300 mb-1.5">Ваше имя</label><input id="site-feedback-name" required maxlength="200" autocomplete="name" placeholder="Как к вам обращаться" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white placeholder:text-slate-500"></div>
+        <div><label for="site-feedback-email" class="block text-xs font-semibold text-slate-300 mb-1.5">Email для ответа</label><input id="site-feedback-email" required type="email" maxlength="320" autocomplete="email" placeholder="you@example.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white placeholder:text-slate-500"></div>
+        <div class="sm:col-span-2"><label for="site-feedback-kind" class="block text-xs font-semibold text-slate-300 mb-1.5">Тема сообщения</label><select id="site-feedback-kind" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white"><option value="Улучшение теста">Улучшить задания и диагностику</option><option value="Удобство прохождения">Сделать прохождение удобнее</option><option value="Новый продукт">Предложить новый продукт или тему</option><option value="Отзыв">Оставить отзыв</option><option value="Другое">Другое</option></select></div>
+        <div class="sm:col-span-2"><label for="site-feedback-message" class="block text-xs font-semibold text-slate-300 mb-1.5">Ваши идеи и пожелания</label><textarea id="site-feedback-message" required minlength="5" maxlength="5000" rows="4" placeholder="Что было неудобно? Чего не хватило? Какой продукт вам пригодился бы?" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white placeholder:text-slate-500"></textarea></div>
+        <div class="sm:col-span-2 flex flex-col sm:flex-row sm:items-center gap-3"><button id="site-feedback-submit" type="submit" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-3 text-sm font-bold text-white">Отправить обратную связь</button><p id="site-feedback-status" class="text-sm text-slate-300" aria-live="polite"></p></div>
+      </form></div></div></section>
+
     <!-- ЭКРАН 5: СЛУЖБА ПОДДЕРЖКИ -->
     <section id="support" class="py-8 bg-slate-900/40 border-t border-slate-800/60 scroll-mt-20">
         <div class="max-w-3xl mx-auto px-4 text-center space-y-3">
@@ -445,6 +456,34 @@
             initVideo();
             initPdfViewer();
             selectOption('');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('site-feedback-form');
+            if (!form) return;
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const button = document.getElementById('site-feedback-submit');
+                const status = document.getElementById('site-feedback-status');
+                button.disabled = true; button.textContent = 'Отправляем…'; status.textContent = '';
+                try {
+                    const response = await fetch('/api/submit-feedback', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            source: 'website',
+                            name: document.getElementById('site-feedback-name').value.trim(),
+                            email: document.getElementById('site-feedback-email').value.trim(),
+                            category: document.getElementById('site-feedback-kind').value,
+                            message: document.getElementById('site-feedback-message').value.trim()
+                        })
+                    });
+                    const result = await response.json().catch(() => ({}));
+                    if (!response.ok || !result.success) throw new Error(result.message || 'Не удалось отправить сообщение.');
+                    status.textContent = 'Спасибо! Сообщение сохранено — мы используем ваши идеи для улучшения Решай360.';
+                    form.reset();
+                } catch (error) { status.textContent = error.message || 'Ошибка отправки. Попробуйте ещё раз.'; }
+                finally { button.disabled = false; button.textContent = 'Отправить обратную связь'; }
+            });
         });
 
         function initLinks() {
