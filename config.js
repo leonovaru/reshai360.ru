@@ -1,7 +1,7 @@
 /**
  * Файл конфигурации и данных сайта Решай360.ру
  */
-const CONFIG = {
+window.CONFIG = {
     links: {
         policy: "policy.html",
         offer: "offer.html",
