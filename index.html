@@ -77,7 +77,7 @@
                     </h1>
                     
                     <p class="text-slate-300 text-xs sm:text-sm lg:text-base font-normal leading-relaxed max-w-xl">
-                        Проверь знания по всей пройденной программе. Получи развернутую PDF-карту: что освоено идеально, где скрыты ошибки и детальные результаты каждого задания.
+                        Проверь ключевые темы школьной математики, изученные к 11 классу. Получи подробную PDF-карту результатов: сильные стороны, темы для повторения и ответы по каждому заданию.
                     </p>
 
                     <div class="flex flex-wrap gap-2 pt-1 text-xs font-medium text-slate-300">
@@ -128,6 +128,40 @@
         </div>
     </section>
 
+    <!-- Ориентиры содержания диагностики -->
+    <section id="standards" class="py-12 border-t border-slate-800/60">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center space-y-3">
+                <p class="text-xs font-bold uppercase tracking-widest text-indigo-400">Методическая основа</p>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Ориентируемся на школьные образовательные программы</h2>
+                <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+                    Темы диагностики соотносятся с предметными результатами ФГОС основного и среднего общего образования и федеральными рабочими программами по математике для 5–9 и 10–11 классов.
+                </p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4 mt-8">
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+                    <h3 class="font-bold text-white mb-2">Для ученика</h3>
+                    <p class="text-sm text-slate-400">Самостоятельно проверить освоение выбранных тем и определить, что стоит повторить.</p>
+                </div>
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+                    <h3 class="font-bold text-white mb-2">Для родителей</h3>
+                    <p class="text-sm text-slate-400">Увидеть результаты по тематическим блокам и конкретные задания, в которых возникли трудности.</p>
+                </div>
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+                    <h3 class="font-bold text-white mb-2">Для репетитора</h3>
+                    <p class="text-sm text-slate-400">Использовать PDF-отчёт как дополнительный ориентир для планирования повторения.</p>
+                </div>
+            </div>
+            <p class="text-xs text-slate-500 text-center mt-6 leading-relaxed">
+                Решай360 — авторский диагностический инструмент, а не официальная аттестационная работа. Он не является продуктом ФИПИ и не имеет официального одобрения ФИПИ. Диагностика проверяет перечисленные в программе темы и не заменяет полную проверку всех результатов обучения.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4 mt-4 text-xs">
+                <a class="text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_ooo_frp_matematika-5-9_baza.pdf" target="_blank" rel="noopener noreferrer">Федеральная рабочая программа: 5–9 классы</a>
+                <a class="text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_soo_frp_matematika_10_11_baz.pdf" target="_blank" rel="noopener noreferrer">Федеральная рабочая программа: 10–11 классы</a>
+            </div>
+        </div>
+    </section>
+
     <!-- ЭКРАН 2: ВЫБОР ДИАГНОСТИКИ И ОПЛАТА -->
     <section id="select-program" class="py-12 border-t border-slate-800/60 scroll-mt-10">
         <div class="max-w-5xl mx-auto px-4">
@@ -149,6 +183,16 @@
                 </div>
             </div>
 
+            <!-- Выбор уровня для 11 класса -->
+            <div id="level-selector" class="hidden flex flex-col items-center pt-4">
+                <span class="text-[11px] uppercase font-bold tracking-wider text-slate-500 mb-2">Уровень диагностики для 11 класса</span>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <button type="button" onclick="selectOption('11_basic')" id="btn-11_basic" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">Базовый уровень</button>
+                    <button type="button" onclick="selectOption('11_advanced')" id="btn-11_advanced" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">Продвинутый уровень</button>
+                </div>
+                <p class="text-xs text-slate-500 mt-2 text-center max-w-xl">Выберите уровень, который подходит вам. Программа и стоимость отобразятся ниже.</p>
+            </div>
+
             <!-- КАРТОЧКА ВЫБРАННОЙ ДИАГНОСТИКИ -->
             <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 max-w-4xl mx-auto shadow-2xl">
                 
@@ -159,7 +203,7 @@
                                 Полный аудит
                             </span>
                             <span id="fipi-badge" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 hidden">
-                                <i class="fa-solid fa-award mr-1"></i>Соответствует спецификации ФИПИ
+                                <i class="fa-solid fa-book-open mr-1"></i>Ориентир: ФГОС и федеральные программы
                             </span>
                         </div>
                         <h3 id="card-title" class="text-2xl sm:text-3xl font-extrabold text-white mt-2">
@@ -563,33 +607,50 @@
             if (pdfDoc) queueRenderPdfPage(currentPdfPage);
         });
 
-        // Выбор варианта программы
+        // Выбор класса или уровня диагностики.
+        // При выборе 11 класса уровень обязан выбрать сам пользователь.
         function selectOption(key) {
-            currentSelectedProductKey = key; // сохраняем выбор для отправки в api
+            const isLevelKey = key === '11_basic' || key === '11_advanced';
+            const gradeKey = isLevelKey ? '11' : key;
+            const levelSelector = document.getElementById('level-selector');
 
             document.querySelectorAll('.opt-btn').forEach(btn => {
                 btn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition";
             });
 
-            const activeBtn = document.getElementById(`btn-${key}`);
-            if (activeBtn) {
-                activeBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
+            const activeGradeBtn = document.getElementById(`btn-${gradeKey}`);
+            if (activeGradeBtn) activeGradeBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
+
+            if (levelSelector) levelSelector.classList.toggle('hidden', gradeKey !== '11');
+
+            if (gradeKey === '11' && !isLevelKey) {
+                currentSelectedProductKey = null;
+                document.getElementById('badge-text').innerText = 'Выбор уровня';
+                document.getElementById('card-title').innerText = 'Выберите уровень диагностики';
+                document.getElementById('card-desc').innerText = 'Для 11 класса доступны базовый и продвинутый уровни';
+                document.getElementById('card-price').innerText = '—';
+                document.getElementById('fipi-badge').classList.add('hidden');
+                document.getElementById('blocks-container').innerHTML = '';
+                document.getElementById('toggle-blocks-text').innerText = 'Посмотреть программу диагностики';
+                document.getElementById('toggle-blocks-icon').className = 'fa-solid fa-chevron-down text-xs';
+                document.getElementById('blocks-wrapper').classList.add('hidden');
+                return;
             }
 
-            const data = (typeof CONFIG !== 'undefined' && CONFIG.programs[key]) ? CONFIG.programs[key] : null;
+            const productKey = isLevelKey ? key : key;
+            currentSelectedProductKey = productKey;
+
+            const activeLevelBtn = document.getElementById(`btn-${productKey}`);
+            if (activeLevelBtn && isLevelKey) activeLevelBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
+
+            const data = (typeof CONFIG !== 'undefined' && CONFIG.programs[productKey]) ? CONFIG.programs[productKey] : null;
             if (!data) return;
 
             document.getElementById('badge-text').innerText = data.badge;
             document.getElementById('card-title').innerText = data.title;
             document.getElementById('card-desc').innerText = data.desc;
             document.getElementById('card-price').innerText = data.price;
-
-            const fipiBadge = document.getElementById('fipi-badge');
-            if (data.fipi) {
-                fipiBadge.classList.remove('hidden');
-            } else {
-                fipiBadge.classList.add('hidden');
-            }
+            document.getElementById('fipi-badge').classList.toggle('hidden', !data.fipi);
 
             const container = document.getElementById('blocks-container');
             container.innerHTML = data.blocks.map(b => `
@@ -614,6 +675,11 @@
         // Обработка отправки формы и вызов ЮKassa (через надежный редирект)
         async function handleSubmit(e) {
             e.preventDefault();
+
+            if (!currentSelectedProductKey) {
+                alert('Сначала выберите класс и уровень диагностики.');
+                return;
+            }
 
             const studentName = document.getElementById('student-name').value.trim();
             const email = document.getElementById('student-email').value.trim();

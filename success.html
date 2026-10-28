@@ -28,7 +28,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const productKey = urlParams.get('productKey') || '11';
+            const requestedProductKey = urlParams.get('productKey');
             const token = urlParams.get('token');
 
             const testFiles = {
@@ -36,9 +36,10 @@
                 '8': 'test_8.html',
                 '9': 'test_9.html',
                 '10': 'test_10.html',
-                '11': 'test_11.html'
+                '11': 'test_11.html',
+                '11_basic': 'test_11_basic.html',
+                '11_advanced': 'test_11_advanced.html'
             };
-            const targetFile = testFiles[productKey] || 'index.html';
 
             if (!token) {
                 document.getElementById('loader').style.display = 'none';
@@ -57,6 +58,14 @@
                 const result = await response.json();
 
                 if (result.valid && result.data) {
+                    const productKey = result.data.productKey || requestedProductKey || '11';
+                    const targetFile = testFiles[productKey];
+                    if (!targetFile) {
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('status-title').innerText = "Ошибка доступа";
+                        document.getElementById('status-desc').innerText = "Не удалось определить выбранную диагностику. Обратитесь в поддержку.";
+                        return;
+                    }
                     localStorage.setItem('studentName', result.data.studentName);
                     localStorage.setItem('studentEmail', result.data.email);
                     localStorage.setItem('testToken', token);
@@ -70,7 +79,7 @@
                     document.getElementById('status-desc').innerText = "Открываем вашу диагностику...";
 
                     setTimeout(() => {
-                        window.location.href = `${targetFile}?token=${token}`;
+                        window.location.href = `${targetFile}?token=${encodeURIComponent(token)}`;
                     }, 1000);
                 } else {
                     document.getElementById('loader').style.display = 'none';

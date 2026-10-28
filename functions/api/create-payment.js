@@ -9,7 +9,9 @@ export async function onRequestPost(context) {
       '8': { title: 'Диагностика — 8 класс', price: 1, file: 'test_8.html' },
       '9': { title: 'Диагностика — 9 класс (ОГЭ)', price: 1, file: 'test_9.html' },
       '10': { title: 'Диагностика — 10 класс', price: 1, file: 'test_10.html' },
-      '11': { title: 'Диагностика — 11 класс', price: 1, file: 'test_11.html' }
+      '11': { title: 'Диагностика — 11 класс (старый заказ)', price: 1, file: 'test_11.html' },
+      '11_basic': { title: 'Диагностика — 11 класс, базовый уровень', price: 1, file: 'test_11_basic.html' },
+      '11_advanced': { title: 'Диагностика — 11 класс, продвинутый уровень', price: 1, file: 'test_11_advanced.html' }
     };
 
     const product = PRODUCTS[productKey];
