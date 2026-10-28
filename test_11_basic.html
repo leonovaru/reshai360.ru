@@ -672,7 +672,7 @@
       if (!response.ok || !result.success) throw new Error(result.message || "Не удалось отправить обратную связь.");
       const p = document.querySelector("#promo-code-result > p");
       if (p) p.innerHTML = 'Скидка <strong>190 ₽</strong> на следующую диагностику. Промокод одноразовый, действует 180 дней — используйте его сами или передайте другу.';
-      status.textContent = "Спасибо! Ваш промокод теперь даёт скидку 190 ₽.";
+      status.textContent = result.emailSent ? "Спасибо! Ваш промокод теперь даёт скидку 190 ₽. Обновлённый код отправлен на вашу почту." : "Спасибо! Ваш промокод теперь даёт скидку 190 ₽. Сохраните код на этой странице.";
       document.getElementById("feedback-upgrade").innerHTML = '<div style="padding:12px; border-radius:10px; background:#dcfce7; color:#166534; font-weight:700;">✓ Обратная связь получена. Спасибо, что помогаете развивать Решай360!</div>';
     } catch (error) { status.textContent = error.message || "Ошибка отправки. Попробуйте ещё раз."; button.disabled = false; button.textContent = "Отправить обратную связь и получить скидку 190 ₽"; }
   }
