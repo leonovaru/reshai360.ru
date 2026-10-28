@@ -34,13 +34,38 @@ export async function onRequestPost({ request, env }) {
     const percent = Math.round((scoreNumber / totalNumber) * 100);
     const safeName = String(name || "Ученик").replace(/[\\/:*?"<>|]/g, "_");
 
+    let promoCode = null;
     if (token && env.TEST_TOKENS) {
       const tokenDataRaw = await env.TEST_TOKENS.get(token);
-
       if (tokenDataRaw) {
         const tokenData = JSON.parse(tokenDataRaw);
         tokenData.isCompleted = true;
-        await env.TEST_TOKENS.put(token, JSON.stringify(tokenData));
+
+        // Один промокод на завершённую диагностику; повторный запрос отчёта не создаёт новый.
+        if (tokenData.promoCodeIssued) {
+          promoCode = tokenData.promoCodeIssued;
+        } else {
+          const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+          for (let attempt = 0; attempt < 8 && !promoCode; attempt++) {
+            const bytes = new Uint8Array(10);
+            crypto.getRandomValues(bytes);
+            const candidate = "R360-" + Array.from(bytes, byte => alphabet[byte % alphabet.length]).join("");
+            const exists = await env.TEST_TOKENS.get("promo:" + candidate);
+            if (!exists) promoCode = candidate;
+          }
+          if (!promoCode) throw new Error("Не удалось сгенерировать промокод");
+          await env.TEST_TOKENS.put("promo:" + promoCode, JSON.stringify({
+            code: promoCode,
+            discount: 190,
+            createdAt: Date.now(),
+            expiresAt: Date.now() + 180 * 24 * 60 * 60 * 1000,
+            used: false,
+            reservedBy: null,
+            reservedUntil: null
+          }), { expirationTtl: 15552000 });
+          tokenData.promoCodeIssued = promoCode;
+        }
+        await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
       }
     }
 
@@ -50,7 +75,7 @@ export async function onRequestPost({ request, env }) {
         tgFormData.append("chat_id", env.TG_CHAT_ID);
         tgFormData.append(
           "caption",
-          `🎯 Пройдена диагностика!\nУченик: ${name || "Не указано"}\nEmail: ${email || "Не указан"}\nРезультат: ${scoreNumber} из ${totalNumber} (${percent}%)`
+          `🎯 Пройдена диагностика!\nУченик: ${name || "Не указано"}\nEmail: ${email || "Не указан"}\nРезультат: ${scoreNumber} из ${totalNumber} (${percent}%)${promoCode ? `\n🎁 Промокод на следующую диагностику: ${promoCode} (скидка 190 ₽)` : ""}`
         );
         tgFormData.append("document", pdfFile, `Отчет_${safeName}.pdf`);
 
@@ -92,6 +117,7 @@ export async function onRequestPost({ request, env }) {
               <p>Здравствуйте, <b>${name || "ученик"}</b>!</p>
               <p>Вы завершили диагностику знаний по математике на платформе <b>Решай360</b>.</p>
               <p>Во вложении находится ваш PDF-отчёт с результатами и рекомендациями.</p>
+              ${promoCode ? `<p><b>Ваш промокод на следующую диагностику: ${promoCode}</b></p><p>Промокод даёт скидку 190 ₽. Вы можете использовать его сами при следующем заказе или передать другу. Использовать промокод можно один раз; срок действия — 180 дней.</p>` : ""}
               <p>С уважением,<br>Команда Решай360<br>
               <a href="https://reshai360.ru">reshai360.ru</a></p>
             `,
@@ -112,7 +138,7 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    return Response.json({ success: true });
+    return Response.json({ success: true, promoCode });
   } catch (err) {
     console.error("Send report global error:", err);
 
