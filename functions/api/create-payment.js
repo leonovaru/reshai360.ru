@@ -30,6 +30,7 @@ export async function onRequestPost(context) {
       const promoRaw = await env.TEST_TOKENS.get('promo:' + promoCode);
       if (!promoRaw) return new Response(JSON.stringify({ message: 'Промокод не найден или срок его действия истёк.' }), { status: 400 });
       promoRecord = JSON.parse(promoRaw);
+      if (promoRecord.expiresAt && promoRecord.expiresAt <= Date.now()) return new Response(JSON.stringify({ message: 'Срок действия промокода закончился.' }), { status: 410 });
       if (promoRecord.used) return new Response(JSON.stringify({ message: 'Промокод уже использован.' }), { status: 409 });
       if (promoRecord.reservedUntil && promoRecord.reservedUntil > Date.now()) {
         return new Response(JSON.stringify({ message: 'Промокод уже оформляется в другом заказе. Попробуйте позже.' }), { status: 409 });
