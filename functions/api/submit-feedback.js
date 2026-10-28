@@ -25,7 +25,7 @@ export async function onRequestPost({ request, env }) {
       promo=JSON.parse(promoRaw);
     }
     const feedback={id:feedbackId,createdAt:new Date().toISOString(),source,name,email,productKey:tokenData?(tokenData.productKey||"unknown"):null,category,message,promoCode:promoCode||null,promoDiscountBefore:promo?(Number(promo.discount)||90):null,promoDiscountAfter:promo?190:null};
-    await env.TEST_TOKENS.put(feedbackKey,JSON.stringify(feedback),{expirationTtl:15552000});
+    await env.TEST_TOKENS.put(feedbackKey,JSON.stringify(feedback),{expirationTtl:31536000});
     if(promo&&promoKey){
       promo.discount=190; promo.feedbackUpgrade=true; promo.feedbackAt=Date.now();
       const ttl=Math.max(60,Math.floor(((promo.expiresAt||(Date.now()+15552000000))-Date.now())/1000));
