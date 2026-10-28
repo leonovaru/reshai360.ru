@@ -10,7 +10,7 @@
     <!-- PDF.js CDN для просмотра PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Внешний файл данных и конфигурации -->
-    <script src="config.js?v=20261029-2"></script>
+    <script src="config.js?v=20261029-3"></script>
 
     <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш реальный номер счетчика) -->
     <script type="text/javascript" >
@@ -138,23 +138,6 @@
                     Темы диагностики соотносятся с предметными результатами ФГОС основного и среднего общего образования и федеральными рабочими программами по математике для 5–9 и 10–11 классов.
                 </p>
             </div>
-            <div class="grid md:grid-cols-3 gap-4 mt-8">
-                <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-                    <h3 class="font-bold text-white mb-2">Для ученика</h3>
-                    <p class="text-sm text-slate-400">Самостоятельно проверить освоение выбранных тем и определить, что стоит повторить.</p>
-                </div>
-                <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-                    <h3 class="font-bold text-white mb-2">Для родителей</h3>
-                    <p class="text-sm text-slate-400">Увидеть результаты по тематическим блокам и конкретные задания, в которых возникли трудности.</p>
-                </div>
-                <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-                    <h3 class="font-bold text-white mb-2">Для репетитора</h3>
-                    <p class="text-sm text-slate-400">Использовать PDF-отчёт как дополнительный ориентир для планирования повторения.</p>
-                </div>
-            </div>
-            <p class="text-xs text-slate-500 text-center mt-6 leading-relaxed">
-                Решай360 — авторский диагностический инструмент, а не официальная аттестационная работа. Он не является продуктом ФИПИ и не имеет официального одобрения ФИПИ. Диагностика проверяет перечисленные в программе темы и не заменяет полную проверку всех результатов обучения.
-            </p>
             <div class="flex flex-wrap justify-center gap-4 mt-4 text-xs">
                 <a class="text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_ooo_frp_matematika-5-9_baza.pdf" target="_blank" rel="noopener noreferrer">Федеральная рабочая программа: 5–9 классы</a>
                 <a class="text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_soo_frp_matematika_10_11_baz.pdf" target="_blank" rel="noopener noreferrer">Федеральная рабочая программа: 10–11 классы</a>
@@ -165,10 +148,8 @@
     <!-- ЭКРАН 2: ВЫБОР ДИАГНОСТИКИ И ОПЛАТА -->
     <section id="select-program" class="py-12 border-t border-slate-800/60 scroll-mt-10">
         <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-8 space-y-2">
-                <p class="text-xs font-bold uppercase tracking-widest text-indigo-400">Диагностика знаний</p>
-                <h2 class="text-2xl sm:text-4xl font-extrabold text-white">Выберите диагностику</h2>
-                <p class="text-sm text-slate-400">Выберите класс и, если доступно, уровень. Программа и стоимость обновятся автоматически.</p>
+            <div class="mb-7">
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-wide text-white">Диагностика знаний</h2>
             </div>
 
             <div class="grid lg:grid-cols-12 gap-6 lg:gap-8 items-start">
@@ -176,16 +157,15 @@
                 <div class="lg:col-span-4 glass-panel rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-2xl">
                     <div class="space-y-3">
                         <div>
-                            <div class="flex items-center gap-2 mb-3">
-                                <span class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-black">1</span>
-                                <h3 class="text-sm font-bold text-white">Выберите класс</h3>
-                            </div>
-                            <div class="grid grid-cols-3 gap-2">
-                                <button type="button" onclick="selectOption('7')" id="btn-7" class="opt-btn px-2 py-3 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">7 класс</button>
-                                <button type="button" onclick="selectOption('8')" id="btn-8" class="opt-btn px-2 py-3 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">8 класс</button>
-                                <button type="button" onclick="selectOption('9')" id="btn-9" class="opt-btn px-2 py-3 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">9 класс</button>
-                                <button type="button" onclick="selectOption('10')" id="btn-10" class="opt-btn px-2 py-3 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">10 класс</button>
-                                <button type="button" onclick="selectOption('11')" id="btn-11" class="opt-btn px-2 py-3 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition col-span-2">11 класс</button>
+                            <div class="flex items-center gap-3">
+                                <label for="grade-select" class="shrink-0 text-sm font-bold text-white">Класс</label>
+                                <select id="grade-select" onchange="selectOption(this.value)" class="min-w-0 flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm font-semibold text-white focus:outline-none focus:border-indigo-500">
+                                    <option value="7">7 класс</option>
+                                    <option value="8">8 класс</option>
+                                    <option value="9">9 класс</option>
+                                    <option value="10" selected>10 класс</option>
+                                    <option value="11">11 класс</option>
+                                </select>
                             </div>
                         </div>
 
@@ -194,36 +174,29 @@
                                 <span class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-black">2</span>
                                 <h3 class="text-sm font-bold text-white">Выберите уровень</h3>
                             </div>
-                            <div id="level-selector" class="hidden space-y-2">
-                                <button type="button" onclick="selectOption('11_basic')" id="btn-11_basic" class="opt-btn w-full text-left px-3 py-3 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">
-                                    <span class="block">Базовый</span>
-                                    <span class="block text-[11px] font-normal text-slate-500 mt-1">Ключевые базовые знания</span>
+                            <div id="level-selector" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <button type="button" onclick="selectOption('10_basic')" id="btn-10_basic" class="level-btn w-full text-left px-3 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:border-indigo-500 transition">
+                                    <span class="flex items-center justify-between gap-2 text-sm font-bold text-white"><span>Базовый</span><span class="level-price text-indigo-300 whitespace-nowrap">790 ₽</span></span>
+                                    <span class="block text-xs font-normal text-slate-300 mt-1">Ключевые базовые знания</span>
                                 </button>
-                                <button type="button" onclick="selectOption('11_advanced')" id="btn-11_advanced" class="opt-btn w-full text-left px-3 py-3 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">
-                                    <span class="block">Продвинутый</span>
-                                    <span class="block text-[11px] font-normal text-slate-500 mt-1">Более сложные и многошаговые задачи</span>
+                                <button type="button" onclick="selectOption('10_advanced')" id="btn-10_advanced" class="level-btn w-full text-left px-3 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:border-indigo-500 transition">
+                                    <span class="flex items-center justify-between gap-2 text-sm font-bold text-white"><span>Продвинутый</span><span class="level-price text-indigo-300 whitespace-nowrap">990 ₽</span></span>
+                                    <span class="block text-xs font-normal text-slate-300 mt-1">Более сложные и многошаговые задачи</span>
                                 </button>
                             </div>
-                            <p id="level-hint" class="text-xs text-slate-500 leading-relaxed">Для 7–10 классов доступна одна версия диагностики. Для 11 класса выберите базовый или продвинутый уровень.</p>
                         </div>
                     </div>
 
                     <form id="checkout-form" onsubmit="handleSubmit(event)" class="mt-5 pt-5 border-t border-slate-800 space-y-4">
-                        <div class="rounded-2xl bg-slate-950/70 border border-slate-800 p-4">
-                            <p class="text-[11px] uppercase tracking-wider font-bold text-slate-500">Вы выбрали</p>
-                            <p id="checkout-product-title" class="text-sm font-bold text-white mt-1">Готовность к 10 классу</p>
-                            <div class="flex items-baseline justify-between gap-2 mt-3">
-                                <span class="text-xs text-slate-400">Стоимость</span>
-                                <span id="checkout-price" class="text-xl font-black text-white">1000 ₽</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="min-w-0">
+                                <label for="student-name" class="block text-xs font-semibold text-slate-300 mb-1.5">Ваше имя</label>
+                                <input type="text" id="student-name" required autocomplete="name" placeholder="Александр" class="w-full min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
                             </div>
-                        </div>
-                        <div>
-                            <label for="student-name" class="block text-xs font-semibold text-slate-400 mb-1.5">Ваше имя</label>
-                            <input type="text" id="student-name" required autocomplete="name" placeholder="Александр" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm">
-                        </div>
-                        <div>
-                            <label for="student-email" class="block text-xs font-semibold text-slate-400 mb-1.5">Email для PDF-отчёта</label>
-                            <input type="email" id="student-email" required autocomplete="email" placeholder="student@mail.ru" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm">
+                            <div class="min-w-0">
+                                <label for="student-email" class="block text-xs font-semibold text-slate-300 mb-1.5">Email для PDF-отчёта</label>
+                                <input type="email" id="student-email" required autocomplete="email" placeholder="student@mail.ru" class="w-full min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
+                            </div>
                         </div>
                         <div class="flex items-start gap-2.5 pt-1 text-xs text-slate-400">
                             <input type="checkbox" id="consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
@@ -243,21 +216,18 @@
 
                 <!-- Правый блок: программа выбранной диагностики -->
                 <div class="lg:col-span-8 glass-panel rounded-3xl p-5 sm:p-7 border border-slate-800 shadow-2xl min-w-0">
-                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-slate-800 pb-5 mb-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-800 pb-5 mb-5">
                         <div>
-                            <div class="flex flex-wrap items-center gap-2">
-                                <span id="badge-text" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">Школьная программа</span>
-                                <span id="fipi-badge" class="text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 hidden"><i class="fa-solid fa-book-open mr-1"></i>Ориентир: ФГОС и федеральные программы</span>
-                            </div>
-                            <h3 id="card-title" class="text-xl sm:text-2xl font-extrabold text-white mt-3">Готовность к 10 классу</h3>
-                            <p id="card-desc" class="text-sm text-slate-400 mt-2">Диагностика знаний за 1–9 классы</p>
+                            <h3 id="card-title" class="text-xl sm:text-2xl font-extrabold text-white">Диагностика 10 класса</h3>
+                            <p id="card-level" class="text-sm font-semibold text-indigo-300 mt-1">Базовый уровень</p>
                         </div>
-                        <div class="shrink-0 sm:text-right">
-                            <p class="text-[11px] uppercase tracking-wider font-bold text-slate-500">Программа диагностики</p>
-                            <p class="text-xs text-slate-400 mt-1">Темы сгруппированы по блокам</p>
+                        <div class="sm:text-right">
+                            <p class="text-sm sm:text-base font-bold text-white">Программа диагностики</p>
+                            <p class="text-xs sm:text-sm text-slate-300 mt-1">Темы сгруппированы по блокам</p>
                         </div>
+                        <p id="card-desc" class="sm:col-span-2 w-full text-sm sm:text-base leading-relaxed text-slate-200">Проверка ключевых базовых знаний и типовых способов решения задач</p>
                     </div>
-                    <div id="blocks-container" class="grid sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+                    <div id="blocks-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
                         <div class="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-sm text-slate-400">Загрузка программы…</div>
                     </div>
                 </div>
@@ -458,7 +428,7 @@
             initLinks();
             initVideo();
             initPdfViewer();
-            selectOption('10');
+            selectOption('10_basic');
         });
 
         function initLinks() {
@@ -610,83 +580,66 @@
             if (pdfDoc) queueRenderPdfPage(currentPdfPage);
         });
 
-        // Выбор класса или уровня диагностики. Программа и стоимость обновляются в одном месте.
+        // Выбор класса и уровня: программа и стоимость синхронно обновляются из CONFIG.
         function selectOption(key) {
-            const isLevelKey = key === '11_basic' || key === '11_advanced';
-            const gradeKey = isLevelKey ? '11' : key;
+            const isLevelKey = /^(7|8|9|10|11)_(basic|advanced)$/.test(key);
+            const gradeKey = isLevelKey ? key.split('_')[0] : key;
+            const gradeSelect = document.getElementById('grade-select');
+            if (gradeSelect && gradeSelect.value !== gradeKey) gradeSelect.value = gradeKey;
             const levelSelector = document.getElementById('level-selector');
-            const levelHint = document.getElementById('level-hint');
-
-            document.querySelectorAll('.opt-btn').forEach(btn => {
-                btn.classList.remove('border-indigo-500', 'bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/30');
-                btn.classList.add('border-slate-800', 'bg-slate-900', 'text-slate-400');
+            const buttons = levelSelector.querySelectorAll('.level-btn');
+            buttons[0].id = 'btn-' + gradeKey + '_basic';
+            buttons[0].setAttribute('onclick', "selectOption('" + gradeKey + "_basic')");
+            buttons[1].id = 'btn-' + gradeKey + '_advanced';
+            buttons[1].setAttribute('onclick', "selectOption('" + gradeKey + "_advanced')");
+            buttons.forEach(btn => {
+                btn.classList.remove('border-indigo-500', 'bg-indigo-600', 'shadow-lg', 'shadow-indigo-600/30');
+                btn.classList.add('border-slate-700', 'bg-slate-900');
             });
-
-            const activeGradeBtn = document.getElementById('btn-' + gradeKey);
-            if (activeGradeBtn) {
-                activeGradeBtn.classList.remove('border-slate-800', 'bg-slate-900', 'text-slate-400');
-                activeGradeBtn.classList.add('border-indigo-500', 'bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/30');
-            }
-
-            if (levelSelector) levelSelector.classList.toggle('hidden', gradeKey !== '11');
-            if (levelHint) levelHint.classList.toggle('hidden', gradeKey === '11');
-
-            if (gradeKey === '11' && !isLevelKey) {
+            const config = window.CONFIG || (typeof CONFIG !== 'undefined' ? CONFIG : null);
+            const programs = config && config.programs ? config.programs : {};
+            const baseData = programs[gradeKey + '_basic'];
+            const advancedData = programs[gradeKey + '_advanced'];
+            if (baseData) buttons[0].querySelector('.level-price').textContent = baseData.price;
+            if (advancedData) buttons[1].querySelector('.level-price').textContent = advancedData.price;
+            if (!isLevelKey) {
                 currentSelectedProductKey = null;
-                document.getElementById('badge-text').innerText = 'Выбор уровня';
-                document.getElementById('card-title').innerText = 'Выберите уровень диагностики';
-                document.getElementById('card-desc').innerText = 'Для 11 класса доступны базовый и продвинутый уровни';
-                document.getElementById('checkout-product-title').innerText = 'Сначала выберите уровень';
-                document.getElementById('card-price').innerText = '—';
-                document.getElementById('checkout-price').innerText = '—';
-                document.getElementById('payment-button-label').innerText = 'Выберите уровень диагностики';
+                document.getElementById('card-title').innerText = 'Диагностика ' + gradeKey + ' класса';
+                document.getElementById('card-level').innerText = 'Выберите уровень';
+                document.getElementById('card-desc').innerText = 'Выберите базовый или продвинутый уровень, чтобы увидеть темы и стоимость диагностики.';
                 document.getElementById('pay-button').disabled = true;
-                document.getElementById('fipi-badge').classList.add('hidden');
-                document.getElementById('blocks-container').innerHTML = '<div class="sm:col-span-2 rounded-2xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-400">Выберите базовый или продвинутый уровень, чтобы увидеть программу диагностики.</div>';
+                document.getElementById('payment-button-label').innerText = 'Выберите уровень диагностики';
+                document.getElementById('blocks-container').innerHTML = '<div class="sm:col-span-2 rounded-2xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-300">Выберите базовый или продвинутый уровень, чтобы увидеть программу диагностики.</div>';
                 return;
             }
-
-            const productKey = key;
-            const config = window.CONFIG || (typeof CONFIG !== 'undefined' ? CONFIG : null);
-            const data = (config && config.programs) ? config.programs[productKey] : null;
+            const data = programs[key];
             if (!data) {
                 currentSelectedProductKey = null;
                 document.getElementById('pay-button').disabled = true;
-                document.getElementById('blocks-container').innerHTML = '<div class="sm:col-span-2 text-rose-300 text-sm">Не удалось загрузить программу. Обновите страницу или попробуйте позже.</div>';
-                console.error('Не найдена программа диагностики:', productKey, 'CONFIG доступен:', !!config, 'Ключи:', config && config.programs ? Object.keys(config.programs) : []);
+                document.getElementById('blocks-container').innerHTML = '<div class="sm:col-span-2 text-rose-300 text-sm">Не удалось загрузить программу. Проверьте файл config.js.</div>';
+                console.error('Не найдена программа диагностики:', key, 'Доступные ключи:', Object.keys(programs));
                 return;
             }
-
-            currentSelectedProductKey = productKey;
-            const activeLevelBtn = document.getElementById('btn-' + productKey);
-            if (activeLevelBtn && isLevelKey) {
-                activeLevelBtn.classList.remove('border-slate-800', 'bg-slate-900', 'text-slate-400');
-                activeLevelBtn.classList.add('border-indigo-500', 'bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/30');
+            currentSelectedProductKey = key;
+            const activeBtn = document.getElementById('btn-' + key);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-slate-700', 'bg-slate-900');
+                activeBtn.classList.add('border-indigo-500', 'bg-indigo-600', 'shadow-lg', 'shadow-indigo-600/30');
             }
-
-            document.getElementById('badge-text').innerText = data.badge || 'Диагностика знаний';
-            document.getElementById('card-title').innerText = data.title;
+            document.getElementById('card-title').innerText = 'Диагностика ' + gradeKey + ' класса';
+            document.getElementById('card-level').innerText = key.endsWith('_basic') ? 'Базовый уровень' : 'Продвинутый уровень';
             document.getElementById('card-desc').innerText = data.desc;
-            document.getElementById('card-price').innerText = data.price;
-            document.getElementById('checkout-product-title').innerText = data.title;
-            document.getElementById('checkout-price').innerText = data.price;
             document.getElementById('payment-button-label').innerText = 'Перейти к оплате · ' + data.price;
             document.getElementById('pay-button').disabled = false;
-            document.getElementById('fipi-badge').classList.toggle('hidden', !data.fipi);
-
             const container = document.getElementById('blocks-container');
-            container.innerHTML = (Array.isArray(data.blocks) ? data.blocks : []).map(b => `
-                <div class="bg-slate-950/70 p-4 sm:p-5 rounded-2xl border border-slate-800/80 space-y-3">
-                    <div class="font-bold text-white text-sm text-indigo-300">${escapeHtml(b.name)}</div>
-                    <ul class="space-y-2 text-slate-400 text-xs sm:text-sm">
-                        ${b.items.map(item => `<li class="flex gap-2"><span class="text-indigo-400 shrink-0">•</span><span>${escapeHtml(item)}</span></li>`).join('')}
-                    </ul>
-                </div>
-            `).join('');
-
-            if (!container.innerHTML) {
-                container.innerHTML = '<div class="sm:col-span-2 text-sm text-slate-400">Программа для этого варианта пока не заполнена.</div>';
-            }
+            container.innerHTML = (Array.isArray(data.blocks) ? data.blocks : []).map((block, index) =>
+                '<div class="bg-slate-950/70 p-4 sm:p-5 rounded-2xl border border-slate-800/80 min-w-0">' +
+                    '<div class="font-bold text-white text-sm text-indigo-300 mb-3">Блок ' + (index + 1) + '</div>' +
+                    '<ul class="space-y-2 text-slate-200 text-xs sm:text-sm leading-relaxed">' +
+                    (Array.isArray(block.items) ? block.items : []).map(item => '<li class="flex gap-2"><span class="text-indigo-400 shrink-0">•</span><span>' + escapeHtml(item) + '</span></li>').join('') +
+                    '</ul></div>'
+            ).join('');
+            if (!container.innerHTML) container.innerHTML = '<div class="sm:col-span-2 text-sm text-slate-300">Программа для этого варианта пока не заполнена.</div>';
         }
 
         function escapeHtml(str) {
