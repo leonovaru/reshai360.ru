@@ -82,4 +82,3 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500 });
   }
 }
-```[cite: 16]
