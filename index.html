@@ -573,12 +573,12 @@
             if (pdfDoc) queueRenderPdfPage(currentPdfPage);
         });
 
-        // Выбор класса или уровня диагностики
+        // Выбор класса или уровня диагностики.
+        // При выборе 11 класса уровень обязан выбрать сам пользователь.
         function selectOption(key) {
             const isLevelKey = key === '11_basic' || key === '11_advanced';
             const gradeKey = isLevelKey ? '11' : key;
-            const productKey = key === '11' ? '11_basic' : key;
-            currentSelectedProductKey = productKey;
+            const levelSelector = document.getElementById('level-selector');
 
             document.querySelectorAll('.opt-btn').forEach(btn => {
                 btn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition";
@@ -587,11 +587,27 @@
             const activeGradeBtn = document.getElementById(`btn-${gradeKey}`);
             if (activeGradeBtn) activeGradeBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
 
-            const levelSelector = document.getElementById('level-selector');
             if (levelSelector) levelSelector.classList.toggle('hidden', gradeKey !== '11');
 
+            if (gradeKey === '11' && !isLevelKey) {
+                currentSelectedProductKey = null;
+                document.getElementById('badge-text').innerText = 'Выбор уровня';
+                document.getElementById('card-title').innerText = 'Выберите уровень диагностики';
+                document.getElementById('card-desc').innerText = 'Для 11 класса доступны базовый и продвинутый уровни';
+                document.getElementById('card-price').innerText = '—';
+                document.getElementById('fipi-badge').classList.add('hidden');
+                document.getElementById('blocks-container').innerHTML = '';
+                document.getElementById('toggle-blocks-text').innerText = 'Посмотреть программу диагностики';
+                document.getElementById('toggle-blocks-icon').className = 'fa-solid fa-chevron-down text-xs';
+                document.getElementById('blocks-wrapper').classList.add('hidden');
+                return;
+            }
+
+            const productKey = isLevelKey ? key : key;
+            currentSelectedProductKey = productKey;
+
             const activeLevelBtn = document.getElementById(`btn-${productKey}`);
-            if (activeLevelBtn && gradeKey === '11') activeLevelBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
+            if (activeLevelBtn && isLevelKey) activeLevelBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
 
             const data = (typeof CONFIG !== 'undefined' && CONFIG.programs[productKey]) ? CONFIG.programs[productKey] : null;
             if (!data) return;
@@ -625,6 +641,11 @@
         // Обработка отправки формы и вызов ЮKassa (через надежный редирект)
         async function handleSubmit(e) {
             e.preventDefault();
+
+            if (!currentSelectedProductKey) {
+                alert('Сначала выберите класс и уровень диагностики.');
+                return;
+            }
 
             const studentName = document.getElementById('student-name').value.trim();
             const email = document.getElementById('student-email').value.trim();
