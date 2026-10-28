@@ -35,6 +35,7 @@ export async function onRequestPost({ request, env }) {
     const safeName = String(name || "Ученик").replace(/[\\/:*?"<>|]/g, "_");
 
     let promoCode = null;
+    let emailSent = false;
     if (token && env.TEST_TOKENS) {
       const tokenDataRaw = await env.TEST_TOKENS.get(token);
       if (tokenDataRaw) {
@@ -56,7 +57,7 @@ export async function onRequestPost({ request, env }) {
           if (!promoCode) throw new Error("Не удалось сгенерировать промокод");
           await env.TEST_TOKENS.put("promo:" + promoCode, JSON.stringify({
             code: promoCode,
-            discount: 190,
+            discount: 90,
             createdAt: Date.now(),
             expiresAt: Date.now() + 180 * 24 * 60 * 60 * 1000,
             used: false,
@@ -75,7 +76,7 @@ export async function onRequestPost({ request, env }) {
         tgFormData.append("chat_id", env.TG_CHAT_ID);
         tgFormData.append(
           "caption",
-          `🎯 Пройдена диагностика!\nУченик: ${name || "Не указано"}\nEmail: ${email || "Не указан"}\nРезультат: ${scoreNumber} из ${totalNumber} (${percent}%)${promoCode ? `\n🎁 Промокод на следующую диагностику: ${promoCode} (скидка 190 ₽)` : ""}`
+          `🎯 Пройдена диагностика!\nУченик: ${name || "Не указано"}\nEmail: ${email || "Не указан"}\nРезультат: ${scoreNumber} из ${totalNumber} (${percent}%)${promoCode ? `\n🎁 Промокод на следующую диагностику: ${promoCode} (скидка 90 ₽)` : ""}`
         );
         tgFormData.append("document", pdfFile, `Отчет_${safeName}.pdf`);
 
@@ -117,7 +118,7 @@ export async function onRequestPost({ request, env }) {
               <p>Здравствуйте, <b>${name || "ученик"}</b>!</p>
               <p>Вы завершили диагностику знаний по математике на платформе <b>Решай360</b>.</p>
               <p>Во вложении находится ваш PDF-отчёт с результатами и рекомендациями.</p>
-              ${promoCode ? `<p><b>Ваш промокод на следующую диагностику: ${promoCode}</b></p><p>Промокод даёт скидку 190 ₽. Вы можете использовать его сами при следующем заказе или передать другу. Использовать промокод можно один раз; срок действия — 180 дней.</p>` : ""}
+              ${promoCode ? `<p><b>Ваш промокод на следующую диагностику: ${promoCode}</b></p><p>Промокод даёт скидку 90 ₽. Вы можете использовать его сами при следующем заказе или передать другу. Использовать промокод можно один раз; срок действия — 180 дней.</p>` : ""}
               <p>С уважением,<br>Команда Решай360<br>
               <a href="https://reshai360.ru">reshai360.ru</a></p>
             `,
@@ -132,13 +133,13 @@ export async function onRequestPost({ request, env }) {
 
         if (!emailResponse.ok) {
           console.error("Resend API error:", await emailResponse.text());
-        }
+        } else { emailSent = true; }
       } catch (resendErr) {
         console.error("Resend email error:", resendErr);
       }
     }
 
-    return Response.json({ success: true, promoCode });
+    return Response.json({ success: true, promoCode, emailSent });
   } catch (err) {
     console.error("Send report global error:", err);
 
