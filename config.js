@@ -109,15 +109,16 @@ window.CONFIG = {
 for (const grade of ['7', '8', '9', '10']) {
     const source = window.CONFIG.programs[grade];
     if (!source) continue;
+    const { blocks: _blocks, ...sourceMeta } = source;
     window.CONFIG.programs[grade + '_basic'] = {
-        ...source,
+        ...sourceMeta,
         badge: 'Базовый уровень',
         title: 'Диагностика ' + grade + ' класса — базовый уровень',
         desc: 'Проверка ключевых базовых знаний и типовых способов решения задач.',
         price: '790 ₽',
     };
     window.CONFIG.programs[grade + '_advanced'] = {
-        ...source,
+        ...sourceMeta,
         badge: 'Продвинутый уровень',
         title: 'Диагностика ' + grade + ' класса — продвинутый уровень',
         desc: 'Проверка более сложных способов рассуждения и многошаговых задач.',
