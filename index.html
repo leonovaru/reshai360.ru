@@ -128,30 +128,14 @@
         </div>
     </section>
 
-    <!-- Ориентиры содержания диагностики -->
-    <section id="standards" class="py-12 border-t border-slate-800/60">
+    <!-- Почему диагностика по всей программе важнее случайного балла -->
+    <section id="why-diagnostics" class="py-8 sm:py-10 border-t border-slate-800/60">
         <div class="max-w-5xl mx-auto px-4">
-            <div class="max-w-3xl mx-auto text-center space-y-3">
-                <p class="text-xs font-bold uppercase tracking-widest text-indigo-400">Методическая основа</p>
-                <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Ориентируемся на школьные образовательные программы</h2>
-                <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
-                    Темы диагностики соотносятся с предметными результатами ФГОС основного и среднего общего образования и федеральными рабочими программами по математике для 5–9 и 10–11 классов.
+            <div class="glass-panel p-5 sm:p-6 rounded-2xl border border-indigo-500/20 bg-indigo-950/20 space-y-2">
+                <h2 class="text-lg sm:text-xl font-bold text-white">Почему обычные тесты не дают полной картины?</h2>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                    На школьной контрольной, ВПР или тестовом пробнике легко получить случайный высокий балл, если выпадут легкие темы. При этом слабые места останутся скрыты до самого дня экзамена. В <strong class="text-indigo-400">Решай360</strong> проверка идет по всей пройденной программе за прошлые годы.
                 </p>
-            </div>
-            <div class="flex flex-wrap justify-center gap-4 mt-4 text-xs">
-                <a class="text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_ooo_frp_matematika-5-9_baza.pdf" target="_blank" rel="noopener noreferrer">Федеральная рабочая программа: 5–9 классы</a>
-                <a class="text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_soo_frp_matematika_10_11_baz.pdf" target="_blank" rel="noopener noreferrer">Федеральная рабочая программа: 10–11 классы</a>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 text-xs">
-                <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-3 text-slate-300">
-                    <i class="fa-solid fa-book-open text-indigo-300"></i><span><b class="text-white">Открытые источники</b><br>Сверяем темы с федеральными программами</span>
-                </div>
-                <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-3 text-slate-300">
-                    <i class="fa-solid fa-list-check text-indigo-300"></i><span><b class="text-white">Структура по темам</b><br>Результат виден по тематическим блокам</span>
-                </div>
-                <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-3 text-slate-300">
-                    <i class="fa-solid fa-file-pdf text-indigo-300"></i><span><b class="text-white">Персональный отчёт</b><br>Результаты и задания для повторения в PDF</span>
-                </div>
             </div>
         </div>
     </section>
@@ -171,8 +155,8 @@
                             <div class="flex items-center gap-2.5">
                                 <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-500/15 text-indigo-300 text-xs font-black shrink-0">1</span>
                                 <label for="grade-select" class="shrink-0 text-sm font-bold text-white">Выберите класс</label>
-                                <select id="grade-select" onchange="selectOption(this.value)" class="min-w-0 w-28 ml-auto bg-indigo-600 border border-indigo-400 rounded-lg px-2 py-2 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                                    <option value="7">7 класс</option><option value="8">8 класс</option><option value="9">9 класс</option><option value="10" selected>10 класс</option><option value="11">11 класс</option>
+                                <select id="grade-select" onchange="selectOption(this.value)" class="min-w-0 w-28 ml-auto bg-slate-950 border border-slate-700 rounded-lg px-2 py-2 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                    <option value="" selected>—</option><option value="7">7 класс</option><option value="8">8 класс</option><option value="9">9 класс</option><option value="10">10 класс</option><option value="11">11 класс</option>
                                 </select>
                             </div>
                         </div>
@@ -206,8 +190,8 @@
                                 <input type="email" id="student-email" required autocomplete="email" placeholder="student@mail.ru" class="w-full min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
                             </div>
                         </div>
-                        <div class="rounded-xl border border-slate-700 bg-slate-950/70 p-3 space-y-2">
-                            <label for="promo-code" class="block text-xs font-semibold text-slate-200">Промокод на скидку 190 ₽</label>
+                        <div class="rounded-xl border border-slate-700 bg-slate-950/70 p-2.5 space-y-2">
+                            
                             <div class="flex gap-2">
                                 <input type="text" id="promo-code" maxlength="24" autocomplete="off" oninput="clearAppliedPromoCode()" placeholder="Введите промокод" class="min-w-0 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white uppercase placeholder:normal-case placeholder:text-slate-500 focus:outline-none focus:border-indigo-500">
                                 <button type="button" id="apply-promo-button" onclick="applyPromoCode()" class="shrink-0 rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-2 text-xs font-bold text-white">Применить</button>
@@ -232,7 +216,7 @@
                 </div>
 
                 <!-- Правый блок: программа выбранной диагностики -->
-                <div class="lg:col-span-8 glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-2xl min-w-0 max-h-[620px] overflow-y-auto">
+                <div class="lg:col-span-8 glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-2xl min-w-0 h-full">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-slate-800 pb-3 mb-3">
                         <div>
                             <h3 id="card-title" class="text-xl sm:text-2xl font-extrabold text-white">Диагностика 10 класса</h3>
@@ -260,7 +244,11 @@
                 <!-- ЛЕВАЯ КОЛОНКА: ИНТЕРАКТИВНЫЙ PDF В КАРТОЧКЕ -->
                 <div class="lg:col-span-6 flex justify-center">
                     <div class="w-full max-w-[440px] bg-[#0d1322] border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col items-center">
-                        
+                        <div class="w-full mb-3 text-center sm:text-left">
+                            <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs sm:text-sm font-semibold">
+                                📄 Наглядный PDF-документ
+                            </span>
+                        </div>
                         <!-- Оболочка документа -->
                         <div id="canvas-wrapper" class="w-full bg-white rounded-2xl overflow-hidden min-h-[460px] flex items-center justify-center relative shadow-lg border border-slate-700/50">
                             <div id="pdf-loading" class="text-slate-600 text-xs flex items-center space-x-2 p-6 text-center">
@@ -328,15 +316,30 @@
                         </div>
                     </div>
 
-                    <!-- Нижняя плашка -->
-                    <div class="glass-panel p-5 rounded-2xl border border-indigo-500/20 bg-indigo-950/20 space-y-2">
-                        <h3 class="text-sm sm:text-base font-bold text-white flex items-center space-x-2">
-                            <i class="fa-solid fa-circle-exclamation text-amber-400 text-xs"></i>
-                            <span>Почему обычные тесты не дают полной картины?</span>
-                        </h3>
-                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                            На школьной контрольной, ВПР или тестовом пробнике легко получить случайный высокий балл, если выпадут легкие темы. При этом слабые места останутся скрыты до самого дня экзамена. В <strong class="text-indigo-400">Решай360</strong> проверка идет по всей пройденной программе за прошлые годы.
-                        </p>
+                    <!-- Методическая основа объединена с примером PDF -->
+                    <div class="glass-panel p-4 sm:p-5 rounded-2xl border border-indigo-500/20 space-y-3">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-widest text-indigo-300 mb-1">Методическая основа</p>
+                            <h3 class="text-lg sm:text-xl font-extrabold text-white">Ориентируемся на школьные образовательные программы</h3>
+                            <p class="text-slate-300 text-sm leading-relaxed mt-2">
+                                Темы диагностики соотносятся с предметными результатами ФГОС основного и среднего общего образования и федеральными рабочими программами по математике для 5–9 и 10–11 классов.
+                            </p>
+                        </div>
+                        <div class="flex flex-col gap-2 text-sm">
+                            <a class="text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_ooo_frp_matematika-5-9_baza.pdf" target="_blank" rel="noopener noreferrer">Федеральная рабочая программа: 5–9 классы</a>
+                            <a class="text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_soo_frp_matematika_10_11_baz.pdf" target="_blank" rel="noopener noreferrer">Федеральная рабочая программа: 10–11 классы</a>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                            <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-slate-300">
+                                <i class="fa-solid fa-book-open text-indigo-300"></i><span><b class="text-white">Открытые источники</b><br>Сверяем темы с федеральными программами</span>
+                            </div>
+                            <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-slate-300">
+                                <i class="fa-solid fa-list-check text-indigo-300"></i><span><b class="text-white">Структура по темам</b><br>Результат виден по тематическим блокам</span>
+                            </div>
+                            <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-slate-300">
+                                <i class="fa-solid fa-file-pdf text-indigo-300"></i><span><b class="text-white">Персональный отчёт</b><br>Результаты и задания для повторения в PDF</span>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -447,7 +450,7 @@
             initLinks();
             initVideo();
             initPdfViewer();
-            selectOption('10_basic');
+            selectOption('');
         });
 
         function initLinks() {
@@ -595,12 +598,54 @@
             }
         }
 
+        // На телефоне можно перелистывать PDF горизонтальным свайпом; вертикальный скролл страницы не блокируем.
+        let pdfTouchStartX = 0;
+        let pdfTouchStartY = 0;
+        const pdfCanvasWrapper = document.getElementById('canvas-wrapper');
+        if (pdfCanvasWrapper) {
+            pdfCanvasWrapper.addEventListener('touchstart', function(event) {
+                if (!event.changedTouches || !event.changedTouches.length) return;
+                pdfTouchStartX = event.changedTouches[0].clientX;
+                pdfTouchStartY = event.changedTouches[0].clientY;
+            }, { passive: true });
+            pdfCanvasWrapper.addEventListener('touchend', function(event) {
+                if (!event.changedTouches || !event.changedTouches.length) return;
+                const dx = event.changedTouches[0].clientX - pdfTouchStartX;
+                const dy = event.changedTouches[0].clientY - pdfTouchStartY;
+                if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+                    changePage(dx < 0 ? 1 : -1);
+                }
+            }, { passive: true });
+        }
+
         window.addEventListener('resize', function() {
             if (pdfDoc) queueRenderPdfPage(currentPdfPage);
         });
 
         // Выбор класса и уровня: программа и стоимость синхронно обновляются из CONFIG.
         function selectOption(key) {
+            if (!key) {
+                currentSelectedProductKey = null;
+                const gradeSelect = document.getElementById('grade-select');
+                if (gradeSelect) {
+                    gradeSelect.value = '';
+                    gradeSelect.classList.remove('bg-indigo-600', 'border-indigo-400');
+                    gradeSelect.classList.add('bg-slate-950', 'border-slate-700');
+                }
+                document.querySelectorAll('.level-btn').forEach(btn => {
+                    btn.disabled = true;
+                    btn.classList.remove('border-indigo-500', 'bg-indigo-600', 'shadow-lg', 'shadow-indigo-600/30');
+                    btn.classList.add('border-slate-700', 'bg-slate-900', 'opacity-50', 'cursor-not-allowed');
+                });
+                document.getElementById('card-title').innerText = 'Диагностика';
+                document.getElementById('card-level').innerText = 'Выберите класс';
+                document.getElementById('card-desc').innerText = 'После выбора класса здесь появится программа диагностики.';
+                document.getElementById('pay-button').disabled = true;
+                document.getElementById('payment-button-label').innerText = 'Выберите класс и уровень диагностики';
+                document.getElementById('payment-readiness-note').classList.add('hidden');
+                document.getElementById('blocks-container').innerHTML = '<div class="sm:col-span-2 rounded-2xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-300">Выберите класс, чтобы увидеть программу диагностики.</div>';
+                return;
+            }
             const isLevelKey = /^(7|8|9|10|11)_(basic|advanced)$/.test(key);
             const gradeKey = isLevelKey ? key.split('_')[0] : key;
             const gradeSelect = document.getElementById('grade-select');
@@ -608,6 +653,7 @@
             if (gradeSelect) { gradeSelect.classList.add('bg-indigo-600', 'border-indigo-400'); gradeSelect.classList.remove('bg-slate-950', 'border-slate-700'); }
             const levelSelector = document.getElementById('level-selector');
             const buttons = levelSelector.querySelectorAll('.level-btn');
+            buttons.forEach(btn => { btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); });
             buttons[0].id = 'btn-' + gradeKey + '_basic';
             buttons[0].setAttribute('onclick', "selectOption('" + gradeKey + "_basic')");
             buttons[1].id = 'btn-' + gradeKey + '_advanced';
@@ -626,11 +672,20 @@
                 currentSelectedProductKey = null;
                 document.getElementById('card-title').innerText = 'Диагностика ' + gradeKey + ' класса';
                 document.getElementById('card-level').innerText = 'Выберите уровень';
-                document.getElementById('card-desc').innerText = 'Выберите базовый или продвинутый уровень, чтобы увидеть темы и стоимость диагностики.';
+                document.getElementById('card-desc').innerText = 'Программа класса показана ниже. Выберите уровень, чтобы определить сложность заданий и перейти к оплате.';
                 document.getElementById('pay-button').disabled = true;
                 document.getElementById('payment-button-label').innerText = 'Выберите уровень диагностики';
                 document.getElementById('payment-readiness-note').classList.add('hidden');
-                document.getElementById('blocks-container').innerHTML = '<div class="sm:col-span-2 rounded-2xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-300">Выберите базовый или продвинутый уровень, чтобы увидеть программу диагностики.</div>';
+                const programme = programs[gradeKey];
+                const container = document.getElementById('blocks-container');
+                container.innerHTML = (programme && Array.isArray(programme.blocks) ? programme.blocks : []).map((block, index) =>
+                    '<div class="bg-slate-950/70 p-3 sm:p-4 rounded-xl border border-slate-800/80 min-w-0">' +
+                        '<div class="font-bold text-white text-sm text-indigo-300 mb-2">' + escapeHtml(block.name || ('Блок ' + (index + 1))) + '</div>' +
+                        '<ul class="space-y-2 text-slate-200 text-xs sm:text-sm leading-relaxed">' +
+                        (Array.isArray(block.items) ? block.items : []).map(item => '<li class="flex gap-2"><span class="text-indigo-400 shrink-0">•</span><span>' + escapeHtml(item) + '</span></li>').join('') +
+                        '</ul></div>'
+                ).join('');
+                if (!container.innerHTML) container.innerHTML = '<div class="sm:col-span-2 text-sm text-slate-300">Программа для этого класса пока не заполнена.</div>';
                 return;
             }
             const data = programs[key];
