@@ -149,6 +149,16 @@
                 </div>
             </div>
 
+            <!-- Выбор уровня для 11 класса -->
+            <div id="level-selector" class="hidden flex flex-col items-center pt-4">
+                <span class="text-[11px] uppercase font-bold tracking-wider text-slate-500 mb-2">Уровень диагностики для 11 класса</span>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <button type="button" onclick="selectOption('11_basic')" id="btn-11_basic" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">Базовый уровень</button>
+                    <button type="button" onclick="selectOption('11_advanced')" id="btn-11_advanced" class="opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition">Продвинутый уровень</button>
+                </div>
+                <p class="text-xs text-slate-500 mt-2 text-center max-w-xl">Выберите уровень, который подходит вам. Программа и стоимость отобразятся ниже.</p>
+            </div>
+
             <!-- КАРТОЧКА ВЫБРАННОЙ ДИАГНОСТИКИ -->
             <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 max-w-4xl mx-auto shadow-2xl">
                 
@@ -563,33 +573,34 @@
             if (pdfDoc) queueRenderPdfPage(currentPdfPage);
         });
 
-        // Выбор варианта программы
+        // Выбор класса или уровня диагностики
         function selectOption(key) {
-            currentSelectedProductKey = key; // сохраняем выбор для отправки в api
+            const isLevelKey = key === '11_basic' || key === '11_advanced';
+            const gradeKey = isLevelKey ? '11' : key;
+            const productKey = key === '11' ? '11_basic' : key;
+            currentSelectedProductKey = productKey;
 
             document.querySelectorAll('.opt-btn').forEach(btn => {
                 btn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition";
             });
 
-            const activeBtn = document.getElementById(`btn-${key}`);
-            if (activeBtn) {
-                activeBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
-            }
+            const activeGradeBtn = document.getElementById(`btn-${gradeKey}`);
+            if (activeGradeBtn) activeGradeBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
 
-            const data = (typeof CONFIG !== 'undefined' && CONFIG.programs[key]) ? CONFIG.programs[key] : null;
+            const levelSelector = document.getElementById('level-selector');
+            if (levelSelector) levelSelector.classList.toggle('hidden', gradeKey !== '11');
+
+            const activeLevelBtn = document.getElementById(`btn-${productKey}`);
+            if (activeLevelBtn && gradeKey === '11') activeLevelBtn.className = "opt-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition";
+
+            const data = (typeof CONFIG !== 'undefined' && CONFIG.programs[productKey]) ? CONFIG.programs[productKey] : null;
             if (!data) return;
 
             document.getElementById('badge-text').innerText = data.badge;
             document.getElementById('card-title').innerText = data.title;
             document.getElementById('card-desc').innerText = data.desc;
             document.getElementById('card-price').innerText = data.price;
-
-            const fipiBadge = document.getElementById('fipi-badge');
-            if (data.fipi) {
-                fipiBadge.classList.remove('hidden');
-            } else {
-                fipiBadge.classList.add('hidden');
-            }
+            document.getElementById('fipi-badge').classList.toggle('hidden', !data.fipi);
 
             const container = document.getElementById('blocks-container');
             container.innerHTML = data.blocks.map(b => `
