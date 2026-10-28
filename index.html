@@ -210,6 +210,7 @@
                             <span id="payment-button-label">Перейти к оплате · 1000 ₽</span>
                             <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
+                        <p id="payment-readiness-note" class="hidden text-xs leading-relaxed text-amber-200/90 text-center">Отдельные тесты для этого класса и уровня ещё готовятся. Оплата пока недоступна.</p>
                         <p class="text-[10px] leading-relaxed text-slate-500 text-center">После успешной оплаты вы получите доступ к выбранной диагностике.</p>
                     </form>
                 </div>
@@ -609,6 +610,7 @@
                 document.getElementById('card-desc').innerText = 'Выберите базовый или продвинутый уровень, чтобы увидеть темы и стоимость диагностики.';
                 document.getElementById('pay-button').disabled = true;
                 document.getElementById('payment-button-label').innerText = 'Выберите уровень диагностики';
+                document.getElementById('payment-readiness-note').classList.add('hidden');
                 document.getElementById('blocks-container').innerHTML = '<div class="sm:col-span-2 rounded-2xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-300">Выберите базовый или продвинутый уровень, чтобы увидеть программу диагностики.</div>';
                 return;
             }
@@ -629,8 +631,10 @@
             document.getElementById('card-title').innerText = 'Диагностика ' + gradeKey + ' класса';
             document.getElementById('card-level').innerText = key.endsWith('_basic') ? 'Базовый уровень' : 'Продвинутый уровень';
             document.getElementById('card-desc').innerText = data.desc;
-            document.getElementById('payment-button-label').innerText = 'Перейти к оплате · ' + data.price;
-            document.getElementById('pay-button').disabled = false;
+            const paymentAvailable = gradeKey === '11';
+            document.getElementById('payment-button-label').innerText = paymentAvailable ? ('Перейти к оплате · ' + data.price) : 'Диагностика готовится';
+            document.getElementById('pay-button').disabled = !paymentAvailable;
+            document.getElementById('payment-readiness-note').classList.toggle('hidden', paymentAvailable);
             const container = document.getElementById('blocks-container');
             container.innerHTML = (Array.isArray(data.blocks) ? data.blocks : []).map((block, index) =>
                 '<div class="bg-slate-950/70 p-4 sm:p-5 rounded-2xl border border-slate-800/80 min-w-0">' +
