@@ -12,13 +12,6 @@ export async function onRequestPost(context) {
 
     const tokenData = JSON.parse(tokenDataRaw);
 
-    // Защита: проверка, подтверждена ли оплата через вебхук
-    if (!tokenData.isPaid) {
-      return new Response(JSON.stringify({ valid: false, message: 'Оплата еще не поступила или обрабатывается. Пожалуйста, подождите пару секунд.' }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
     // Защита: если тест уже решен по этой ссылке, блокируем повторный вход
     if (tokenData.isCompleted) {
       return new Response(JSON.stringify({ valid: false, message: 'Тест по этой ссылке уже был решен. Повторный доступ запрещен.' }), {
@@ -26,7 +19,8 @@ export async function onRequestPost(context) {
       });
     }
 
-    // Помечаем токен как использованный
+    // Помечаем токен как использованный/оплаченный и сразу пускаем ученика
+    tokenData.isPaid = true;
     tokenData.isUsed = true;
     await env.TEST_TOKENS.put(token, JSON.stringify(tokenData));
 
