@@ -120,3 +120,25 @@ window.CONFIG = {
         }
     }
 };
+
+// Два уровня доступны для каждого класса. Для 7–10 классов используем соответствующие тематические блоки класса.
+for (const grade of ['7', '8', '9', '10']) {
+    const source = window.CONFIG.programs[grade];
+    if (!source) continue;
+    window.CONFIG.programs[grade + '_basic'] = {
+        ...source,
+        badge: 'Базовый уровень',
+        title: 'Диагностика ' + grade + ' класса — базовый уровень',
+        desc: 'Проверка ключевых базовых знаний и типовых способов решения задач.',
+        price: '790 ₽',
+        blocks: source.blocks.map(block => ({ name: block.name, items: [...block.items] }))
+    };
+    window.CONFIG.programs[grade + '_advanced'] = {
+        ...source,
+        badge: 'Продвинутый уровень',
+        title: 'Диагностика ' + grade + ' класса — продвинутый уровень',
+        desc: 'Проверка более сложных способов рассуждения и многошаговых задач.',
+        price: '990 ₽',
+        blocks: source.blocks.map(block => ({ name: block.name, items: [...block.items] }))
+    };
+}
