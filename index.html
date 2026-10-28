@@ -687,6 +687,14 @@
             if (status) status.classList.add('hidden');
             const config = window.CONFIG || (typeof CONFIG !== 'undefined' ? CONFIG : null);
             const data = config && config.programs && currentSelectedProductKey ? config.programs[currentSelectedProductKey] : null;
+            const gradeKey = currentSelectedProductKey ? currentSelectedProductKey.split('_')[0] : null;
+            if (config && config.programs && gradeKey) {
+                ['basic', 'advanced'].forEach(level => {
+                    const levelData = config.programs[gradeKey + '_' + level];
+                    const levelButton = document.getElementById('btn-' + gradeKey + '_' + level);
+                    if (levelData && levelButton) levelButton.querySelector('.level-price').textContent = levelData.price;
+                });
+            }
             if (data && document.getElementById('pay-button') && !document.getElementById('pay-button').disabled) {
                 const price = Number(String(data.price).replace(/[^0-9]/g, '')) || 0;
                 document.getElementById('payment-button-label').textContent = 'Перейти к оплате · ' + price + ' ₽';
@@ -711,6 +719,8 @@
                 status.textContent = 'Промокод применён: скидка ' + appliedPromoDiscount + ' ₽. Итоговая цена: ' + result.finalPrice + ' ₽.';
                 status.className = 'text-xs leading-relaxed text-emerald-300'; status.classList.remove('hidden');
                 document.getElementById('payment-button-label').textContent = 'Перейти к оплате · ' + result.finalPrice + ' ₽';
+                const selectedLevelButton = document.getElementById('btn-' + currentSelectedProductKey);
+                if (selectedLevelButton) selectedLevelButton.querySelector('.level-price').textContent = result.finalPrice + ' ₽';
             } catch (error) {
                 appliedPromoCode = ''; appliedPromoDiscount = 0;
                 status.textContent = error.message || 'Не удалось проверить промокод.';
