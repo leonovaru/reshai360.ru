@@ -140,6 +140,15 @@
 
 <div id="result-wrapper">
   <div id="result-screen"></div>
+  <div id="promo-code-result" style="display:none; margin:18px auto 28px; max-width:794px; padding:20px; border:1px solid #a5b4fc; border-radius:12px; background:#eef2ff; color:#1e1b4b;">
+    <div style="font-size:1.1em; font-weight:800; margin-bottom:8px;">🎁 Подарок за прохождение диагностики</div>
+    <p style="margin:0 0 10px;">Ваш промокод на скидку 190 ₽ для следующей диагностики. Используйте его сами или передайте другу. Промокод одноразовый, действует 180 дней.</p>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+      <strong id="promo-code-result-value" style="font-size:1.35em; letter-spacing:.08em;"></strong>
+      <button type="button" onclick="navigator.clipboard && navigator.clipboard.writeText(document.getElementById('promo-code-result-value').textContent)" style="padding:9px 14px; border-radius:8px; background:#4338ca; color:white; font-weight:700; border:0; cursor:pointer;">Скопировать</button>
+    </div>
+    <p id="promo-code-result-note" style="margin:10px 0 0; font-size:.85em;"></p>
+  </div>
 </div>
 
 <div id="pdf-export-container">
@@ -851,10 +860,18 @@
         formData.append('total', totalQuestions);
         formData.append('document', generatedPdfBlob, `Отчет_${studentData.fullName}.pdf`);
 
-        await fetch('/api/send-report', {
+        const reportResponse = await fetch('/api/send-report', {
           method: 'POST',
           body: formData
         });
+        const reportResult = await reportResponse.json().catch(() => ({}));
+        if (reportResponse.ok && reportResult.promoCode) {
+          document.getElementById('promo-code-result-value').textContent = reportResult.promoCode;
+          document.getElementById('promo-code-result').style.display = 'block';
+        } else {
+          const note = document.getElementById('promo-code-result-note');
+          note.textContent = 'Не удалось загрузить промокод. Он может быть отправлен отдельно после проверки отправки отчёта.';
+        }
       }
 
     } catch (err) {
