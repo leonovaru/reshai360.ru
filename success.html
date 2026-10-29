@@ -23,6 +23,7 @@
         </div>
         <h1 id="status-title" class="text-xl sm:text-2xl font-bold leading-tight">Проверяем статус оплаты...</h1>
         <p id="status-desc" class="text-sm sm:text-base text-slate-300 leading-relaxed">Секунду, настраиваем вашу диагностику...</p>
+        <button id="retry-payment-check" type="button" onclick="window.location.reload()" class="hidden w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-3 text-sm font-bold text-white">Проверить ещё раз</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -59,14 +60,16 @@
 
             try {
                 let result = null;
-                for (let attempt = 0; attempt < 8; attempt++) {
+                let lastStatus = 0;
+                for (let attempt = 0; attempt < 20; attempt++) {
                     const response = await fetch('/api/verify-token', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ token })
                     });
+                    lastStatus = response.status;
                     result = await response.json();
-                    if (result.valid || response.status !== 402) break;
+                    if (result.valid || lastStatus !== 402) break;
                     await new Promise(resolve => setTimeout(resolve, 1500));
                 }
 
@@ -96,8 +99,14 @@
                     }, 1000);
                 } else {
                     document.getElementById('loader').style.display = 'none';
-                    document.getElementById('status-title').innerText = "Ошибка доступа";
-                    document.getElementById('status-desc').innerHTML = `<span class="text-rose-400">${result.message || 'Ссылка недействительна или уже использована'}</span>`;
+                    if (lastStatus === 402) {
+                        document.getElementById('status-title').innerText = "Платёж ещё подтверждается";
+                        document.getElementById('status-desc').innerText = "Банк уже мог принять оплату, но сервер ещё не получил подтверждение от ЮKassa. Подождите немного и нажмите кнопку ниже — повторно оплачивать не нужно.";
+                        document.getElementById('retry-payment-check').classList.remove('hidden');
+                    } else {
+                        document.getElementById('status-title').innerText = "Ошибка доступа";
+                        document.getElementById('status-desc').innerHTML = `<span class="text-rose-400">${result.message || 'Ссылка недействительна или уже использована'}</span>`;
+                    }
                 }
             } catch (err) {
                 console.error(err);
