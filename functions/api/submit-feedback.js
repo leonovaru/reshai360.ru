@@ -19,53 +19,105 @@ export async function onRequestPost({ request, env }) {
     let tokenData = null;
     let promo = null;
     let promoKey = null;
+    let promoCodeToUpgrade = null;
     let feedbackId = crypto.randomUUID();
     let feedbackKey = "feedback:" + feedbackId;
+    const normalizedEmail = email.toLowerCase();
+    const now = Date.now();
 
     if (token) {
-      if (!promoCode) {
-        return Response.json({ success: false, message: "Не найден промокод этой диагностики." }, { status: 400 });
-      }
       const tokenRaw = await env.TEST_TOKENS.get(token);
       if (!tokenRaw) {
-        return Response.json({ success: false, message: "Ссылка на диагностику истекла. Обратитесь в поддержку." }, { status: 403 });
+        return Response.json({ success: false, message: "Ссылка на диагностику истекла. Оставьте обратную связь через форму на сайте." }, { status: 403 });
       }
       tokenData = JSON.parse(tokenRaw);
-      if (!tokenData.isCompleted || tokenData.promoCodeIssued !== promoCode) {
-        return Response.json({ success: false, message: "Не удалось подтвердить промокод для этой диагностики." }, { status: 403 });
+      if (!tokenData.isCompleted) {
+        return Response.json({ success: false, message: "Обратную связь по этой диагностике можно оставить после её завершения." }, { status: 403 });
+      }
+      if (String(tokenData.email || "").trim().toLowerCase() && String(tokenData.email).trim().toLowerCase() !== normalizedEmail) {
+        return Response.json({ success: false, message: "Укажите email, который использовался при заказе диагностики." }, { status: 403 });
       }
       feedbackKey = "feedback:" + token;
       const previousFeedback = await env.TEST_TOKENS.get(feedbackKey);
       if (previousFeedback) {
-        const previous = JSON.parse(previousFeedback);
-        return Response.json({ success: true, upgraded: Boolean(previous.promoCode), alreadySubmitted: true, emailSent: false });
+        return Response.json({ success: true, upgraded: false, alreadySubmitted: true, emailSent: false, message: "Обратная связь по этой диагностике уже отправлена." });
       }
     }
 
-    if (promoCode) {
-      if (!/^[A-Z0-9-]{5,24}$/.test(promoCode)) {
-        return Response.json({ success: false, message: "Проверьте формат промокода." }, { status: 400 });
-      }
-      promoKey = "promo:" + promoCode;
-      const promoRaw = await env.TEST_TOKENS.get(promoKey);
-      if (!promoRaw) {
-        return Response.json({ success: false, message: "Промокод не найден. Проверьте код или отправьте сообщение без него." }, { status: 404 });
-      }
-      promo = JSON.parse(promoRaw);
-      if (promo.used) {
-        return Response.json({ success: false, message: "Этот промокод уже использован, его скидку нельзя изменить." }, { status: 409 });
-      }
-      if (promo.reservedUntil && promo.reservedUntil > Date.now()) {
-        return Response.json({ success: false, message: "Промокод сейчас используется в оформлении заказа. Попробуйте обновить скидку через несколько минут." }, { status: 409 });
-      }
-      if (promo.expiresAt && promo.expiresAt <= Date.now()) {
-        return Response.json({ success: false, message: "Срок действия промокода закончился." }, { status: 410 });
+    // Сначала ищем индекс выданных промокодов по нормализованному email.
+    const emailHashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalizedEmail));
+    const emailHash = Array.from(new Uint8Array(emailHashBuffer), byte => byte.toString(16).padStart(2, "0")).join("");
+    const emailIndexKey = "promo-email:" + emailHash;
+    const indexRaw = await env.TEST_TOKENS.get(emailIndexKey);
+    let indexedCodes = indexRaw ? JSON.parse(indexRaw) : [];
+    if (!Array.isArray(indexedCodes)) indexedCodes = [];
+
+    // Для старых заказов без индекса ищем ещё живые записи диагностики в KV.
+    if (indexedCodes.length === 0 && typeof env.TEST_TOKENS.list === "function") {
+      let cursor;
+      do {
+        const page = await env.TEST_TOKENS.list({ limit: 1000, ...(cursor ? { cursor } : {}) });
+        for (const entry of page.keys || []) {
+          const key = entry.name;
+          if (!key || key.startsWith("promo:") || key.startsWith("promo-email:") || key.startsWith("feedback:") || key.startsWith("partner:")) continue;
+          const raw = await env.TEST_TOKENS.get(key);
+          if (!raw) continue;
+          let record;
+          try { record = JSON.parse(raw); } catch { continue; }
+          if (String(record.email || "").trim().toLowerCase() !== normalizedEmail || !record.promoCodeIssued) continue;
+          indexedCodes.push({ code: String(record.promoCodeIssued).toUpperCase(), createdAt: Number(record.completedAt || record.createdAt || 0) });
+        }
+        cursor = page.list_complete ? undefined : page.cursor;
+      } while (cursor);
+    }
+
+    const seenCodes = new Set();
+    const candidates = [];
+    for (const item of indexedCodes) {
+      const code = String(item?.code || "").trim().toUpperCase();
+      if (!/^[A-Z0-9-]{5,24}$/.test(code) || seenCodes.has(code)) continue;
+      seenCodes.add(code);
+      const raw = await env.TEST_TOKENS.get("promo:" + code);
+      if (!raw) continue;
+      let record;
+      try { record = JSON.parse(raw); } catch { continue; }
+      // Не позволяем повысить промокод, принадлежащий другому email.
+      if (record.email && String(record.email).trim().toLowerCase() !== normalizedEmail) continue;
+      if (record.used || (record.expiresAt && record.expiresAt <= now) || (record.reservedUntil && record.reservedUntil > now)) continue;
+      candidates.push({ code, key: "promo:" + code, record, createdAt: Number(record.issuedAt || record.createdAt || item.createdAt || 0) });
+    }
+
+    // Если токен диагностики ещё жив, его промокод тоже учитываем — это помогает старым заказам.
+    if (tokenData?.promoCodeIssued && !seenCodes.has(String(tokenData.promoCodeIssued).toUpperCase())) {
+      const code = String(tokenData.promoCodeIssued).toUpperCase();
+      const raw = await env.TEST_TOKENS.get("promo:" + code);
+      if (raw) {
+        const record = JSON.parse(raw);
+        if ((!record.email || String(record.email).trim().toLowerCase() === normalizedEmail) &&
+            !record.used && !(record.expiresAt && record.expiresAt <= now) &&
+            !(record.reservedUntil && record.reservedUntil > now)) {
+          candidates.push({ code, key: "promo:" + code, record, createdAt: Number(record.issuedAt || record.createdAt || 0) });
+        }
       }
     }
 
+    // Повышаем только самый поздний из активных промокодов клиента.
+    candidates.sort((a, b) => b.createdAt - a.createdAt);
+    if (candidates.length) {
+      promoCodeToUpgrade = candidates[0].code;
+      promoKey = candidates[0].key;
+      promo = candidates[0].record;
+      if (Number(promo.discountPercent || 10) < 15 && !promo.feedbackUpgrade) {
+        // К этому моменту выбран именно последний активный промокод по email.
+      } else {
+        promo = null;
+        promoKey = null;
+        promoCodeToUpgrade = null;
+      }
+    }
     const oldPercent = Number(promo?.discountPercent);
     const promoDiscountBefore = promo ? (Number.isFinite(oldPercent) && oldPercent > 0 ? oldPercent + "%" : (Number(promo.discount) || 90) + " ₽") : null;
-    const upgradedNow = Boolean(promo && Number(promo.discountPercent) !== 15);
+    const upgradedNow = Boolean(promo && Number(promo.discountPercent || 10) < 15 && !promo.feedbackUpgrade);
     const feedback = {
       id: feedbackId,
       createdAt: new Date().toISOString(),
@@ -75,7 +127,7 @@ export async function onRequestPost({ request, env }) {
       productKey: tokenData ? (tokenData.productKey || "unknown") : null,
       category,
       message,
-      promoCode: promoCode || null,
+      promoCode: promoCodeToUpgrade || promoCode || null,
       promoDiscountBefore,
       promoDiscountAfter: promo ? "15%" : null
     };
@@ -85,7 +137,7 @@ export async function onRequestPost({ request, env }) {
       delete promo.discount;
       promo.feedbackUpgrade = true;
       promo.feedbackAt = Date.now();
-      const ttl = Math.max(60, Math.floor(((promo.expiresAt || (Date.now() + 15552000000)) - Date.now()) / 1000));
+      const ttl = Math.max(60, Math.floor(((promo.expiresAt || (Date.now() + 45 * 24 * 60 * 60 * 1000)) - Date.now()) / 1000));
       await env.TEST_TOKENS.put(promoKey, JSON.stringify(promo), { expirationTtl: ttl });
     }
 
@@ -122,7 +174,7 @@ export async function onRequestPost({ request, env }) {
     let emailSent = false;
     if (promo && upgradedNow && env.RESEND_API_KEY && email) {
       try {
-        const safePromoCode = promoCode.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const safePromoCode = promoCodeToUpgrade.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         const safeName = name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         const response = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -138,7 +190,7 @@ export async function onRequestPost({ request, env }) {
                     <tr><td style="padding:26px 30px;background:linear-gradient(120deg,#312e81,#4f46e5,#0891b2);color:#fff;"><div style="font-size:13px;font-weight:700;letter-spacing:2px;">РЕШАЙ360</div><h1 style="margin:12px 0 0;font-size:24px;">Спасибо за вашу идею!</h1></td></tr>
                     <tr><td style="padding:28px 30px;"><p>Здравствуйте, <strong>${safeName}</strong>!</p><p style="line-height:1.7;color:#475569;">Вы помогаете сделать Решай360 полезнее. Как и обещали, мы увеличили скидку по вашему промокоду.</p>
                       <div style="padding:20px;border-radius:14px;background:#eef2ff;border:1px solid #c7d2fe;text-align:center;"><div style="font-size:12px;color:#4338ca;font-weight:800;letter-spacing:1px;">ВАШ ПРОМОКОД</div><div style="margin:12px 0;font-size:24px;font-weight:800;letter-spacing:2px;color:#312e81;">${safePromoCode}</div><div style="font-size:20px;font-weight:800;color:#4338ca;">Скидка 15%</div></div>
-                      <p style="font-size:14px;line-height:1.7;color:#475569;">Код одноразовый и действует 45 дней. Используйте его сами или поделитесь с другом.</p><p style="font-size:14px;line-height:1.7;color:#475569;">Форма обратной связи доступна на сайте: <a href="https://reshai360.ru/#feedback" style="color:#4338ca;text-decoration:underline;">оставить отзыв, пожелание или идею</a>.</p><p>Спасибо, что вы с нами!<br><strong>Команда Решай360</strong></p></td></tr>
+                      <p style="font-size:14px;line-height:1.7;color:#475569;">Код одноразовый и действует 45 дней. Используйте его сами или поделитесь с другом.</p><p>Спасибо, что вы с нами!<br><strong>Команда Решай360</strong></p></td></tr>
                     <tr><td style="padding:20px 30px;background:#0f172a;color:#cbd5e1;font-size:12px;line-height:1.7;"><a href="https://reshai360.ru" style="color:#a5b4fc;">reshai360.ru</a><p style="margin:12px 0 0;">Это автоматическое письмо. Не отвечайте на него: ответы на этот адрес не отслеживаются.</p></td></tr>
                   </table></td></tr></table></body></html>`
           })
@@ -156,7 +208,7 @@ export async function onRequestPost({ request, env }) {
       emailSent,
       upgraded: Boolean(promo && upgradedNow),
       promoPercent: promo ? Number(promo.discountPercent || 15) : null,
-      promoMessage: promo ? (upgradedNow ? "Ваш промокод повышен до скидки 15%." : "Ваш промокод уже даёт скидку 15%.") : "Спасибо! Сообщение сохранено — мы используем ваши идеи для улучшения Решай360."
+      promoMessage: promo && upgradedNow ? "Скидка по последнему активному промокоду повышена до 15%. Письмо отправлено, если почта указана верно." : "Спасибо! Сообщение сохранено — мы используем ваши идеи для улучшения Решай360."
     });
   } catch (error) {
     console.error("Submit feedback error:", error);
