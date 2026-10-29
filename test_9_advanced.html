@@ -1202,7 +1202,7 @@
           document.getElementById('promo-code-result-value').textContent = reportResult.promoCode;
           document.getElementById('promo-code-result').style.display = 'block';
           const emailStatus = document.getElementById('report-email-status');
-          if (reportResult.emailSent && studentData.email) emailStatus.innerHTML = '📩 Письмо с PDF-отчётом и промокодом на скидку 90 ₽ отправлено на <strong>' + escapeHtml(studentData.email) + '</strong>. Если письма нет, проверьте папку «Спам».';
+          if (reportResult.emailSent && studentData.email) emailStatus.innerHTML = '📩 Письмо с PDF-отчётом и промокодом на скидку 10% отправлено на <strong>' + escapeHtml(studentData.email) + '</strong>. Если письма нет, проверьте папку «Спам».';
           else if (studentData.email) emailStatus.innerHTML = '⚠️ Отчёт сформирован, но сервер не подтвердил отправку письма на <strong>' + escapeHtml(studentData.email) + '</strong>. Проверьте адрес или обратитесь в поддержку.';
           else emailStatus.textContent = 'Отчёт сформирован. Email не был указан, поэтому письмо не отправлялось.';
         } else {
