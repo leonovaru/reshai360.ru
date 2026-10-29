@@ -53,7 +53,7 @@ export async function onRequestPost({ request, env }) {
     if (!Array.isArray(indexedCodes)) indexedCodes = [];
 
     // Для старых заказов без индекса ищем ещё живые записи диагностики в KV.
-    if (indexedCodes.length === 0 && typeof env.TEST_TOKENS.list === "function") {
+    if (typeof env.TEST_TOKENS.list === "function") {
       let cursor;
       do {
         const page = await env.TEST_TOKENS.list({ limit: 1000, ...(cursor ? { cursor } : {}) });
@@ -153,7 +153,7 @@ export async function onRequestPost({ request, env }) {
         "Email: " + email,
         "Диагностика: " + (tokenData ? (tokenData.productKey || "не указана") : "не привязана"),
         "Категория: " + category,
-        promoCode ? ("Промокод " + promoCode + (promo ? (upgradedNow ? " повышен до 15%" : " — текущая скидка " + (promo.discountPercent || 10) + "%") : "")) : "",
+        (promoCodeToUpgrade || promoCode) ? ("Промокод " + (promoCodeToUpgrade || promoCode) + (promo ? (upgradedNow ? " повышен до 15%" : " — текущая скидка " + (promo.discountPercent || 10) + "%") : "")) : "",
         "",
         "Сообщение:",
         message
