@@ -1,6 +1,33 @@
 export async function onRequestPost(context) {
   const { request, env } = context;
-  
+  let createdToken = null;
+  let reservedPromoCode = null;
+
+  // Освобождаем резерв промокода и удаляем незавершённый заказ при ошибке создания платежа.
+  async function rollbackPendingOrder() {
+    if (createdToken && env.TEST_TOKENS) {
+      try { await env.TEST_TOKENS.delete(createdToken); } catch (error) {
+        console.error('Не удалось удалить незавершённый заказ:', error);
+      }
+    }
+    if (reservedPromoCode && createdToken && env.TEST_TOKENS) {
+      try {
+        const key = 'promo:' + reservedPromoCode;
+        const raw = await env.TEST_TOKENS.get(key);
+        if (raw) {
+          const promo = JSON.parse(raw);
+          if (promo.reservedBy === createdToken && !promo.used) {
+            promo.reservedBy = null;
+            promo.reservedUntil = null;
+            await env.TEST_TOKENS.put(key, JSON.stringify(promo), { expirationTtl: 15552000 });
+          }
+        }
+      } catch (error) {
+        console.error('Не удалось освободить промокод:', error);
+      }
+    }
+  }
+
   try {
     const { studentName, email, productKey, promoCode: rawPromoCode } = await request.json();
     const promoCode = String(rawPromoCode || "").trim().toUpperCase();
@@ -48,6 +75,8 @@ export async function onRequestPost(context) {
 
     // Генерируем уникальный защищенный токен
     const token = crypto.randomUUID() + '-' + crypto.randomUUID();
+    createdToken = token;
+    if (promoCode) reservedPromoCode = promoCode;
 
     // Сохраняем заказ в KV-хранилище (срок жизни 24 часа)
     await env.TEST_TOKENS.put(token, JSON.stringify({
@@ -100,6 +129,7 @@ export async function onRequestPost(context) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Ошибка ЮKassa API:', response.status, errorText);
+      await rollbackPendingOrder();
       return new Response(JSON.stringify({ message: 'Ошибка платежной системы. Попробуйте позже.' }), { status: 502 });
     }
 
@@ -114,6 +144,7 @@ export async function onRequestPost(context) {
 
   } catch (error) {
     console.error('Create payment error:', error);
+    await rollbackPendingOrder();
     return new Response(JSON.stringify({ message: 'Внутренняя ошибка сервера' }), { status: 500 });
   }
 }
