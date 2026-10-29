@@ -142,7 +142,10 @@ export async function onRequestPost(context) {
       throw new Error('Некорректный ответ от платежного шлюза');
     }
 
-    return new Response(JSON.stringify({ confirmationToken: payment.confirmation.confirmation_token }), {
+    return new Response(JSON.stringify({
+      confirmationToken: payment.confirmation.confirmation_token,
+      returnUrl: `https://reshai360.ru/success.html?token=${encodeURIComponent(createdToken)}&productKey=${encodeURIComponent(productKey)}`
+    }), {
       headers: { 'Content-Type': 'application/json' }
     });
 
