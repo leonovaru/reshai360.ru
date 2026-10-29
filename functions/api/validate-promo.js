@@ -4,6 +4,8 @@ export async function onRequestPost({ request, env }) {
     const code = String(rawCode || "").trim().toUpperCase();
 
     const displayPrices = {
+      "10_basic": 790,
+      "10_advanced": 990,
       "11_basic": 790,
       "11_advanced": 990
     };
