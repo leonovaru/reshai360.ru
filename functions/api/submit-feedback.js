@@ -59,7 +59,7 @@ export async function onRequestPost({ request, env }) {
         const page = await env.TEST_TOKENS.list({ limit: 1000, ...(cursor ? { cursor } : {}) });
         for (const entry of page.keys || []) {
           const key = entry.name;
-          if (!key || key.startsWith("promo:") || key.startsWith("promo-email:") || key.startsWith("feedback:") || key.startsWith("partner:")) continue;
+          if (!key || key.startsWith("promo:") || key.startsWith("promo-email:") || key.startsWith("feedback:") || key.startsWith("consent:") || key.startsWith("partner:")) continue;
           const raw = await env.TEST_TOKENS.get(key);
           if (!raw) continue;
           let record;
