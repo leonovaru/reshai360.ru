@@ -154,11 +154,10 @@
                         </div>
                         
                         <div class="relative w-full h-full rounded-[26px] overflow-hidden bg-slate-950 flex items-center justify-center">
-                            <video id="demo-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" controls class="w-full h-full object-cover" aria-label="Пример прохождения диагностики">
+                            <video id="demo-video" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen" class="w-full h-full object-cover pointer-events-none select-none" aria-label="Беззвучный зацикленный пример прохождения диагностики">
                                 <source id="video-source" src="/demo_mobile.mp4?v=20261030" type="video/mp4">
-                                Ваш браузер не поддерживает видео.
                             </video>
-                            <p id="video-fallback" class="hidden absolute inset-x-3 bottom-3 rounded-lg bg-slate-950/90 p-2 text-center text-xs text-white">Видео не удалось загрузить. <a href="/demo_mobile.mp4" class="underline text-indigo-300" target="_blank" rel="noopener noreferrer">Открыть видео отдельно</a></p>
+                            <p id="video-fallback" class="hidden absolute inset-x-3 bottom-3 rounded-lg bg-slate-950/90 p-2 text-center text-xs text-white">Видео временно недоступно.</p>
                         </div>
                     </div>
                 </div>
@@ -287,11 +286,10 @@
                     <div class="w-full max-w-[440px] bg-[#0d1322] border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col items-center">
                         <div class="w-full mb-3 flex flex-wrap items-center justify-between gap-2">
                             <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs sm:text-sm font-semibold">📄 Пример персонального PDF-отчёта</span>
-                            <a href="/report.pdf?v=20261030" target="_blank" rel="noopener noreferrer" class="text-xs text-indigo-300 underline underline-offset-2 hover:text-indigo-200">Открыть PDF отдельно</a>
                         </div>
                         <div id="canvas-wrapper" class="w-full bg-white rounded-2xl overflow-hidden min-h-[460px] flex items-center justify-center relative shadow-lg border border-slate-700/50">
                             <div id="pdf-loading" class="text-slate-600 text-xs p-6 text-center">Загрузка примера отчёта…</div>
-                            <canvas id="pdf-canvas" class="max-w-full h-auto hidden" oncontextmenu="return false;"></canvas>
+                            <canvas id="pdf-canvas" class="max-w-full h-auto hidden" oncontextmenu="return false;" ondragstart="return false;"></canvas>
                         </div>
                         <div class="w-full mt-4 flex items-center justify-between px-2">
                             <button id="prev-page" onclick="changePage(-1)" class="px-4 py-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700/60 rounded-xl font-bold text-xs transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-2">
@@ -541,22 +539,19 @@
         function initVideo() {
             const video = document.getElementById('demo-video');
             const fallback = document.getElementById('video-fallback');
-            if (video && fallback) {
-                video.addEventListener('error', () => fallback.classList.remove('hidden'));
-                const source = document.getElementById('video-source');
-                if (source) source.addEventListener('error', () => fallback.classList.remove('hidden'));
-            }
-            if (video) {
-                video.muted = true;
-                const playPromise = video.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(() => {
-                        const playOnTouch = () => { video.play(); };
-                        document.addEventListener('touchstart', playOnTouch, { once: true });
-                        document.addEventListener('click', playOnTouch, { once: true });
-                    });
-                }
-            }
+            if (!video) return;
+            video.muted = true;
+            video.defaultMuted = true;
+            video.loop = true;
+            video.controls = false;
+            video.removeAttribute('controls');
+            video.addEventListener('contextmenu', event => event.preventDefault());
+            video.addEventListener('error', () => {
+                if (fallback) fallback.classList.remove('hidden');
+            });
+            video.play().catch(() => {
+                // Автовоспроизведение может блокироваться настройками браузера.
+            });
         }
 
         function toggleProgramBlocks() {
@@ -582,19 +577,19 @@
         let pageNumPending = null;
 
         function initPdfViewer() {
-            if (typeof pdfjsLib === 'undefined') { const el = document.getElementById('pdf-loading'); if (el) el.innerHTML = '<div class="text-slate-600 text-xs p-4 text-center">Предпросмотр временно недоступен. <a class="text-indigo-700 underline" href="/report.pdf" target="_blank" rel="noopener noreferrer">Открыть PDF-отчёт</a></div>'; return; }
+            if (typeof pdfjsLib === 'undefined') { const el = document.getElementById('pdf-loading'); if (el) el.textContent = 'Предпросмотр отчёта временно недоступен.'; return; }
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
             const pdfFile = '/report.pdf?v=20261030';
             
-            pdfjsLib.getDocument(pdfFile).promise.then(function(doc) {
+            pdfjsLib.getDocument({ url: pdfFile, disableRange: true, disableStream: true, disableAutoFetch: true }).promise.then(function(doc) {
                 pdfDoc = doc;
                 document.getElementById('page-count').textContent = pdfDoc.numPages;
                 renderPdfPage(currentPdfPage);
             }).catch(function(err) {
                 console.error("Ошибка загрузки PDF:", err);
                 const loadingElem = document.getElementById('pdf-loading');
-                if (loadingElem) loadingElem.innerHTML = '<div class="text-rose-600 text-xs p-4 text-center">Не удалось показать предпросмотр. <a class="text-indigo-700 underline font-semibold" href="/report.pdf" target="_blank" rel="noopener noreferrer">Открыть PDF-отчёт отдельно</a></div>';
+                if (loadingElem) loadingElem.innerHTML = '<div class="text-rose-600 text-xs p-4 text-center">Не удалось загрузить пример отчёта. Попробуйте обновить страницу позже.</div>';
             });
         }
 
