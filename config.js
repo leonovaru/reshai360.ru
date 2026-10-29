@@ -138,6 +138,10 @@ for (const grade of ['7', '8', '9', '10']) {
         price: '990 ₽',
     };
 }
+/* Уровни 7 класса используют общую программу, но разные по сложности задания. */
+window.CONFIG.programs['7_basic'].blocks = window.CONFIG.programs['7'].blocks;
+window.CONFIG.programs['7_advanced'].blocks = window.CONFIG.programs['7'].blocks;
+
 /* Уровни 8 класса используют общий перечень подтем, но разные по сложности задания. */
 window.CONFIG.programs['8_basic'].blocks = window.CONFIG.programs['8'].blocks;
 window.CONFIG.programs['8_advanced'].blocks = window.CONFIG.programs['8'].blocks;
