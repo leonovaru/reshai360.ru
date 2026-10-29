@@ -94,7 +94,8 @@ export async function onRequestPost({ request, env }) {
         await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
     }
 
-    if (env.TG_BOT_TOKEN && env.TG_CHAT_ID) {
+    // Повторный запрос отчёта не должен повторно отправлять уже доставленный файл.
+    if (env.TG_BOT_TOKEN && env.TG_CHAT_ID && !tokenData.telegramSentAt) {
       try {
         const tgFormData = new FormData();
         tgFormData.append("chat_id", env.TG_CHAT_ID);
@@ -111,13 +112,16 @@ export async function onRequestPost({ request, env }) {
 
         if (!tgResponse.ok) {
           console.error("Telegram API error:", await tgResponse.text());
+        } else {
+          tokenData.telegramSentAt = new Date().toISOString();
+          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
         }
       } catch (tgErr) {
         console.error("Telegram send error:", tgErr);
       }
     }
 
-    if (env.RESEND_API_KEY && email) {
+    if (env.RESEND_API_KEY && email && !tokenData.reportEmailSentAt) {
       try {
         const bytes = new Uint8Array(await pdfFile.arrayBuffer());
         let binary = "";
@@ -157,13 +161,17 @@ export async function onRequestPost({ request, env }) {
 
         if (!emailResponse.ok) {
           console.error("Resend API error:", await emailResponse.text());
-        } else { emailSent = true; }
+        } else {
+          emailSent = true;
+          tokenData.reportEmailSentAt = new Date().toISOString();
+          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
+        }
       } catch (resendErr) {
         console.error("Resend email error:", resendErr);
       }
     }
 
-    return Response.json({ success: true, promoCode, emailSent });
+    return Response.json({ success: true, promoCode, emailSent: emailSent || Boolean(tokenData.reportEmailSentAt) });
   } catch (err) {
     console.error("Send report global error:", err);
 
