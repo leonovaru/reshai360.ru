@@ -57,6 +57,9 @@
     <noscript><div><img src="https://mc.yandex.ru/watch/113852589" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 
     <style>
+        .brand-gradient { background: linear-gradient(100deg, #818cf8 0%, #c084fc 28%, #67e8f9 55%, #a5b4fc 78%, #818cf8 100%); background-size: 240% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: brand-gradient-shift 6s ease-in-out infinite; }
+        @keyframes brand-gradient-shift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @media (prefers-reduced-motion: reduce) { .brand-gradient { animation: none; } }
         body {
             background-color: #090d16;
             color: #f1f5f9;
@@ -81,7 +84,7 @@
     <!-- ВЕРХНЯЯ ПЛАШКА О БЛАГОТВОРИТЕЛЬНОСТИ -->
     <div class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white text-xs sm:text-sm font-bold py-1.5 px-4 text-center flex items-center justify-center space-x-2 shadow-md">
         <span>🐾</span>
-        <span>100 ₽ с каждой оплаченной диагностики — приюту «Собачий мир»</span>
+        <span>1 диагностика = 1 сытый пёсик в приюте</span>
         <span>🐾</span>
     </div>
 
@@ -89,10 +92,10 @@
     <div id="sticky-bar" class="fixed top-7 left-0 right-0 z-40 bg-[#090d16]/95 backdrop-blur-md border-b border-indigo-500/30 py-2.5 px-4 shadow-2xl transition-all duration-300">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <a href="#" class="flex items-center" aria-label="Решай360 — на главную">
-                <span class="text-xl sm:text-2xl font-black tracking-tight text-white">РЕШАЙ360</span>
+                <span class="brand-gradient text-xl sm:text-2xl font-black tracking-tight">РЕШАЙ360</span>
             </a>
             
-            <nav class="flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm font-semibold">
+            <nav class="hidden lg:flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm font-semibold">
                 <a href="#select-program" class="text-slate-300 hover:text-white transition px-2 py-1">Диагностика</a>
                 <a href="#charity" class="text-amber-400 hover:text-amber-300 transition px-2 py-1 flex items-center space-x-1">
                     <span>🐾</span>
@@ -195,6 +198,17 @@
                             </div>
                         </div>
 
+                        <div id="mobile-program-accordion" class="hidden lg:hidden mt-3 rounded-xl border border-indigo-500/30 bg-slate-950/60 p-3">
+                            <button type="button" id="mobile-program-toggle-top" onclick="toggleMobileProgram()" aria-expanded="false" aria-controls="mobile-program-content" class="w-full flex items-center justify-between gap-3 text-left text-sm font-bold text-indigo-200">
+                                <span id="mobile-program-toggle-label">Посмотреть программу диагностики</span>
+                                <i id="mobile-program-toggle-icon" class="fa-solid fa-chevron-down text-xs"></i>
+                            </button>
+                            <div id="mobile-program-content" class="hidden mt-3">
+                                <div id="mobile-blocks-container" class="grid grid-cols-1 gap-3 text-xs sm:text-sm"></div>
+                                <button type="button" onclick="toggleMobileProgram(false)" class="mt-4 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2.5 text-xs font-bold text-slate-200">Свернуть программу ↑</button>
+                            </div>
+                        </div>
+
                         <div class="border-t border-slate-800 pt-4">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-black">2</span>
@@ -258,7 +272,7 @@
                 </div>
 
                 <!-- Правый блок: программа выбранной диагностики -->
-                <div id="program-panel" class="lg:col-span-8 glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-2xl min-w-0 lg:overflow-y-auto">
+                <div id="program-panel" class="hidden lg:block lg:col-span-8 glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-2xl min-w-0 lg:overflow-y-auto">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-slate-800 pb-3 mb-3">
                         <div>
                             <h3 id="card-title" class="text-xl sm:text-2xl font-extrabold text-white">Диагностика 10 класса</h3>
@@ -432,7 +446,7 @@
         </div>
     </footer>
 
-    <a href="#select-program" id="mobile-diagnostics-cta" class="fixed bottom-3 left-3 right-3 z-40 lg:hidden flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 px-5 py-4 text-sm font-extrabold text-white shadow-2xl shadow-indigo-950/50 border border-indigo-300/30" style="padding-bottom:calc(1rem + env(safe-area-inset-bottom));"><i class="fa-solid fa-calculator"></i><span>Пройти диагностику</span></a>
+    <a href="#select-program" id="mobile-diagnostics-cta" class="fixed bottom-3 left-3 right-3 z-40 lg:hidden flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 px-5 py-4 text-sm font-extrabold text-white shadow-2xl shadow-indigo-950/50 border border-indigo-300/30" style="padding-bottom:calc(1rem + env(safe-area-inset-bottom));"><span>Пройти диагностику</span></a>
 
     <!-- СКРИПТЫ -->
     <script>
@@ -696,6 +710,18 @@
             });
         }
 
+        function toggleMobileProgram(forceOpen) {
+            const content = document.getElementById('mobile-program-content');
+            const label = document.getElementById('mobile-program-toggle-label');
+            const icon = document.getElementById('mobile-program-toggle-icon');
+            const topButton = document.getElementById('mobile-program-toggle-top');
+            const isOpen = typeof forceOpen === 'boolean' ? forceOpen : content.classList.contains('hidden');
+            content.classList.toggle('hidden', !isOpen);
+            label.textContent = isOpen ? 'Свернуть программу диагностики' : 'Посмотреть программу диагностики';
+            icon.className = isOpen ? 'fa-solid fa-chevron-up text-xs' : 'fa-solid fa-chevron-down text-xs';
+            topButton.setAttribute('aria-expanded', String(isOpen));
+        }
+
         // Выбор класса и уровня: программа и стоимость синхронно обновляются из CONFIG.
         function selectOption(key) {
             if (!key) {
@@ -718,6 +744,9 @@
                 document.getElementById('payment-button-label').innerText = 'Выберите класс и уровень диагностики';
                 document.getElementById('payment-readiness-note').classList.add('hidden');
                 document.getElementById('blocks-container').innerHTML = '<div class="sm:col-span-2 rounded-2xl border border-dashed border-slate-700 p-6 text-center text-sm text-slate-300">Выберите класс, чтобы увидеть программу диагностики.</div>';
+                document.getElementById('mobile-program-accordion').classList.add('hidden');
+                document.getElementById('mobile-program-content').classList.add('hidden');
+                document.getElementById('mobile-blocks-container').innerHTML = document.getElementById('blocks-container').innerHTML;
                 return;
             }
             const isLevelKey = /^(7|8|9|10|11)_(basic|advanced)$/.test(key);
@@ -760,6 +789,8 @@
                         '</ul></div>'
                 ).join('');
                 if (!container.innerHTML) container.innerHTML = '<div class="sm:col-span-2 text-sm text-slate-300">Программа для этого класса пока не заполнена.</div>';
+                document.getElementById('mobile-blocks-container').innerHTML = container.innerHTML;
+                document.getElementById('mobile-program-accordion').classList.remove('hidden');
                 return;
             }
             const data = programs[key];
@@ -798,6 +829,8 @@
                     '</ul></div>'
             ).join('');
             if (!container.innerHTML) container.innerHTML = '<div class="sm:col-span-2 text-sm text-slate-300">Программа для этого варианта пока не заполнена.</div>';
+            document.getElementById('mobile-blocks-container').innerHTML = container.innerHTML;
+            document.getElementById('mobile-program-accordion').classList.remove('hidden');
             requestAnimationFrame(syncProgramPanelHeight);
         }
 
@@ -909,9 +942,9 @@
                     }
 
                     let widget;
+                    let paymentFinished = false;
                     widget = new window.YooMoneyCheckoutWidget({
                         confirmation_token: data.confirmationToken,
-                        return_url: data.returnUrl,
                         customization: {
                             modal: true,
                             colors: { control_primary: '#6366f1' }
@@ -925,7 +958,27 @@
                         }
                     });
 
+                    // Без return_url ЮKassa вызывает события success/fail. После успеха
+                    // сами переводим основное окно браузера на серверную проверку заказа,
+                    // а не оставляем страницу результата внутри модального виджета.
+                    widget.on('success', function() {
+                        if (paymentFinished) return;
+                        paymentFinished = true;
+                        try { widget.destroy(); } catch (_) {}
+                        window.location.assign(data.returnUrl);
+                    });
+
+                    widget.on('fail', function() {
+                        if (paymentFinished) return;
+                        paymentFinished = true;
+                        try { widget.destroy(); } catch (_) {}
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnContent;
+                        alert('Платёж не был завершён. Проверьте статус в банке; если деньги списались, обратитесь в поддержку — повторно оплачивать не нужно.');
+                    });
+
                     widget.on('modal_close', function() {
+                        if (paymentFinished) return;
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalBtnContent;
                     });
