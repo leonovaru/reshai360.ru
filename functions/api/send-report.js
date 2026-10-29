@@ -93,6 +93,15 @@ export async function onRequestPost({ request, env }) {
           tokenData.promoCodeIssued = promoCode;
         }
 
+        // Одноразово сгенерированный непрозрачный токен позволяет предзаполнить форму,
+        // не помещая имя и email в URL письма или историю браузера.
+        const feedbackPrefillToken = crypto.randomUUID().replace(/-/g, "");
+        await env.TEST_TOKENS.put("feedback-prefill:" + feedbackPrefillToken, JSON.stringify({
+          name: String(name || "").trim(),
+          email: String(email || "").trim().toLowerCase(),
+          createdAt: Date.now()
+        }), { expirationTtl: 45 * 24 * 60 * 60 });
+
         // Связываем промокод с email заказа, чтобы форму ОС можно было заполнить позже по ссылке из письма.
         const normalizedEmail = String(email || "").trim().toLowerCase();
         if (promoCode && normalizedEmail) {
@@ -191,7 +200,7 @@ export async function onRequestPost({ request, env }) {
                           <div style="font-size:13px;color:#4338ca;font-weight:800;text-transform:uppercase;letter-spacing:.8px;">🎁 Подарок за прохождение</div>
                           <div style="margin:10px 0;padding:12px;background:#ffffff;border:1px dashed #818cf8;border-radius:10px;text-align:center;font-size:22px;letter-spacing:2px;font-weight:800;color:#312e81;">${promoCode}</div>
                           <p style="margin:0;font-size:14px;line-height:1.65;color:#3730a3;">Промокод даёт <strong>скидку 10%</strong> на следующую диагностику. Используйте его сами или поделитесь с другом. Код одноразовый и действует 45 дней.</p>
-                          <p style="margin:12px 0 0;font-size:13px;line-height:1.65;color:#4338ca;">Оставьте отзыв, пожелание или идею — скидка по промокоду увеличится до <strong>15%</strong>. <a href="https://reshai360.ru/#feedback" style="color:#4338ca;text-decoration:underline;font-weight:700;">Открыть форму обратной связи</a>.</p>
+                          <p style="margin:12px 0 0;font-size:13px;line-height:1.65;color:#4338ca;">Оставьте отзыв, пожелание или идею — скидка по промокоду увеличится до <strong>15%</strong>. <a href="https://reshai360.ru/?feedback_token=${feedbackPrefillToken}#feedback" style="color:#4338ca;text-decoration:underline;font-weight:700;">Открыть форму обратной связи</a>.</p>
                         </div>` : ""}
                         <p style="margin:22px 0 0;font-size:15px;line-height:1.7;color:#475569;">С заботой о знаниях и хвостиках,<br><strong>Команда Решай360</strong></p>
                       </td></tr>
