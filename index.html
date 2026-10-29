@@ -536,7 +536,7 @@
                     });
                     const result = await response.json().catch(() => ({}));
                     if (!response.ok || !result.success) throw new Error(result.message || 'Не удалось отправить сообщение.');
-                    status.textContent = result.upgraded ? 'Спасибо! Ваш промокод теперь даёт скидку 15% вместо 10%.' : (result.promoMessage || 'Спасибо! Сообщение сохранено — мы используем ваши идеи для улучшения Решай360.');
+                    status.textContent = (result.upgraded || result.promoPercent) ? 'Спасибо! Сообщение отправлено. Если промокод был указан, проверьте почту.' : 'Спасибо! Сообщение сохранено — мы используем ваши идеи для улучшения Решай360.';
                     form.reset();
                 } catch (error) { status.textContent = error.message || 'Ошибка отправки. Попробуйте ещё раз.'; }
                 finally { button.disabled = false; button.textContent = 'Отправить обратную связь'; }
