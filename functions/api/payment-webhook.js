@@ -58,7 +58,9 @@ export async function onRequestPost(context) {
 
     // Партнёрское начисление создаётся только после серверного подтверждения оплаты.
     // Ключ основан на payment ID: повторный webhook перезаписывает ту же запись, а не создаёт новую.
-    if (tokenData.referralCode && /^[a-z0-9_-]{3,32}$/.test(tokenData.referralCode)) {
+    // По умолчанию партнёрские начисления выключены: сейчас платежи проекта в тестовом режиме по 1 ₽.
+    // Включать PARTNER_PROGRAM_ENABLED=true только после переключения оплаты на реальные цены.
+    if (env.PARTNER_PROGRAM_ENABLED === 'true' && tokenData.referralCode && /^[a-z0-9_-]{3,32}$/.test(tokenData.referralCode)) {
       const partnerCode = tokenData.referralCode;
       const partnerRaw = await env.TEST_TOKENS.get('partner:profile:' + partnerCode);
       if (partnerRaw) {
