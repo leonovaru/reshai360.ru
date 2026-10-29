@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Диагностический тест по математике | 8 класс — базовый уровень</title>
+  <title>Диагностический тест по математике | 7 класс — базовый уровень</title>
   
   <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш номер счетчика) -->
   <script type="text/javascript" >
@@ -116,14 +116,15 @@
     .badge-err { background: #fef9c3; color: #a16207; }
     .badge-skip { background: #fee2e2; color: #b91c1c; }
     .page-footer { position: absolute; bottom: 10px; left: 40px; right: 40px; text-align: center; font-size: 0.72em; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; }
-  </style>
+      .question-title svg { display:block; max-width:100%; height:auto; }
+</style>
 </head>
 <body>
 
 <div class="container" id="main-container">
   <div id="quiz-screen" style="display: block;">
     <div class="top-instruction">
-      <div style="font-weight:700;color:#2563eb;margin:0 0 6px 0;">Диагностика 8 класса — базовый уровень</div>
+      <div style="font-weight:700;color:#2563eb;margin:0 0 6px 0;">Диагностика 7 класса — базовый уровень</div>
       <div class="top-instruction-title">📋 Правила прохождения теста:</div>
       <ul>
         <li>Решайте задания самостоятельно и не пытайтесь угадывать ответы наугад.</li>
@@ -192,7 +193,7 @@
       }
 
       if (result.data) {
-        if (result.data.productKey !== '8_basic') {
+        if (result.data.productKey !== '7_basic') {
           alert("Эта ссылка не соответствует выбранному уровню диагностики.");
           window.location.href = "index.html";
           return;
