@@ -3,12 +3,38 @@ export async function onRequestPost({ request, env }) {
   try {
     const formData = await request.formData();
 
-    const token = formData.get("token");
-    const email = formData.get("email");
-    const name = formData.get("name");
+    const token = String(formData.get("token") || "").trim();
+    const submittedEmail = String(formData.get("email") || "").trim();
+    const submittedName = String(formData.get("name") || "Ученик").trim();
     const score = formData.get("score");
     const total = formData.get("total");
     const pdfFile = formData.get("document");
+
+    // Отчёт и бонусный промокод доступны только по действительному оплаченному заказу.
+    if (!token || !env.TEST_TOKENS) {
+      return Response.json(
+        { success: false, message: "Не удалось подтвердить оплаченный заказ." },
+        { status: 403 }
+      );
+    }
+    const tokenDataRaw = await env.TEST_TOKENS.get(token);
+    if (!tokenDataRaw) {
+      return Response.json(
+        { success: false, message: "Ссылка на диагностику недействительна или истекла." },
+        { status: 403 }
+      );
+    }
+    const tokenData = JSON.parse(tokenDataRaw);
+    if (tokenData.isPaid !== true) {
+      return Response.json(
+        { success: false, message: "Отчёт доступен только после подтверждения оплаты." },
+        { status: 403 }
+      );
+    }
+
+    // Используем контактные данные из серверной записи заказа.
+    const email = String(tokenData.email || submittedEmail).trim();
+    const name = String(tokenData.studentName || submittedName).trim();
 
     if (!pdfFile || typeof pdfFile.arrayBuffer !== "function") {
       return Response.json(
@@ -23,7 +49,9 @@ export async function onRequestPost({ request, env }) {
     if (
       !Number.isFinite(scoreNumber) ||
       !Number.isFinite(totalNumber) ||
-      totalNumber <= 0
+      totalNumber <= 0 ||
+      scoreNumber < 0 ||
+      scoreNumber > totalNumber
     ) {
       return Response.json(
         { success: false, message: "Некорректный результат теста" },
@@ -36,10 +64,7 @@ export async function onRequestPost({ request, env }) {
 
     let promoCode = null;
     let emailSent = false;
-    if (token && env.TEST_TOKENS) {
-      const tokenDataRaw = await env.TEST_TOKENS.get(token);
-      if (tokenDataRaw) {
-        const tokenData = JSON.parse(tokenDataRaw);
+    {
         tokenData.isCompleted = true;
 
         // Один промокод на завершённую диагностику; повторный запрос отчёта не создаёт новый.
@@ -67,7 +92,6 @@ export async function onRequestPost({ request, env }) {
           tokenData.promoCodeIssued = promoCode;
         }
         await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
-      }
     }
 
     if (env.TG_BOT_TOKEN && env.TG_CHAT_ID) {
