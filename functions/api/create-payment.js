@@ -30,7 +30,21 @@ export async function onRequestPost(context) {
   }
 
   try {
-    const { studentName, email, productKey, promoCode: rawPromoCode, referralCode: rawReferralCode } = await request.json();
+    const { studentName, email, productKey, promoCode: rawPromoCode, referralCode: rawReferralCode, personalDataConsent, offerAccepted } = await request.json();
+    if (personalDataConsent !== true || offerAccepted !== true) {
+      return Response.json({ message: "Для оформления заказа необходимо отдельно подтвердить согласие на обработку персональных данных и принятие публичной оферты." }, { status: 400 });
+    }
+    const consentAt = new Date().toISOString();
+    const consentRecord = {
+      studentName: String(studentName || "").trim(),
+      email: String(email || "").trim().toLowerCase(),
+      personalDataConsent: true,
+      personalDataConsentAt: consentAt,
+      personalDataConsentVersion: "2026-10-30",
+      offerAccepted: true,
+      offerAcceptedAt: consentAt,
+      offerVersion: "2026-10-30"
+    };
     const promoCode = String(rawPromoCode || "").trim().toUpperCase();
     const referralCandidate = String(rawReferralCode || "").trim().toLowerCase();
     let referralCode = null;
@@ -96,9 +110,16 @@ export async function onRequestPost(context) {
       productKey,
       promoCode: promoCode || null,
       referralCode,
+      consentRecord,
       isPaid: false,
       isUsed: false
     }), { expirationTtl: 86400 });
+    // Отдельная запись подтверждения согласия нужна для доказуемости факта и версии документов.
+    await env.TEST_TOKENS.put("consent:" + token, JSON.stringify({
+      ...consentRecord,
+      orderToken: token,
+      recordedAt: consentAt
+    }), { expirationTtl: 94608000 });
 
     // Короткая резервация не даёт параллельно применить один промокод в нескольких заказах.
     if (promoCode && promoRecord) {
