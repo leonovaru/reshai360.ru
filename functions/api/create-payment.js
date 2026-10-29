@@ -30,8 +30,18 @@ export async function onRequestPost(context) {
   }
 
   try {
-    const { studentName, email, productKey, promoCode: rawPromoCode } = await request.json();
+    const { studentName, email, productKey, promoCode: rawPromoCode, referralCode: rawReferralCode } = await request.json();
     const promoCode = String(rawPromoCode || "").trim().toUpperCase();
+    const referralCandidate = String(rawReferralCode || "").trim().toLowerCase();
+    let referralCode = null;
+    if (/^[a-z0-9_-]{3,32}$/.test(referralCandidate) && env.TEST_TOKENS) {
+      // Источник принимается только для существующего партнёра из серверного реестра.
+      const partnerRaw = await env.TEST_TOKENS.get('partner:profile:' + referralCandidate);
+      if (partnerRaw) {
+        const partner = JSON.parse(partnerRaw);
+        if (partner.active !== false) referralCode = referralCandidate;
+      }
+    }
 
     const PRODUCTS = {
       '7': { title: 'Диагностика — 7 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_7_basic.html' },
@@ -85,6 +95,7 @@ export async function onRequestPost(context) {
       email,
       productKey,
       promoCode: promoCode || null,
+      referralCode,
       isPaid: false,
       isUsed: false
     }), { expirationTtl: 86400 });
