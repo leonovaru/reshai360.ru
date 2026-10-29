@@ -6,15 +6,17 @@ export async function onRequestPost(context) {
     const promoCode = String(rawPromoCode || "").trim().toUpperCase();
 
     const PRODUCTS = {
-      '7': { title: 'Диагностика — 7 класс', price: 1, file: 'test_7.html' },
-      '8': { title: 'Диагностика — 8 класс', price: 1, file: 'test_8.html' },
+      '7': { title: 'Диагностика — 7 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_7_basic.html' },
+      '7_basic': { title: 'Диагностика — 7 класс, базовый уровень', price: 1, displayPrice: 790, file: 'test_7_basic.html' },
+      '7_advanced': { title: 'Диагностика — 7 класс, продвинутый уровень', price: 1, displayPrice: 990, file: 'test_7_advanced.html' },
+      '8': { title: 'Диагностика — 8 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_8_basic.html' },
       '8_basic': { title: 'Диагностика — 8 класс, базовый уровень', price: 1, displayPrice: 790, file: 'test_8_basic.html' },
       '8_advanced': { title: 'Диагностика — 8 класс, продвинутый уровень', price: 1, displayPrice: 990, file: 'test_8_advanced.html' },
-      '9': { title: 'Диагностика — 9 класс (ОГЭ, старый заказ)', price: 1, file: 'test_9.html' },
+      '9': { title: 'Диагностика — 9 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_9_basic.html' },
       '9_basic': { title: 'Диагностика — 9 класс, базовый уровень', price: 1, displayPrice: 790, file: 'test_9_basic.html' },
       '9_advanced': { title: 'Диагностика — 9 класс, продвинутый уровень', price: 1, displayPrice: 990, file: 'test_9_advanced.html' },
-      '10': { title: 'Диагностика — 10 класс', price: 1, file: 'test_10.html' },
-      '11': { title: 'Диагностика — 11 класс (старый заказ)', price: 1, file: 'test_11.html' },
+      '10': { title: 'Диагностика — 10 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_10_basic.html' },
+      '11': { title: 'Диагностика — 11 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_11_basic.html' },
       '10_basic': { title: 'Диагностика — 10 класс, базовый уровень', price: 1, displayPrice: 790, file: 'test_10_basic.html' },
       '10_advanced': { title: 'Диагностика — 10 класс, продвинутый уровень', price: 1, displayPrice: 990, file: 'test_10_advanced.html' },
       '11_basic': { title: 'Диагностика — 11 класс, базовый уровень', price: 1, file: 'test_11_basic.html' },
