@@ -42,8 +42,16 @@ export async function onRequestPost({ request, env }) {
       return Response.json({ valid: false, message: "Промокод уже оформляется в другом заказе. Попробуйте через несколько минут." }, { status: 409 });
     }
 
-    const discount = Math.min(Number(promo.discount) || 190, basePrice);
-    return Response.json({ valid: true, discount, finalPrice: basePrice - discount });
+    let discount;
+    let discountPercent = null;
+    if (Number.isFinite(Number(promo.discountPercent)) && Number(promo.discountPercent) > 0) {
+      discountPercent = Math.min(100, Number(promo.discountPercent));
+      discount = Math.min(Math.round(basePrice * discountPercent / 100), basePrice);
+    } else {
+      // Поддержка ранее выданных промокодов с фиксированной скидкой в рублях.
+      discount = Math.min(Number(promo.discount) || 90, basePrice);
+    }
+    return Response.json({ valid: true, discount, discountPercent, finalPrice: basePrice - discount });
   } catch (error) {
     console.error("Validate promo error:", error);
     return Response.json({ valid: false, message: "Не удалось проверить промокод." }, { status: 500 });

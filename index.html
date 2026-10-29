@@ -38,22 +38,24 @@
         .phone-mockup {
             box-shadow: 0 0 50px rgba(99, 102, 241, 0.2);
         }
+        @media (max-width: 1023px) { body { padding-bottom: 5.5rem; } }
+        #program-panel { scrollbar-width: thin; scrollbar-color: #475569 transparent; }
     </style>
 </head>
 <body class="font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col justify-between pt-20">
 
     <!-- ВЕРХНЯЯ ПЛАШКА О БЛАГОТВОРИТЕЛЬНОСТИ -->
     <div class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white text-xs sm:text-sm font-bold py-1.5 px-4 text-center flex items-center justify-center space-x-2 shadow-md">
-        <span class="inline-block animate-bounce">🐾</span>
-        <span>1 диагностика = 1 сытый пёсик</span>
-        <span class="inline-block animate-bounce">🐾</span>
+        <span>🐾</span>
+        <span>100 ₽ с каждой оплаченной диагностики — приюту «Собачий мир»</span>
+        <span>🐾</span>
     </div>
 
     <!-- ЛИПКАЯ ПЛАШКА СВЕРХУ ПРИ СКРОЛЛЕ -->
     <div id="sticky-bar" class="fixed top-7 left-0 right-0 z-40 bg-[#090d16]/95 backdrop-blur-md border-b border-indigo-500/30 py-2.5 px-4 shadow-2xl transition-all duration-300">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <a href="#" class="flex items-center space-x-3">
-                <span class="text-lg sm:text-xl font-black tracking-wider bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">РЕШАЙ360</span>
+                <img src="/logo.png" alt="Решай360" class="h-9 sm:h-10 w-auto object-contain" width="160" height="40">
             </a>
             
             <nav class="flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm font-semibold">
@@ -149,13 +151,13 @@
                 <h2 class="text-2xl sm:text-3xl font-black uppercase tracking-wide text-white">Диагностика знаний</h2>
             </div>
 
-            <div class="grid lg:grid-cols-12 gap-4 lg:gap-5 items-stretch">
+            <div class="grid lg:grid-cols-12 gap-4 lg:gap-5 items-start">
                 <!-- Левый блок: выбор и оплата -->
-                <div class="lg:col-span-4 glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-2xl">
+                <div id="checkout-panel" class="lg:col-span-4 glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-2xl lg:sticky lg:top-28 lg:self-start">
                     <div class="space-y-3">
                         <div>
                             <div class="flex items-center gap-2.5">
-                                <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-500/15 text-indigo-300 text-xs font-black shrink-0">1</span>
+                                <span class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-black shrink-0">1</span>
                                 <label for="grade-select" class="shrink-0 text-sm font-bold text-white">Выберите класс</label>
                                 <select id="grade-select" onchange="selectOption(this.value)" class="min-w-0 w-28 ml-auto bg-slate-950 border border-slate-700 rounded-lg px-2 py-2 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
                                     <option value="" selected></option><option value="7">7 класс</option><option value="8">8 класс</option><option value="9">9 класс</option><option value="10">10 класс</option><option value="11">11 класс</option>
@@ -182,6 +184,7 @@
                     </div>
 
                     <form id="checkout-form" onsubmit="handleSubmit(event)" class="mt-5 pt-5 border-t border-slate-800 space-y-4">
+                        <div class="flex items-center gap-2 mb-1"><span class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-black shrink-0">3</span><h3 class="text-sm font-bold text-white">Ваши данные</h3></div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="min-w-0">
                                 <label for="student-name" class="block pl-3 text-xs font-semibold text-slate-300 mb-1.5">Ваше имя</label>
@@ -192,14 +195,6 @@
                                 <input type="email" id="student-email" required autocomplete="email" placeholder="student@mail.ru" class="w-full min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
                             </div>
                         </div>
-                        <div class="space-y-2">
-                            
-                            <div class="flex gap-2">
-                                <input type="text" id="promo-code" maxlength="24" autocomplete="off" oninput="clearAppliedPromoCode()" placeholder="Введите промокод" class="min-w-0 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white uppercase placeholder:normal-case placeholder:text-slate-500 focus:outline-none focus:border-indigo-500">
-                                <button type="button" id="apply-promo-button" onclick="applyPromoCode()" class="shrink-0 rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-2 text-xs font-bold text-white">Применить</button>
-                            </div>
-                            <p id="promo-status" class="hidden text-xs leading-relaxed" aria-live="polite"></p>
-                        </div>
                         <div class="flex items-start gap-2.5 pt-1 text-xs text-slate-400">
                             <input type="checkbox" id="consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
                             <label for="consent" class="text-[11px] leading-relaxed text-slate-400">
@@ -207,6 +202,15 @@
                                 <a id="link-policy" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Политики конфиденциальности</a>
                                 и <a id="link-offer" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Публичной оферты</a>.
                             </label>
+                        </div>
+                        <div class="space-y-2 border-t border-slate-800 pt-4">
+                            <div class="flex items-center gap-2 mb-1"><span class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-black shrink-0">4</span><h3 class="text-sm font-bold text-white">Промокод</h3></div>
+                            <p class="text-xs text-slate-400">Есть код на скидку? Введите его здесь.</p>
+                            <div class="flex gap-2">
+                                <input type="text" id="promo-code" maxlength="24" autocomplete="off" oninput="clearAppliedPromoCode()" placeholder="Введите промокод" class="min-w-0 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white uppercase placeholder:normal-case placeholder:text-slate-500 focus:outline-none focus:border-indigo-500">
+                                <button type="button" id="apply-promo-button" onclick="applyPromoCode()" class="shrink-0 rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-2 text-xs font-bold text-white">Применить</button>
+                            </div>
+                            <p id="promo-status" class="hidden text-xs leading-relaxed" aria-live="polite"></p>
                         </div>
                         <button id="pay-button" type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-3 rounded-xl transition shadow-xl shadow-indigo-600/25 text-sm flex items-center justify-center gap-2">
                             <span id="payment-button-label">Перейти к оплате</span>
@@ -218,7 +222,7 @@
                 </div>
 
                 <!-- Правый блок: программа выбранной диагностики -->
-                <div class="lg:col-span-8 glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-2xl min-w-0 h-full">
+                <div id="program-panel" class="lg:col-span-8 glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-2xl min-w-0 lg:overflow-y-auto">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-slate-800 pb-3 mb-3">
                         <div>
                             <h3 id="card-title" class="text-xl sm:text-2xl font-extrabold text-white">Диагностика 10 класса</h3>
@@ -369,7 +373,7 @@
 
                 <!-- Основной текст -->
                 <p class="text-slate-300 text-xs sm:text-sm leading-relaxed text-center sm:text-left">
-                    С каждой проданной диагностики мы переводим <strong class="text-amber-400">100 ₽</strong> в фонд помощи бездомным животным <strong class="text-white">«Собачий мир»</strong> (г. Красноярск). Приобретая диагностику для себя, вы одновременно дарите день сытой жизни одному из подопечных приюта.
+                    За каждую оплаченную диагностику Решай360 направляет <strong class="text-amber-400">100 ₽</strong> в приют помощи бездомным животным <strong class="text-white">«Собачий мир»</strong> (г. Красноярск). Переводы осуществляются регулярно; подтверждения и отчёты публикует приют в своём Telegram-канале.
                 </p>
 
                 <!-- Информационная плашка -->
@@ -378,7 +382,7 @@
                         <div class="text-amber-400 text-2xl">🍲</div>
                         <div>
                             <div class="text-white font-bold text-sm">Прозрачная помощь</div>
-                            <div class="text-slate-400 text-xs">Отчеты о переводах публикуются в канале приюта</div>
+                            <div class="text-slate-400 text-xs">Подтверждения и отчёты публикуются в Telegram-канале приюта</div>
                         </div>
                     </div>
                     <a id="link-charity-tg" href="https://t.me/sobachiy_mir_krsk" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2.5 rounded-xl font-bold text-xs transition shrink-0">
@@ -393,11 +397,12 @@
     
     <!-- Обратная связь от посетителей -->
     <section id="site-feedback" class="py-10 border-t border-slate-800/60"><div class="max-w-3xl mx-auto px-4"><div class="glass-panel rounded-2xl p-5 sm:p-7 border border-indigo-500/20 space-y-4">
-      <div><p class="text-xs font-bold uppercase tracking-widest text-indigo-300 mb-1">Обратная связь</p><h2 class="text-xl sm:text-2xl font-extrabold text-white">Что нам улучшить в Решай360?</h2><p class="text-sm text-slate-300 mt-2 leading-relaxed">Подскажите, какие темы или продукты вам нужны, что стоит изменить в заданиях, отчётах или прохождении диагностики. Мы читаем каждое сообщение и используем предложения для развития платформы.</p></div>
+      <div><p class="text-xs font-bold uppercase tracking-widest text-indigo-300 mb-1">Обратная связь</p><h2 class="text-xl sm:text-2xl font-extrabold text-white">Что нам улучшить в Решай360?</h2><p class="text-sm text-slate-300 mt-2 leading-relaxed">Подскажите, какие темы или продукты вам нужны, что стоит изменить в заданиях, отчётах или прохождении диагностики. Мы читаем каждое сообщение и используем предложения для развития платформы.</p><div class="mt-4 rounded-xl border border-indigo-500/25 bg-indigo-500/10 p-4 text-sm leading-relaxed text-slate-200"><strong class="text-white">После диагностики вы получите промокод на <span class="text-indigo-300">10%</span></strong> для следующей диагностики или для друга.<br>Оставите отзыв, пожелание или идею — увеличим скидку до <strong class="text-indigo-300">15%</strong>.</div></div>
       <form id="site-feedback-form" class="grid sm:grid-cols-2 gap-3">
         <div><label for="site-feedback-name" class="block text-xs font-semibold text-slate-300 mb-1.5">Ваше имя</label><input id="site-feedback-name" required maxlength="200" autocomplete="name" placeholder="Как к вам обращаться" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white placeholder:text-slate-500"></div>
         <div><label for="site-feedback-email" class="block text-xs font-semibold text-slate-300 mb-1.5">Email для ответа</label><input id="site-feedback-email" required type="email" maxlength="320" autocomplete="email" placeholder="you@example.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white placeholder:text-slate-500"></div>
         <div class="sm:col-span-2"><label for="site-feedback-kind" class="block text-xs font-semibold text-slate-300 mb-1.5">Тема сообщения</label><select id="site-feedback-kind" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white"><option value="Улучшение теста">Улучшить задания и диагностику</option><option value="Удобство прохождения">Сделать прохождение удобнее</option><option value="Новый продукт">Предложить новый продукт или тему</option><option value="Отзыв">Оставить отзыв</option><option value="Другое">Другое</option></select></div>
+        <div class="sm:col-span-2"><label for="site-feedback-promo" class="block text-xs font-semibold text-slate-300 mb-1.5">Промокод после диагностики (необязательно)</label><input id="site-feedback-promo" maxlength="24" autocomplete="off" placeholder="R360-…" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white uppercase placeholder:normal-case placeholder:text-slate-500"><p class="text-xs text-slate-400 mt-1">Если оставите отзыв или идею и укажете свой промокод, скидка по нему вырастет с 10% до 15%.</p></div>
         <div class="sm:col-span-2"><label for="site-feedback-message" class="block text-xs font-semibold text-slate-300 mb-1.5">Ваши идеи и пожелания</label><textarea id="site-feedback-message" required minlength="5" maxlength="5000" rows="4" placeholder="Что было неудобно? Чего не хватило? Какой продукт вам пригодился бы?" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white placeholder:text-slate-500"></textarea></div>
         <div class="sm:col-span-2 flex flex-col sm:flex-row sm:items-center gap-3"><button id="site-feedback-submit" type="submit" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-3 text-sm font-bold text-white">Отправить обратную связь</button><p id="site-feedback-status" class="text-sm text-slate-300" aria-live="polite"></p></div>
       </form></div></div></section>
@@ -447,6 +452,8 @@
         </div>
     </footer>
 
+    <a href="#select-program" id="mobile-diagnostics-cta" class="fixed bottom-3 left-3 right-3 z-40 lg:hidden flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 px-5 py-4 text-sm font-extrabold text-white shadow-2xl shadow-indigo-950/50 border border-indigo-300/30" style="padding-bottom:calc(1rem + env(safe-area-inset-bottom));"><i class="fa-solid fa-calculator"></i><span>Пройти диагностику</span></a>
+
     <!-- СКРИПТЫ -->
     <script>
         let currentSelectedProductKey = '10'; // по умолчанию 10 класс
@@ -458,6 +465,7 @@
             initVideo();
             initPdfViewer();
             selectOption('');
+            syncProgramPanelHeight();
         });
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -476,12 +484,13 @@
                             name: document.getElementById('site-feedback-name').value.trim(),
                             email: document.getElementById('site-feedback-email').value.trim(),
                             category: document.getElementById('site-feedback-kind').value,
+                            promoCode: document.getElementById('site-feedback-promo').value.trim().toUpperCase(),
                             message: document.getElementById('site-feedback-message').value.trim()
                         })
                     });
                     const result = await response.json().catch(() => ({}));
                     if (!response.ok || !result.success) throw new Error(result.message || 'Не удалось отправить сообщение.');
-                    status.textContent = 'Спасибо! Сообщение сохранено — мы используем ваши идеи для улучшения Решай360.';
+                    status.textContent = result.upgraded ? 'Спасибо! Ваш промокод теперь даёт скидку 15% вместо 10%.' : (result.promoMessage || 'Спасибо! Сообщение сохранено — мы используем ваши идеи для улучшения Решай360.');
                     form.reset();
                 } catch (error) { status.textContent = error.message || 'Ошибка отправки. Попробуйте ещё раз.'; }
                 finally { button.disabled = false; button.textContent = 'Отправить обратную связь'; }
@@ -657,6 +666,27 @@
             if (pdfDoc) queueRenderPdfPage(currentPdfPage);
         });
 
+        function syncProgramPanelHeight() {
+            const checkout = document.getElementById("checkout-panel");
+            const program = document.getElementById("program-panel");
+            if (!checkout || !program) return;
+            if (window.innerWidth >= 1024) {
+                program.style.height = checkout.offsetHeight + "px";
+                program.style.overflowY = "auto";
+            } else {
+                program.style.height = "";
+                program.style.overflowY = "";
+            }
+        }
+        window.addEventListener("resize", syncProgramPanelHeight);
+        if (window.ResizeObserver) {
+            const checkoutPanelObserver = new ResizeObserver(() => requestAnimationFrame(syncProgramPanelHeight));
+            document.addEventListener("DOMContentLoaded", () => {
+                const checkoutPanel = document.getElementById("checkout-panel");
+                if (checkoutPanel) checkoutPanelObserver.observe(checkoutPanel);
+            });
+        }
+
         // Выбор класса и уровня: программа и стоимость синхронно обновляются из CONFIG.
         function selectOption(key) {
             if (!key) {
@@ -759,6 +789,7 @@
                     '</ul></div>'
             ).join('');
             if (!container.innerHTML) container.innerHTML = '<div class="sm:col-span-2 text-sm text-slate-300">Программа для этого варианта пока не заполнена.</div>';
+            requestAnimationFrame(syncProgramPanelHeight);
         }
 
         function escapeHtml(str) {
@@ -805,8 +836,8 @@
                 const response = await fetch('/api/validate-promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, productKey: currentSelectedProductKey }) });
                 const result = await response.json();
                 if (!response.ok || !result.valid) throw new Error(result.message || 'Промокод недействителен.');
-                appliedPromoCode = code; appliedPromoDiscount = result.discount || 190;
-                status.textContent = 'Промокод применён: скидка ' + appliedPromoDiscount + ' ₽. Итоговая цена: ' + result.finalPrice + ' ₽.';
+                appliedPromoCode = code; appliedPromoDiscount = result.discount || 0;
+                status.textContent = 'Промокод применён: скидка ' + (result.discountPercent ? result.discountPercent + '% (' + appliedPromoDiscount + ' ₽)' : appliedPromoDiscount + ' ₽') + '. Итоговая цена: ' + result.finalPrice + ' ₽.';
                 status.className = 'text-xs leading-relaxed text-emerald-300'; status.classList.remove('hidden');
                 document.getElementById('payment-button-label').textContent = 'Перейти к оплате · ' + result.finalPrice + ' ₽';
                 const selectedLevelButton = document.getElementById('btn-' + currentSelectedProductKey);

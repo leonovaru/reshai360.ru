@@ -61,6 +61,7 @@ export async function onRequestPost({ request, env }) {
 
     const percent = Math.round((scoreNumber / totalNumber) * 100);
     const safeName = String(name || "Ученик").replace(/[\\/:*?"<>|]/g, "_");
+    const safeNameHtml = String(name || "ученик").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/\x27/g, "&#39;");
 
     let promoCode = null;
     let emailSent = false;
@@ -82,7 +83,7 @@ export async function onRequestPost({ request, env }) {
           if (!promoCode) throw new Error("Не удалось сгенерировать промокод");
           await env.TEST_TOKENS.put("promo:" + promoCode, JSON.stringify({
             code: promoCode,
-            discount: 90,
+            discountPercent: 10,
             createdAt: Date.now(),
             expiresAt: Date.now() + 180 * 24 * 60 * 60 * 1000,
             used: false,
@@ -101,7 +102,7 @@ export async function onRequestPost({ request, env }) {
         tgFormData.append("chat_id", env.TG_CHAT_ID);
         tgFormData.append(
           "caption",
-          `🎯 Пройдена диагностика!\nУченик: ${name || "Не указано"}\nEmail: ${email || "Не указан"}\nРезультат: ${scoreNumber} из ${totalNumber} (${percent}%)${promoCode ? `\n🎁 Промокод на следующую диагностику: ${promoCode} (скидка 90 ₽)` : ""}`
+          `🎯 Пройдена диагностика!\nУченик: ${name || "Не указано"}\nEmail: ${email || "Не указан"}\nРезультат: ${scoreNumber} из ${totalNumber} (${percent}%)${promoCode ? `\n🎁 Промокод на следующую диагностику: ${promoCode} (скидка 10%)` : ""}`
         );
         tgFormData.append("document", pdfFile, `Отчет_${safeName}.pdf`);
 
@@ -139,16 +140,46 @@ export async function onRequestPost({ request, env }) {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            from: "Решай360 <info@reshai360.ru>",
+            from: "Решай360 <no-reply@reshai360.ru>",
             to: [email],
             subject: `Результаты диагностики по математике — ${name || "ученик"}`,
             html: `
-              <p>Здравствуйте, <b>${name || "ученик"}</b>!</p>
-              <p>Вы завершили диагностику знаний по математике на платформе <b>Решай360</b>.</p>
-              <p>Во вложении находится ваш PDF-отчёт с результатами и рекомендациями.</p>
-              ${promoCode ? `<p><b>Ваш промокод на следующую диагностику: ${promoCode}</b></p><p>Промокод даёт скидку 90 ₽. Вы можете использовать его сами при следующем заказе или передать другу. Использовать промокод можно один раз; срок действия — 180 дней.</p>` : ""}
-              <p>С уважением,<br>Команда Решай360<br>
-              <a href="https://reshai360.ru">reshai360.ru</a></p>
+              <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+              <body style="margin:0;padding:0;background:#eef2ff;font-family:Arial,Helvetica,sans-serif;color:#172033;">
+                <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Ваша диагностика завершена — PDF-отчёт и персональный промокод внутри.</div>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:linear-gradient(135deg,#eef2ff,#f5f3ff);padding:28px 12px;">
+                  <tr><td align="center">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 12px 35px rgba(30,41,59,.12);">
+                      <tr><td style="padding:28px 30px;background:linear-gradient(120deg,#312e81,#4f46e5,#0891b2);color:#ffffff;">
+                        <div style="font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:.85;">РЕШАЙ360</div>
+                        <h1 style="margin:12px 0 6px;font-size:25px;line-height:1.25;">Диагностика завершена!</h1>
+                        <p style="margin:0;font-size:14px;line-height:1.6;color:#e0e7ff;">Теперь вы знаете, что уже получается хорошо и что стоит повторить.</p>
+                      </td></tr>
+                      <tr><td style="padding:28px 30px 10px;">
+                        <p style="margin:0 0 14px;font-size:16px;">Здравствуйте, <strong>${safeNameHtml}</strong>!</p>
+                        <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#475569;">Спасибо, что прошли диагностику на платформе Решай360. Ваш персональный PDF-отчёт с результатами и рекомендациями прикреплён к этому письму.</p>
+                        <div style="padding:16px 18px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;">
+                          <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Ваш результат</div>
+                          <div style="margin-top:6px;font-size:24px;font-weight:800;color:#312e81;">${scoreNumber} из ${totalNumber} · ${percent}%</div>
+                        </div>
+                        ${promoCode ? `
+                        <div style="margin-top:18px;padding:20px;border-radius:16px;background:#eef2ff;border:1px solid #c7d2fe;">
+                          <div style="font-size:13px;color:#4338ca;font-weight:800;text-transform:uppercase;letter-spacing:.8px;">🎁 Подарок за прохождение</div>
+                          <div style="margin:10px 0;padding:12px;background:#ffffff;border:1px dashed #818cf8;border-radius:10px;text-align:center;font-size:22px;letter-spacing:2px;font-weight:800;color:#312e81;">${promoCode}</div>
+                          <p style="margin:0;font-size:14px;line-height:1.65;color:#3730a3;">Промокод даёт <strong>скидку 10%</strong> на следующую диагностику. Используйте его сами или поделитесь с другом. Код одноразовый и действует 180 дней.</p>
+                          <p style="margin:12px 0 0;font-size:13px;line-height:1.65;color:#4338ca;">Оставьте отзыв, пожелание или идею на сайте — увеличим вашу скидку до <strong>15%</strong>.</p>
+                        </div>` : ""}
+                        <p style="margin:22px 0 0;font-size:15px;line-height:1.7;color:#475569;">С заботой о знаниях и хвостиках,<br><strong>Команда Решай360</strong></p>
+                      </td></tr>
+                      <tr><td style="padding:22px 30px;background:#0f172a;color:#cbd5e1;">
+                        <div style="font-size:13px;line-height:1.7;">Помогаем хвостикам вместе: 100 ₽ с каждой оплаченной диагностики направляем в приют «Собачий мир» в Красноярске.</div>
+                        <div style="margin-top:12px;font-size:12px;"><a href="https://reshai360.ru" style="color:#a5b4fc;text-decoration:none;">reshai360.ru</a> &nbsp;·&nbsp; <a href="https://t.me/sobachiy_mir_krsk" style="color:#fbbf24;text-decoration:none;">Канал приюта</a></div>
+                      </td></tr>
+                    </table>
+                    <p style="max-width:600px;margin:16px auto 0;font-size:11px;line-height:1.6;color:#64748b;text-align:center;">Это автоматическое письмо. Пожалуйста, не отвечайте на него: ответы на этот адрес не отслеживаются. Если нужна помощь, воспользуйтесь контактами на сайте Решай360.</p>
+                  </td></tr>
+                </table>
+              </body></html>
             `,
             attachments: [
               {
