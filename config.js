@@ -105,6 +105,14 @@ window.CONFIG = {
     }
 };
 
+
+/*
+ * Для 11 класса уровни отличаются сложностью заданий, а не списком тем.
+ * Используем одну и ту же программу для базового и продвинутого уровня.
+ */
+window.CONFIG.programs['11_basic'].blocks = window.CONFIG.programs['11'].blocks;
+window.CONFIG.programs['11_advanced'].blocks = window.CONFIG.programs['11'].blocks;
+
 // Два уровня доступны для каждого класса. Для 7–10 классов используем соответствующие тематические блоки класса.
 for (const grade of ['7', '8', '9', '10']) {
     const source = window.CONFIG.programs[grade];
