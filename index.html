@@ -535,11 +535,19 @@
         function initLinks() {
             if (typeof CONFIG === 'undefined') return;
 
-            document.getElementById('link-policy').href = CONFIG.links.policy;
-            document.getElementById('link-offer').href = CONFIG.links.offer;
-            document.getElementById('link-footer-policy').href = CONFIG.links.policy;
-            document.getElementById('link-footer-offer').href = CONFIG.links.offer;
-            document.getElementById('link-charity-tg').href = CONFIG.links.charityTelegram;
+            // Некоторые ссылки могут отсутствовать в конкретной версии страницы.
+            // Не позволяем отсутствующему необязательному элементу остановить инициализацию PDF и остальных блоков.
+            const linkTargets = [
+                ['link-policy', CONFIG.links && CONFIG.links.policy],
+                ['link-offer', CONFIG.links && CONFIG.links.offer],
+                ['link-footer-policy', CONFIG.links && CONFIG.links.policy],
+                ['link-footer-offer', CONFIG.links && CONFIG.links.offer],
+                ['link-charity-tg', CONFIG.links && CONFIG.links.charityTelegram]
+            ];
+            linkTargets.forEach(([id, url]) => {
+                const element = document.getElementById(id);
+                if (element && url) element.href = url;
+            });
 
             const video = document.getElementById('demo-video');
             const videoSource = document.getElementById('video-source');
