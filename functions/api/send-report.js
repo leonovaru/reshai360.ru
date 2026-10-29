@@ -170,7 +170,7 @@ export async function onRequestPost({ request, env }) {
             html: `
               <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
               <body style="margin:0;padding:0;background:#eef2ff;font-family:Arial,Helvetica,sans-serif;color:#172033;">
-                <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Ваша диагностика завершена — PDF-отчёт и персональный промокод внутри.</div>
+                <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Диагностика завершена — PDF-отчёт во вложении, промокод указан отдельно в письме.</div>
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:linear-gradient(135deg,#eef2ff,#f5f3ff);padding:28px 12px;">
                   <tr><td align="center">
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 12px 35px rgba(30,41,59,.12);">
