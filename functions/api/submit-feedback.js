@@ -55,6 +55,9 @@ export async function onRequestPost({ request, env }) {
       if (promo.used) {
         return Response.json({ success: false, message: "Этот промокод уже использован, его скидку нельзя изменить." }, { status: 409 });
       }
+      if (promo.reservedUntil && promo.reservedUntil > Date.now()) {
+        return Response.json({ success: false, message: "Промокод сейчас используется в оформлении заказа. Попробуйте обновить скидку через несколько минут." }, { status: 409 });
+      }
       if (promo.expiresAt && promo.expiresAt <= Date.now()) {
         return Response.json({ success: false, message: "Срок действия промокода закончился." }, { status: 410 });
       }
