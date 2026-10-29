@@ -8,7 +8,9 @@ export async function onRequestPost(context) {
     const PRODUCTS = {
       '7': { title: 'Диагностика — 7 класс', price: 1, file: 'test_7.html' },
       '8': { title: 'Диагностика — 8 класс', price: 1, file: 'test_8.html' },
-      '9': { title: 'Диагностика — 9 класс (ОГЭ)', price: 1, file: 'test_9.html' },
+      '9': { title: 'Диагностика — 9 класс (ОГЭ, старый заказ)', price: 1, file: 'test_9.html' },
+      '9_basic': { title: 'Диагностика — 9 класс, базовый уровень', price: 1, displayPrice: 790, file: 'test_9_basic.html' },
+      '9_advanced': { title: 'Диагностика — 9 класс, продвинутый уровень', price: 1, displayPrice: 990, file: 'test_9_advanced.html' },
       '10': { title: 'Диагностика — 10 класс', price: 1, file: 'test_10.html' },
       '11': { title: 'Диагностика — 11 класс (старый заказ)', price: 1, file: 'test_11.html' },
       '10_basic': { title: 'Диагностика — 10 класс, базовый уровень', price: 1, displayPrice: 790, file: 'test_10_basic.html' },
