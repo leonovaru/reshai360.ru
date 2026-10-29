@@ -26,6 +26,31 @@ export async function onRequestPost(context) {
     const tokenData = JSON.parse(tokenDataRaw);
     if (metadata.productKey !== tokenData.productKey) return new Response('Order mismatch', { status: 400 });
 
+    // Сейчас все товары намеренно оплачиваются по 1 ₽ в тестовом режиме.
+    // Перед включением реальных цен обязательно обновить ожидаемую сумму здесь.
+    const expectedAmountByProduct = {
+      '7': '1.00', '7_basic': '1.00', '7_advanced': '1.00',
+      '8': '1.00', '8_basic': '1.00', '8_advanced': '1.00',
+      '9': '1.00', '9_basic': '1.00', '9_advanced': '1.00',
+      '10': '1.00', '10_basic': '1.00', '10_advanced': '1.00',
+      '11': '1.00', '11_basic': '1.00', '11_advanced': '1.00'
+    };
+    const expectedAmount = expectedAmountByProduct[tokenData.productKey];
+    const actualAmount = confirmedPayment.amount;
+    if (
+      !expectedAmount ||
+      !actualAmount ||
+      actualAmount.currency !== 'RUB' ||
+      Number(actualAmount.value).toFixed(2) !== expectedAmount
+    ) {
+      console.error('Payment amount mismatch:', {
+        paymentId: confirmedPayment.id,
+        productKey: tokenData.productKey,
+        amount: actualAmount
+      });
+      return new Response('Payment amount mismatch', { status: 400 });
+    }
+
     tokenData.isPaid = true;
     tokenData.paymentId = confirmedPayment.id;
     tokenData.paidAt = confirmedPayment.captured_at || confirmedPayment.created_at || new Date().toISOString();
