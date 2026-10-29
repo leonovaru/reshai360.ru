@@ -531,7 +531,7 @@
 
             const video = document.getElementById('demo-video');
             const videoSource = document.getElementById('video-source');
-            if (video && videoSource && CONFIG.media.demoVideo) {
+            if (video && videoSource && CONFIG.media.demoVideo && !videoSource.getAttribute('src')) {
                 videoSource.src = CONFIG.media.demoVideo;
                 video.load();
                 video.play().catch(e => console.log("Автозапуск заблокирован браузером:", e));
@@ -540,6 +540,12 @@
 
         function initVideo() {
             const video = document.getElementById('demo-video');
+            const fallback = document.getElementById('video-fallback');
+            if (video && fallback) {
+                video.addEventListener('error', () => fallback.classList.remove('hidden'));
+                const source = document.getElementById('video-source');
+                if (source) source.addEventListener('error', () => fallback.classList.remove('hidden'));
+            }
             if (video) {
                 video.muted = true;
                 const playPromise = video.play();
@@ -576,34 +582,19 @@
         let pageNumPending = null;
 
         function initPdfViewer() {
-            if (typeof pdfjsLib === 'undefined') return;
+            if (typeof pdfjsLib === 'undefined') { const el = document.getElementById('pdf-loading'); if (el) el.innerHTML = '<div class="text-slate-600 text-xs p-4 text-center">Предпросмотр временно недоступен. <a class="text-indigo-700 underline" href="/report.pdf" target="_blank" rel="noopener noreferrer">Открыть PDF-отчёт</a></div>'; return; }
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-            const pdfFile = (typeof CONFIG !== 'undefined' && CONFIG.media && CONFIG.media.pdfReport) ? CONFIG.media.pdfReport : 'report.pdf';
+            const pdfFile = '/report.pdf?v=20261030';
             
             pdfjsLib.getDocument(pdfFile).promise.then(function(doc) {
                 pdfDoc = doc;
                 document.getElementById('page-count').textContent = pdfDoc.numPages;
                 renderPdfPage(currentPdfPage);
             }).catch(function(err) {
-                console.warn("Первичная загрузка PDF не удалась, пробую альтернативный путь:", err);
-                pdfjsLib.getDocument(encodeURIComponent(pdfFile)).promise.then(function(doc) {
-                    pdfDoc = doc;
-                    document.getElementById('page-count').textContent = pdfDoc.numPages;
-                    renderPdfPage(currentPdfPage);
-                }).catch(function(e) {
-                    console.error("Ошибка загрузки PDF:", e);
-                    const loadingElem = document.getElementById('pdf-loading');
-                    if (loadingElem) {
-                        loadingElem.innerHTML = `
-                            <div class="text-rose-400 text-xs p-4 text-center space-y-2">
-                                <div><b>Файл «${pdfFile}» не найден или заблокирован.</b></div>
-                                <div style="color:#94a3b8; font-size:11px; line-height:1.4;">
-                                    Если вы открываете сайт с компьютера (через <code>file://</code>), браузер блокирует чтение локальных PDF из-за безопасности CORS. Опубликуйте сайт в Cloudflare Pages — там всё будет работать идеально!
-                                </div>
-                            </div>`;
-                    }
-                });
+                console.error("Ошибка загрузки PDF:", err);
+                const loadingElem = document.getElementById('pdf-loading');
+                if (loadingElem) loadingElem.innerHTML = '<div class="text-rose-600 text-xs p-4 text-center">Не удалось показать предпросмотр. <a class="text-indigo-700 underline font-semibold" href="/report.pdf" target="_blank" rel="noopener noreferrer">Открыть PDF-отчёт отдельно</a></div>';
             });
         }
 
