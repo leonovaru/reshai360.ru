@@ -397,7 +397,7 @@
     
     <!-- Обратная связь от посетителей -->
     <section id="site-feedback" class="py-10 border-t border-slate-800/60"><div class="max-w-3xl mx-auto px-4"><div class="glass-panel rounded-2xl p-5 sm:p-7 border border-indigo-500/20 space-y-4">
-      <div><p class="text-xs font-bold uppercase tracking-widest text-indigo-300 mb-1">Обратная связь</p><h2 class="text-xl sm:text-2xl font-extrabold text-white">Что нам улучшить в Решай360?</h2><p class="text-sm text-slate-300 mt-2 leading-relaxed">Подскажите, какие темы или продукты вам нужны, что стоит изменить в заданиях, отчётах или прохождении диагностики. Мы читаем каждое сообщение и используем предложения для развития платформы.</p></div>
+      <div><p class="text-xs font-bold uppercase tracking-widest text-indigo-300 mb-1">Обратная связь</p><h2 class="text-xl sm:text-2xl font-extrabold text-white">Что нам улучшить в Решай360?</h2><p class="text-sm text-slate-300 mt-2 leading-relaxed">Подскажите, какие темы или продукты вам нужны, что стоит изменить в заданиях, отчётах или прохождении диагностики. Мы читаем каждое сообщение и используем предложения для развития платформы.</p><div class="mt-4 rounded-xl border border-indigo-500/25 bg-indigo-500/10 p-4 text-sm leading-relaxed text-slate-200"><strong class="text-white">После диагностики вы получите промокод на <span class="text-indigo-300">10%</span></strong> для следующей диагностики или для друга.<br>Оставите отзыв, пожелание или идею — увеличим скидку до <strong class="text-indigo-300">15%</strong>.</div></div>
       <form id="site-feedback-form" class="grid sm:grid-cols-2 gap-3">
         <div><label for="site-feedback-name" class="block text-xs font-semibold text-slate-300 mb-1.5">Ваше имя</label><input id="site-feedback-name" required maxlength="200" autocomplete="name" placeholder="Как к вам обращаться" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white placeholder:text-slate-500"></div>
         <div><label for="site-feedback-email" class="block text-xs font-semibold text-slate-300 mb-1.5">Email для ответа</label><input id="site-feedback-email" required type="email" maxlength="320" autocomplete="email" placeholder="you@example.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-sm text-white placeholder:text-slate-500"></div>
@@ -829,8 +829,8 @@
                 const response = await fetch('/api/validate-promo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, productKey: currentSelectedProductKey }) });
                 const result = await response.json();
                 if (!response.ok || !result.valid) throw new Error(result.message || 'Промокод недействителен.');
-                appliedPromoCode = code; appliedPromoDiscount = result.discount || 190;
-                status.textContent = 'Промокод применён: скидка ' + appliedPromoDiscount + ' ₽. Итоговая цена: ' + result.finalPrice + ' ₽.';
+                appliedPromoCode = code; appliedPromoDiscount = result.discount || 0;
+                status.textContent = 'Промокод применён: скидка ' + (result.discountPercent ? result.discountPercent + '% (' + appliedPromoDiscount + ' ₽)' : appliedPromoDiscount + ' ₽') + '. Итоговая цена: ' + result.finalPrice + ' ₽.';
                 status.className = 'text-xs leading-relaxed text-emerald-300'; status.classList.remove('hidden');
                 document.getElementById('payment-button-label').textContent = 'Перейти к оплате · ' + result.finalPrice + ' ₽';
                 const selectedLevelButton = document.getElementById('btn-' + currentSelectedProductKey);
