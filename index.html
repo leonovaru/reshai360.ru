@@ -195,6 +195,14 @@
                                 <input type="email" id="student-email" required autocomplete="email" placeholder="student@mail.ru" class="w-full min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
                             </div>
                         </div>
+                        <div class="flex items-start gap-2.5 pt-1 text-xs text-slate-400">
+                            <input type="checkbox" id="consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
+                            <label for="consent" class="text-[11px] leading-relaxed text-slate-400">
+                                Я даю согласие на обработку персональных данных и принимаю условия
+                                <a id="link-policy" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Политики конфиденциальности</a>
+                                и <a id="link-offer" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Публичной оферты</a>.
+                            </label>
+                        </div>
                         <div class="space-y-2 border-t border-slate-800 pt-4">
                             <div class="flex items-center gap-2 mb-1"><span class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-black shrink-0">4</span><h3 class="text-sm font-bold text-white">Промокод</h3></div>
                             <p class="text-xs text-slate-400">Есть код на скидку? Введите его здесь.</p>
@@ -203,14 +211,6 @@
                                 <button type="button" id="apply-promo-button" onclick="applyPromoCode()" class="shrink-0 rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-2 text-xs font-bold text-white">Применить</button>
                             </div>
                             <p id="promo-status" class="hidden text-xs leading-relaxed" aria-live="polite"></p>
-                        </div>
-                        <div class="flex items-start gap-2.5 pt-1 text-xs text-slate-400">
-                            <input type="checkbox" id="consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
-                            <label for="consent" class="text-[11px] leading-relaxed text-slate-400">
-                                Я даю согласие на обработку персональных данных и принимаю условия
-                                <a id="link-policy" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Политики конфиденциальности</a>
-                                и <a id="link-offer" href="#" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Публичной оферты</a>.
-                            </label>
                         </div>
                         <button id="pay-button" type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-3 rounded-xl transition shadow-xl shadow-indigo-600/25 text-sm flex items-center justify-center gap-2">
                             <span id="payment-button-label">Перейти к оплате</span>
