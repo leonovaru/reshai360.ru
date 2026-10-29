@@ -21,7 +21,7 @@
     </section>
     <section class="rounded-2xl border border-slate-800 bg-slate-900 p-4">
       <div class="flex flex-wrap items-center justify-between gap-3"><h2 class="text-xl font-bold">Партнёры и начисления</h2><button id="refresh-button" class="rounded-xl border border-slate-700 px-4 py-2 hover:bg-slate-800">Обновить</button></div>
-      <div class="mt-4 overflow-x-auto"><table class="w-full min-w-[760px] text-left text-sm"><thead class="text-slate-400"><tr><th class="p-3">Партнёр</th><th class="p-3">Уникальная ссылка</th><th class="p-3">Оплат</th><th class="p-3">К выплате</th><th class="p-3">Выплачено</th><th class="p-3">Действия</th></tr></thead><tbody id="partners-body"><tr><td colspan="6" class="p-3 text-slate-400">Введите секрет и откройте реестр.</td></tr></tbody></table></div>
+      <div class="mt-4 overflow-x-auto"><table class="w-full min-w-[760px] text-left text-sm"><thead class="text-slate-400"><tr><th class="p-3">Партнёр</th><th class="p-3">Уникальная ссылка</th><th class="p-3">Переходы</th><th class="p-3">Оплат</th><th class="p-3">К выплате</th><th class="p-3">Выплачено</th><th class="p-3">Действия</th></tr></thead><tbody id="partners-body"><tr><td colspan="7" class="p-3 text-slate-400">Введите секрет и откройте реестр.</td></tr></tbody></table></div>
     </section>
     <section class="rounded-2xl border border-slate-800 bg-slate-900 p-4">
       <h2 class="text-xl font-bold">История начислений</h2>
@@ -31,7 +31,7 @@
 <script>
 (function () {
   const $ = id => document.getElementById(id);
-  let partners = [], commissions = [];
+  let partners = [], commissions = [], clickCounts = {};
   const money = value => new Intl.NumberFormat('ru-RU').format(value || 0) + ' ₽';
   const date = value => value ? new Date(value).toLocaleString('ru-RU') : '—';
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -50,13 +50,13 @@
       const pending = rows.filter(c => c.status === 'accrued');
       const paid = rows.filter(c => c.status === 'paid');
       const url = location.origin + '/?ref=' + encodeURIComponent(p.code);
-      return '<tr class="border-t border-slate-800 align-top"><td class="p-3"><input data-rename="' + esc(p.code) + '" value="' + esc(p.name) + '" class="w-40 rounded-lg border border-slate-700 bg-slate-950 px-2 py-2"><div class="mt-1 text-xs text-slate-500">' + esc(p.code) + (p.active === false ? ' · выключен' : '') + '</div></td><td class="p-3"><a class="break-all text-indigo-300 underline" href="' + esc(url) + '">' + esc(url) + '</a><button data-copy="' + esc(url) + '" class="ml-2 text-xs text-slate-300 underline">Копировать</button></td><td class="p-3">' + rows.length + '</td><td class="p-3 font-bold">' + money(pending.reduce((s,c)=>s+Number(c.amount||0),0)) + '</td><td class="p-3">' + money(paid.reduce((s,c)=>s+Number(c.amount||0),0)) + '</td><td class="p-3"><div class="flex flex-col items-start gap-2"><button data-save="' + esc(p.code) + '" class="rounded-lg bg-indigo-700 px-3 py-2">Сохранить имя</button>' + (pending.length ? '<button data-pay="' + esc(p.code) + '" class="rounded-lg bg-emerald-700 px-3 py-2">Отметить выплату</button>' : '') + '<button data-toggle="' + esc(p.code) + '" class="rounded-lg border border-slate-700 px-3 py-2">' + (p.active === false ? 'Включить ссылку' : 'Отключить ссылку') + '</button></div></td></tr>';
-    }).join('') || '<tr><td colspan="6" class="p-3">Партнёров пока нет.</td></tr>';
+      return '<tr class="border-t border-slate-800 align-top"><td class="p-3"><input data-rename="' + esc(p.code) + '" value="' + esc(p.name) + '" class="w-40 rounded-lg border border-slate-700 bg-slate-950 px-2 py-2"><div class="mt-1 text-xs text-slate-500">' + esc(p.code) + (p.active === false ? ' · выключен' : '') + '</div></td><td class="p-3"><a class="break-all text-indigo-300 underline" href="' + esc(url) + '">' + esc(url) + '</a><button data-copy="' + esc(url) + '" class="ml-2 text-xs text-slate-300 underline">Копировать</button></td><td class="p-3">' + (clickCounts[p.code] || 0) + '</td><td class="p-3">' + rows.length + '</td><td class="p-3 font-bold">' + money(pending.reduce((s,c)=>s+Number(c.amount||0),0)) + '</td><td class="p-3">' + money(paid.reduce((s,c)=>s+Number(c.amount||0),0)) + '</td><td class="p-3"><div class="flex flex-col items-start gap-2"><button data-save="' + esc(p.code) + '" class="rounded-lg bg-indigo-700 px-3 py-2">Сохранить имя</button>' + (pending.length ? '<button data-pay="' + esc(p.code) + '" class="rounded-lg bg-emerald-700 px-3 py-2">Отметить выплату</button>' : '') + '<button data-toggle="' + esc(p.code) + '" class="rounded-lg border border-slate-700 px-3 py-2">' + (p.active === false ? 'Включить ссылку' : 'Отключить ссылку') + '</button></div></td></tr>';
+    }).join('') || '<tr><td colspan="7" class="p-3">Партнёров пока нет.</td></tr>';
     $('sales-body').innerHTML = commissions.map(c => '<tr class="border-t border-slate-800"><td class="p-3">' + esc(date(c.paidAt)) + '</td><td class="p-3">' + esc(names[c.partnerCode] || c.partnerCode) + '<div class="text-xs text-slate-500">' + esc(c.partnerCode) + '</div></td><td class="p-3">' + esc(c.productKey) + '</td><td class="p-3">' + money(c.amount) + '</td><td class="p-3">' + (c.status === 'paid' ? 'Выплачено' : c.status === 'reversed' ? 'Отменено' : 'К выплате') + '</td><td class="p-3 font-mono text-xs">' + esc(c.paymentId) + '</td></tr>').join('') || '<tr><td colspan="6" class="p-3 text-slate-400">Пока нет партнёрских оплат.</td></tr>';
   }
   async function refresh() {
     setStatus('Загружаем реестр…');
-    try { const data = await api('GET'); partners = data.partners || []; commissions = data.commissions || []; render(); setStatus('Данные обновлены. Всего партнёров: ' + partners.length + '. Начисления: ' + (data.commissionEnabled ? 'ВКЛЮЧЕНЫ' : 'ВЫКЛЮЧЕНЫ — тестовый режим') + '.'); }
+    try { const data = await api('GET'); partners = data.partners || []; commissions = data.commissions || []; clickCounts = data.clickCounts || {}; render(); setStatus('Данные обновлены. Всего партнёров: ' + partners.length + '. Начисления: ' + (data.commissionEnabled ? 'ВКЛЮЧЕНЫ' : 'ВЫКЛЮЧЕНЫ — тестовый режим') + '.'); }
     catch (e) { setStatus(e.message, true); }
   }
   $('load-button').addEventListener('click', refresh);
