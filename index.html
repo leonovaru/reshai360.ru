@@ -10,7 +10,7 @@
     <!-- PDF.js CDN для просмотра PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Внешний файл данных и конфигурации -->
-    <script src="config.js?v=20261029-5"></script>
+    <script src="config.js?v=20261029-6"></script>
 
     <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш реальный номер счетчика) -->
     <script type="text/javascript" >
@@ -77,7 +77,7 @@
                     </h1>
                     
                     <p class="text-slate-300 text-xs sm:text-sm lg:text-base font-normal leading-relaxed max-w-xl">
-                        Проверь ключевые темы школьной математики, изученные к 11 классу. Получи подробную PDF-карту результатов: сильные стороны, темы для повторения и ответы по каждому заданию.
+                        Проверь ключевые темы школьной математики, которые важно уверенно знать для учёбы в старших классах. Получи подробную PDF-карту результатов: сильные стороны, темы для повторения и ответы по каждому заданию.
                     </p>
 
                     <div class="flex flex-wrap gap-2 pt-1 text-xs font-medium text-slate-300">
@@ -738,7 +738,7 @@
             document.getElementById('card-title').innerText = 'Диагностика ' + gradeKey + ' класса';
             document.getElementById('card-level').innerText = key.endsWith('_basic') ? 'Базовый уровень' : 'Продвинутый уровень';
             document.getElementById('card-desc').innerText = 'Содержание программы одинаковое для обоих уровней; меняется сложность заданий.';
-            const paymentAvailable = gradeKey === '11';
+            const paymentAvailable = gradeKey === '10' || gradeKey === '11';
             appliedPromoCode = '';
             appliedPromoDiscount = 0;
             document.getElementById('promo-code').value = '';
