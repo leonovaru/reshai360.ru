@@ -936,7 +936,9 @@
                         email: email, 
                         productKey: currentSelectedProductKey,
                         promoCode: promoCode,
-                        referralCode: getSavedPartnerReferral()
+                        referralCode: getSavedPartnerReferral(),
+                        personalDataConsent: document.getElementById('consent').checked,
+                        offerAccepted: document.getElementById('offer-consent').checked
                     })
                 });
 
