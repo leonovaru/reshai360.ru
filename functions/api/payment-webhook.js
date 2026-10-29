@@ -56,6 +56,33 @@ export async function onRequestPost(context) {
     tokenData.paidAt = confirmedPayment.captured_at || confirmedPayment.created_at || new Date().toISOString();
     await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
 
+    // Партнёрское начисление создаётся только после серверного подтверждения оплаты.
+    // Ключ основан на payment ID: повторный webhook перезаписывает ту же запись, а не создаёт новую.
+    if (tokenData.referralCode && /^[a-z0-9_-]{3,32}$/.test(tokenData.referralCode)) {
+      const partnerCode = tokenData.referralCode;
+      const partnerRaw = await env.TEST_TOKENS.get('partner:profile:' + partnerCode);
+      if (partnerRaw) {
+        const partner = JSON.parse(partnerRaw);
+        if (partner.active !== false) {
+          const commissionKey = 'partner:commission:' + String(confirmedPayment.id);
+          const existingCommissionRaw = await env.TEST_TOKENS.get(commissionKey);
+          if (!existingCommissionRaw) {
+            await env.TEST_TOKENS.put(commissionKey, JSON.stringify({
+              paymentId: String(confirmedPayment.id),
+              orderToken: token,
+              partnerCode,
+              productKey: tokenData.productKey,
+              amount: 100,
+              currency: 'RUB',
+              paidAt: tokenData.paidAt,
+              status: 'accrued',
+              createdAt: new Date().toISOString()
+            }));
+          }
+        }
+      }
+    }
+
     // Промокод считается использованным только после подтверждённой оплаты.
     if (tokenData.promoCode) {
       const promoKey = 'promo:' + String(tokenData.promoCode).toUpperCase();
