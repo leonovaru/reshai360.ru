@@ -112,7 +112,7 @@
                     </h1>
                     
                     <p class="text-slate-300 text-xs sm:text-sm lg:text-base font-normal leading-relaxed max-w-xl">
-                        Проверь ключевые темы школьной математики, которые важно уверенно знать для учёбы в старших классах. Получи подробную PDF-карту результатов: сильные стороны, темы для повторения и ответы по каждому заданию.
+                        Онлайн-диагностика по ключевым темам школьной математики за предыдущие классы. В результате — персональный PDF-отчёт: сильные стороны, пробелы в знаниях и задания с ответами для повторения.
                     </p>
 
                     <div class="flex flex-wrap gap-2 pt-1 text-xs font-medium text-slate-300">
@@ -122,7 +122,7 @@
                         </div>
                         <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
                             <i class="fa-solid fa-floppy-disk text-indigo-400"></i>
-                            <span>Сохраняет прогресс</span>
+                            <span>Программа по темам</span>
                         </div>
                         <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
                             <i class="fa-solid fa-file-pdf text-indigo-400"></i>
@@ -133,12 +133,12 @@
                     <!-- Кнопки действий -->
                     <div class="pt-2 flex flex-wrap items-center gap-3">
                         <a href="#select-program" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-7 py-3 rounded-xl font-bold text-sm transition shadow-xl shadow-indigo-600/25 space-x-2">
-                            <span>Выбрать свой класс</span>
+                            <span>Выбрать класс и диагностику</span>
                             <i class="fa-solid fa-arrow-down text-xs"></i>
                         </a>
                         <a href="#pdf-section" class="inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-3 rounded-xl font-bold text-sm transition border border-slate-700 space-x-2">
                             <i class="fa-solid fa-file-pdf text-indigo-400"></i>
-                            <span>Посмотреть отчет PDF</span>
+                            <span>Пример PDF-отчёта</span>
                         </a>
                     </div>
                 </div>
@@ -163,17 +163,13 @@
         </div>
     </section>
 
-    <!-- Почему диагностика по всей программе важнее случайного балла -->
-    <section id="why-diagnostics" class="py-8 sm:py-10 border-t border-slate-800/60">
-        <div class="max-w-5xl mx-auto px-4">
-            <div class="glass-panel p-5 sm:p-6 rounded-2xl border border-indigo-500/20 bg-indigo-950/20 space-y-2">
-                <h2 class="text-lg sm:text-xl font-bold text-white">Почему обычные тесты не дают полной картины?</h2>
-                <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
-                    На школьной контрольной, ВПР или тестовом пробнике легко получить случайный высокий балл, если выпадут легкие темы. При этом слабые места останутся скрыты до самого дня экзамена. В <strong class="text-indigo-400">Решай360</strong> проверка идет по всей пройденной программе за прошлые годы.
-                </p>
-            </div>
+    <div class="border-t border-slate-800/60 py-3">
+        <div class="max-w-6xl mx-auto px-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-slate-300">
+            <span><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i>Проверка по тематическим блокам</span>
+            <span><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i>Персональный PDF-отчёт</span>
+            <span><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i>Задания для повторения</span>
         </div>
-    </section>
+    </div>
 
     <!-- ЭКРАН 2: ВЫБОР ДИАГНОСТИКИ И ОПЛАТА -->
     <section id="select-program" class="py-12 border-t border-slate-800/60 scroll-mt-10">
@@ -215,10 +211,10 @@
                     </div>
 
                     <form id="checkout-form" onsubmit="handleSubmit(event)" class="mt-5 pt-5 border-t border-slate-800 space-y-4">
-                        <div class="flex items-center gap-2 mb-1"><span class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-black shrink-0">3</span><h3 class="text-sm font-bold text-white">Ваши данные</h3></div>
+                        <div class="flex items-center gap-2 mb-1"><span class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-black shrink-0">3</span><h3 class="text-sm font-bold text-white">Данные для заказа</h3></div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="min-w-0">
-                                <label for="student-name" class="block pl-3 text-xs font-semibold text-slate-300 mb-1.5">Ваше имя</label>
+                                <label for="student-name" class="block pl-3 text-xs font-semibold text-slate-300 mb-1.5">Имя для отчёта</label>
                                 <input type="text" id="student-name" required autocomplete="name" placeholder="Александр" class="w-full min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
                             </div>
                             <div class="min-w-0">
@@ -323,7 +319,7 @@
                         </h2>
 
                         <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                            Полная техническая карта выполнения тестирования. Покажет точность решений по каждому из ключевых блоков математики и выявит характер выполненных задач.
+                            Понятный результат диагностики: какие темы освоены, где есть пробелы и что стоит повторить. Ниже можно посмотреть пример PDF-отчёта.
                         </p>
 
                         <div class="space-y-3 pt-2 text-xs sm:text-sm">
@@ -347,35 +343,36 @@
                         </div>
                     </div>
 
-                    <!-- Методическая основа объединена с примером PDF -->
-                    <div class="glass-panel p-4 sm:p-5 rounded-2xl border border-indigo-500/20 space-y-3">
-                        <div>
-                            <p class="text-xs font-bold uppercase tracking-widest text-indigo-300 mb-1">Методическая основа</p>
-                            <h3 class="text-lg sm:text-xl font-extrabold text-white">Ориентируемся на школьные образовательные программы</h3>
-                            <p class="text-slate-300 text-sm leading-relaxed mt-2">
-                                Темы диагностики соотносятся с предметными результатами ФГОС основного и среднего общего образования и федеральными рабочими программами по математике для 5–9 и 10–11 классов.
-                            </p>
+                    <!-- Подробности о методической основе — по запросу -->
+                    <details class="glass-panel p-4 rounded-2xl border border-slate-800 group">
+                        <summary class="cursor-pointer list-none flex items-center justify-between gap-3 text-sm font-bold text-white">
+                            <span><i class="fa-solid fa-book-open text-indigo-300 mr-2"></i>На каких программах основана диагностика?</span>
+                            <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition group-open:rotate-180"></i>
+                        </summary>
+                        <div class="pt-3 space-y-2 text-sm text-slate-300 leading-relaxed">
+                            Темы соотносятся с федеральными рабочими программами по математике для 5–9 и 10–11 классов.
+                            <a class="block text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_ooo_frp_matematika-5-9_baza.pdf" target="_blank" rel="noopener noreferrer">Федеральная программа: 5–9 классы</a>
+                            <a class="block text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_soo_frp_matematika_10_11_baz.pdf" target="_blank" rel="noopener noreferrer">Федеральная программа: 10–11 классы</a>
                         </div>
-                        <div class="flex flex-col gap-2 text-sm">
-                            <a class="text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_ooo_frp_matematika-5-9_baza.pdf" target="_blank" rel="noopener noreferrer">Федеральная рабочая программа: 5–9 классы</a>
-                            <a class="text-indigo-300 hover:text-indigo-200 underline" href="https://edsoo.ru/wp-content/uploads/2025/07/2025_soo_frp_matematika_10_11_baz.pdf" target="_blank" rel="noopener noreferrer">Федеральная рабочая программа: 10–11 классы</a>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                            <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-slate-300">
-                                <i class="fa-solid fa-book-open text-indigo-300"></i><span><b class="text-white">Открытые источники</b><br>Сверяем темы с федеральными программами</span>
-                            </div>
-                            <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-slate-300">
-                                <i class="fa-solid fa-list-check text-indigo-300"></i><span><b class="text-white">Структура по темам</b><br>Результат виден по тематическим блокам</span>
-                            </div>
-                            <div class="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-slate-300">
-                                <i class="fa-solid fa-file-pdf text-indigo-300"></i><span><b class="text-white">Персональный отчёт</b><br>Результаты и задания для повторения в PDF</span>
-                            </div>
-                        </div>
+                    </details>
+
                     </div>
 
                 </div>
 
             </div>
+        </div>
+    </section>
+
+    <section id="faq" class="py-8 border-t border-slate-800/60">
+        <div class="max-w-3xl mx-auto px-4">
+            <h2 class="text-xl sm:text-2xl font-extrabold text-white mb-4">Коротко о диагностике</h2>
+            <div class="space-y-2">
+                <details class="glass-panel rounded-xl border border-slate-800 p-4 group"><summary class="cursor-pointer list-none flex items-center justify-between gap-3 text-sm font-bold text-white"><span>Что входит в результат?</span><i class="fa-solid fa-chevron-down text-xs text-slate-400 transition group-open:rotate-180"></i></summary><p class="pt-3 text-sm text-slate-300 leading-relaxed">PDF-отчёт с результатами по тематическим блокам, сильными сторонами, темами для повторения и ответами к заданиям.</p></details>
+                <details class="glass-panel rounded-xl border border-slate-800 p-4 group"><summary class="cursor-pointer list-none flex items-center justify-between gap-3 text-sm font-bold text-white"><span>Чем отличаются уровни?</span><i class="fa-solid fa-chevron-down text-xs text-slate-400 transition group-open:rotate-180"></i></summary><p class="pt-3 text-sm text-slate-300 leading-relaxed">Список тем одинаковый, меняется сложность заданий: базовый уровень проверяет ключевые знания, продвинутый включает более сложные и многошаговые задачи.</p></details>
+                <details class="glass-panel rounded-xl border border-slate-800 p-4 group"><summary class="cursor-pointer list-none flex items-center justify-between gap-3 text-sm font-bold text-white"><span>Как получить отчёт?</span><i class="fa-solid fa-chevron-down text-xs text-slate-400 transition group-open:rotate-180"></i></summary><p class="pt-3 text-sm text-slate-300 leading-relaxed">После прохождения диагностики отчёт формируется в PDF и отправляется на указанный email. Важно проверить правильность адреса.</p></details>
+            </div>
+            <div class="mt-4 text-center"><a href="#select-program" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-3 text-sm font-bold text-white transition">Выбрать класс и перейти к покупке</a></div>
         </div>
     </section>
 
