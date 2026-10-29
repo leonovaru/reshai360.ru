@@ -150,9 +150,9 @@ export async function onRequestPost({ request, env }) {
       success: true,
       telegramSent,
       emailSent,
-      upgraded: Boolean(promo),
+      upgraded: Boolean(promo && upgradedNow),
       promoPercent: promo ? Number(promo.discountPercent || 15) : null,
-      promoMessage: promo ? "Ваш промокод теперь даёт скидку 15%." : "Спасибо! Сообщение сохранено — мы используем ваши идеи для улучшения Решай360."
+      promoMessage: promo ? (upgradedNow ? "Ваш промокод повышен до скидки 15%." : "Ваш промокод уже даёт скидку 15%.") : "Спасибо! Сообщение сохранено — мы используем ваши идеи для улучшения Решай360."
     });
   } catch (error) {
     console.error("Submit feedback error:", error);
