@@ -3,11 +3,13 @@ export async function onRequestPost({ request, env }) {
     const { code: rawCode, productKey } = await request.json();
     const code = String(rawCode || "").trim().toUpperCase();
 
+    // Все доступные платные уровни. Цена берётся с сервера, а не из запроса браузера.
     const displayPrices = {
-      "10_basic": 790,
-      "10_advanced": 990,
-      "11_basic": 790,
-      "11_advanced": 990
+      "7_basic": 790, "7_advanced": 990,
+      "8_basic": 790, "8_advanced": 990,
+      "9_basic": 790, "9_advanced": 990,
+      "10_basic": 790, "10_advanced": 990,
+      "11_basic": 790, "11_advanced": 990
     };
 
     if (!/^[A-Z0-9-]{5,24}$/.test(code)) {
