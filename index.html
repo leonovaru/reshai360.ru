@@ -522,6 +522,29 @@
 
             const form = document.getElementById('site-feedback-form');
             if (!form) return;
+
+            // Письмо содержит непрозрачный токен, а не персональные данные в URL.
+            const feedbackPrefillToken = new URLSearchParams(window.location.search).get('feedback_token');
+            if (feedbackPrefillToken) {
+                const cleanUrl = new URL(window.location.href);
+                cleanUrl.searchParams.delete('feedback_token');
+                window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+                fetch('/api/feedback-prefill?token=' + encodeURIComponent(feedbackPrefillToken), {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    cache: 'no-store'
+                }).then(async (response) => {
+                    if (!response.ok) return null;
+                    return response.json();
+                }).then((data) => {
+                    if (!data || !data.success || !data.name || !data.email) return;
+                    document.getElementById('site-feedback-name').value = data.name;
+                    document.getElementById('site-feedback-email').value = data.email;
+                }).catch((error) => {
+                    console.error('Feedback prefill unavailable:', error);
+                });
+            }
+
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
                 const button = document.getElementById('site-feedback-submit');
