@@ -7,6 +7,8 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Официальный виджет оплаты ЮKassa -->
+    <script src="https://yookassa.ru/checkout-widget/v1/checkout-widget.js"></script>
     <!-- PDF.js CDN для просмотра PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Внешний файл данных и конфигурации -->
@@ -816,7 +818,7 @@
             } finally { button.disabled = false; button.textContent = 'Применить'; }
         }
 
-        // Обработка отправки формы и вызов ЮKassa (через надежный редирект)
+        // Создание платежа и открытие официального виджета ЮKassa поверх сайта.
         async function handleSubmit(e) {
             e.preventDefault();
 
@@ -858,8 +860,34 @@
 
                 const data = await response.json();
 
-                if (data.confirmationUrl) {
-                    window.location.href = data.confirmationUrl; // Перенаправление на оплату в ЮKassa
+                if (data.confirmationToken) {
+                    if (!window.YooMoneyCheckoutWidget) {
+                        throw new Error('Не загрузился виджет оплаты. Обновите страницу и попробуйте снова.');
+                    }
+
+                    let widget;
+                    widget = new window.YooMoneyCheckoutWidget({
+                        confirmation_token: data.confirmationToken,
+                        return_url: data.returnUrl,
+                        customization: {
+                            modal: true,
+                            colors: { control_primary: '#6366f1' }
+                        },
+                        error_callback: function(error) {
+                            console.error('Ошибка виджета ЮKassa:', error);
+                            try { widget.destroy(); } catch (_) {}
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalBtnContent;
+                            alert('Не удалось открыть форму оплаты. Если платёж уже был подтверждён, не оплачивайте повторно — обратитесь в поддержку.');
+                        }
+                    });
+
+                    widget.on('modal_close', function() {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnContent;
+                    });
+
+                    widget.render();
                 } else {
                     alert(data.message || 'Ошибка создания платежа');
                     submitBtn.disabled = false;
@@ -867,7 +895,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert('Произошла ошибка соединения с платежным шлюзом.');
+                alert(err.message || 'Произошла ошибка соединения с платежным шлюзом.');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnContent;
             }

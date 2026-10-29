@@ -2,6 +2,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   let createdToken = null;
   let reservedPromoCode = null;
+  let paymentRequestStarted = false;
 
   // Освобождаем резерв промокода и удаляем незавершённый заказ при ошибке создания платежа.
   async function rollbackPendingOrder() {
@@ -98,6 +99,8 @@ export async function onRequestPost(context) {
     const credentials = btoa(`${env.YOKASSA_SHOP_ID}:${env.YOKASSA_SECRET_KEY}`);
     const idempotenceKey = crypto.randomUUID();
 
+    // С этого момента сетевой сбой не доказывает, что платёж не создан.
+    paymentRequestStarted = true;
     const response = await fetch('https://api.yookassa.ru/v3/payments', {
       method: 'POST',
       headers: {
@@ -107,10 +110,7 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         amount: { value: `${product.price}.00`, currency: 'RUB' },
-        confirmation: {
-          type: 'redirect',
-          return_url: `https://reshai360.ru/success.html?token=${token}&productKey=${productKey}`
-        },
+        confirmation: { type: 'embedded' },
         capture: true,
         description: `${product.title} (${email})`,
         metadata: { studentName, email, productKey, token },
@@ -129,22 +129,27 @@ export async function onRequestPost(context) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Ошибка ЮKassa API:', response.status, errorText);
-      await rollbackPendingOrder();
+      // 4xx означает отказ запроса; 5xx может быть неоднозначным, поэтому заказ сохраняем.
+      if (response.status >= 400 && response.status < 500) await rollbackPendingOrder();
       return new Response(JSON.stringify({ message: 'Ошибка платежной системы. Попробуйте позже.' }), { status: 502 });
     }
 
     const payment = await response.json();
-    if (!payment.confirmation || !payment.confirmation.confirmation_url) {
+    if (!payment.confirmation || !payment.confirmation.confirmation_token) {
       throw new Error('Некорректный ответ от платежного шлюза');
     }
 
-    return new Response(JSON.stringify({ confirmationUrl: payment.confirmation.confirmation_url }), {
+    return new Response(JSON.stringify({
+      confirmationToken: payment.confirmation.confirmation_token,
+      returnUrl: `https://reshai360.ru/success.html?token=${encodeURIComponent(createdToken)}&productKey=${encodeURIComponent(productKey)}`
+    }), {
       headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
     console.error('Create payment error:', error);
-    await rollbackPendingOrder();
-    return new Response(JSON.stringify({ message: 'Внутренняя ошибка сервера' }), { status: 500 });
+    // Если запрос в ЮKassa уже отправлен, оставляем заказ для возможного webhook.
+    if (!paymentRequestStarted) await rollbackPendingOrder();
+    return new Response(JSON.stringify({ message: 'Не удалось получить подтверждение от платёжной системы. Если платёж прошёл, обратитесь в поддержку.' }), { status: 500 });
   }
 }
