@@ -114,9 +114,6 @@ window.CONFIG = {
 window.CONFIG.programs['11_basic'].blocks = window.CONFIG.programs['11'].blocks;
 window.CONFIG.programs['11_advanced'].blocks = window.CONFIG.programs['11'].blocks;
 
-/* Уровни 9 класса используют общий перечень подтем, но разные по сложности задания. */
-window.CONFIG.programs['9_basic'].blocks = window.CONFIG.programs['9'].blocks;
-window.CONFIG.programs['9_advanced'].blocks = window.CONFIG.programs['9'].blocks;
 
 // Два уровня доступны для каждого класса. Для 7–10 классов используем соответствующие тематические блоки класса.
 for (const grade of ['7', '8', '9', '10']) {
@@ -138,3 +135,6 @@ for (const grade of ['7', '8', '9', '10']) {
         price: '990 ₽',
     };
 }
+/* Уровни 9 класса используют общий перечень подтем, но разные по сложности задания. */
+window.CONFIG.programs['9_basic'].blocks = window.CONFIG.programs['9'].blocks;
+window.CONFIG.programs['9_advanced'].blocks = window.CONFIG.programs['9'].blocks;
