@@ -679,6 +679,13 @@
             }
         }
         window.addEventListener("resize", syncProgramPanelHeight);
+        if (window.ResizeObserver) {
+            const checkoutPanelObserver = new ResizeObserver(() => requestAnimationFrame(syncProgramPanelHeight));
+            document.addEventListener("DOMContentLoaded", () => {
+                const checkoutPanel = document.getElementById("checkout-panel");
+                if (checkoutPanel) checkoutPanelObserver.observe(checkoutPanel);
+            });
+        }
 
         // Выбор класса и уровня: программа и стоимость синхронно обновляются из CONFIG.
         function selectOption(key) {
