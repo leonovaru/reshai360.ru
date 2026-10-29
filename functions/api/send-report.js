@@ -85,11 +85,11 @@ export async function onRequestPost({ request, env }) {
             code: promoCode,
             discountPercent: 10,
             createdAt: Date.now(),
-            expiresAt: Date.now() + 180 * 24 * 60 * 60 * 1000,
+            expiresAt: Date.now() + 45 * 24 * 60 * 60 * 1000,
             used: false,
             reservedBy: null,
             reservedUntil: null
-          }), { expirationTtl: 15552000 });
+          }), { expirationTtl: 45 * 24 * 60 * 60 });
           tokenData.promoCodeIssued = promoCode;
         }
         await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
@@ -166,7 +166,7 @@ export async function onRequestPost({ request, env }) {
                         <div style="margin-top:18px;padding:20px;border-radius:16px;background:#eef2ff;border:1px solid #c7d2fe;">
                           <div style="font-size:13px;color:#4338ca;font-weight:800;text-transform:uppercase;letter-spacing:.8px;">🎁 Подарок за прохождение</div>
                           <div style="margin:10px 0;padding:12px;background:#ffffff;border:1px dashed #818cf8;border-radius:10px;text-align:center;font-size:22px;letter-spacing:2px;font-weight:800;color:#312e81;">${promoCode}</div>
-                          <p style="margin:0;font-size:14px;line-height:1.65;color:#3730a3;">Промокод даёт <strong>скидку 10%</strong> на следующую диагностику. Используйте его сами или поделитесь с другом. Код одноразовый и действует 180 дней.</p>
+                          <p style="margin:0;font-size:14px;line-height:1.65;color:#3730a3;">Промокод даёт <strong>скидку 10%</strong> на следующую диагностику. Используйте его сами или поделитесь с другом. Код одноразовый и действует 45 дней.</p>
                           <p style="margin:12px 0 0;font-size:13px;line-height:1.65;color:#4338ca;">Оставьте отзыв, пожелание или идею на сайте — увеличим вашу скидку до <strong>15%</strong>.</p>
                         </div>` : ""}
                         <p style="margin:22px 0 0;font-size:15px;line-height:1.7;color:#475569;">С заботой о знаниях и хвостиках,<br><strong>Команда Решай360</strong></p>
