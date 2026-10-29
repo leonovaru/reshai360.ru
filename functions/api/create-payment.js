@@ -110,10 +110,7 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         amount: { value: `${product.price}.00`, currency: 'RUB' },
-        confirmation: {
-          type: 'embedded',
-          return_url: `https://reshai360.ru/success.html?token=${token}&productKey=${productKey}`
-        },
+        confirmation: { type: 'embedded' },
         capture: true,
         description: `${product.title} (${email})`,
         metadata: { studentName, email, productKey, token },
