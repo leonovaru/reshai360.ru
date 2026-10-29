@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Партнёры — Решай360</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="robots" content="noindex,nofollow">
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <main class="mx-auto max-w-6xl space-y-6 p-4 sm:p-8">
+    <header><p class="text-sm font-bold tracking-[.25em] text-indigo-300">РЕШАЙ360 · ВНУТРЕННИЙ ИНСТРУМЕНТ</p><h1 class="mt-2 text-3xl font-black">Партнёрская программа</h1><p class="mt-2 text-slate-400">Закрытая статистика оплат и выплат. Вознаграждение — 100 ₽ за подтверждённую диагностику.</p></header>
+    <section class="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+      <label for="admin-token" class="mb-2 block text-sm font-semibold">Секрет доступа (PARTNER_ADMIN_TOKEN)</label>
+      <div class="flex flex-col gap-2 sm:flex-row"><input id="admin-token" type="password" autocomplete="off" class="min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-950 px-4 py-3" placeholder="Вставьте секрет из Cloudflare"><button id="load-button" class="rounded-xl bg-indigo-600 px-5 py-3 font-bold hover:bg-indigo-500">Открыть реестр</button></div>
+      <p id="status" class="mt-3 text-sm text-slate-400">Секрет не сохраняется в браузере.</p>
+    </section>
+    <section class="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+      <h2 class="text-xl font-bold">Добавить партнёра</h2>
+      <form id="create-form" class="mt-3 grid gap-3 sm:grid-cols-3"><input id="new-name" required minlength="2" maxlength="100" class="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3" placeholder="Имя / название"><input id="new-code" required pattern="[a-zA-Z0-9_-]{3,32}" class="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3" placeholder="Уникальный код, например partner06"><button class="rounded-xl bg-emerald-700 px-5 py-3 font-bold hover:bg-emerald-600">Создать ссылку</button></form>
+    </section>
+    <section class="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+      <div class="flex flex-wrap items-center justify-between gap-3"><h2 class="text-xl font-bold">Партнёры и начисления</h2><button id="refresh-button" class="rounded-xl border border-slate-700 px-4 py-2 hover:bg-slate-800">Обновить</button></div>
+      <div class="mt-4 overflow-x-auto"><table class="w-full min-w-[760px] text-left text-sm"><thead class="text-slate-400"><tr><th class="p-3">Партнёр</th><th class="p-3">Уникальная ссылка</th><th class="p-3">Оплат</th><th class="p-3">К выплате</th><th class="p-3">Выплачено</th><th class="p-3">Действия</th></tr></thead><tbody id="partners-body"><tr><td colspan="6" class="p-3 text-slate-400">Введите секрет и откройте реестр.</td></tr></tbody></table></div>
+    </section>
+    <section class="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+      <h2 class="text-xl font-bold">История начислений</h2>
+      <div class="mt-4 overflow-x-auto"><table class="w-full min-w-[700px] text-left text-sm"><thead class="text-slate-400"><tr><th class="p-3">Дата оплаты</th><th class="p-3">Партнёр</th><th class="p-3">Диагностика</th><th class="p-3">Начислено</th><th class="p-3">Статус</th><th class="p-3">ID платежа</th></tr></thead><tbody id="sales-body"><tr><td colspan="6" class="p-3 text-slate-400">Нет данных.</td></tr></tbody></table></div>
+    </section>
+  </main>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  let partners = [], commissions = [];
+  const money = value => new Intl.NumberFormat('ru-RU').format(value || 0) + ' ₽';
+  const date = value => value ? new Date(value).toLocaleString('ru-RU') : '—';
+  const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  function setStatus(message, error) { $('status').textContent = message; $('status').className = 'mt-3 text-sm ' + (error ? 'text-rose-300' : 'text-slate-300'); }
+  async function api(method, body) {
+    const token = $('admin-token').value.trim();
+    const response = await fetch('/api/partner-admin', { method, headers: { 'Authorization': 'Bearer ' + token, ...(body ? {'Content-Type':'application/json'} : {}) }, body: body ? JSON.stringify(body) : undefined });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.message || 'Ошибка запроса.');
+    return data;
+  }
+  function render() {
+    const names = Object.fromEntries(partners.map(p => [p.code, p.name]));
+    $('partners-body').innerHTML = partners.map(p => {
+      const rows = commissions.filter(c => c.partnerCode === p.code);
+      const pending = rows.filter(c => c.status === 'accrued');
+      const paid = rows.filter(c => c.status === 'paid');
+      const url = location.origin + '/?ref=' + encodeURIComponent(p.code);
+      return '<tr class="border-t border-slate-800 align-top"><td class="p-3"><input data-rename="' + esc(p.code) + '" value="' + esc(p.name) + '" class="w-40 rounded-lg border border-slate-700 bg-slate-950 px-2 py-2"><div class="mt-1 text-xs text-slate-500">' + esc(p.code) + (p.active === false ? ' · выключен' : '') + '</div></td><td class="p-3"><a class="break-all text-indigo-300 underline" href="' + esc(url) + '">' + esc(url) + '</a><button data-copy="' + esc(url) + '" class="ml-2 text-xs text-slate-300 underline">Копировать</button></td><td class="p-3">' + rows.length + '</td><td class="p-3 font-bold">' + money(pending.reduce((s,c)=>s+Number(c.amount||0),0)) + '</td><td class="p-3">' + money(paid.reduce((s,c)=>s+Number(c.amount||0),0)) + '</td><td class="p-3"><div class="flex flex-col items-start gap-2"><button data-save="' + esc(p.code) + '" class="rounded-lg bg-indigo-700 px-3 py-2">Сохранить имя</button>' + (pending.length ? '<button data-pay="' + esc(p.code) + '" class="rounded-lg bg-emerald-700 px-3 py-2">Отметить выплату</button>' : '') + '<button data-toggle="' + esc(p.code) + '" class="rounded-lg border border-slate-700 px-3 py-2">' + (p.active === false ? 'Включить ссылку' : 'Отключить ссылку') + '</button></div></td></tr>';
+    }).join('') || '<tr><td colspan="6" class="p-3">Партнёров пока нет.</td></tr>';
+    $('sales-body').innerHTML = commissions.map(c => '<tr class="border-t border-slate-800"><td class="p-3">' + esc(date(c.paidAt)) + '</td><td class="p-3">' + esc(names[c.partnerCode] || c.partnerCode) + '<div class="text-xs text-slate-500">' + esc(c.partnerCode) + '</div></td><td class="p-3">' + esc(c.productKey) + '</td><td class="p-3">' + money(c.amount) + '</td><td class="p-3">' + (c.status === 'paid' ? 'Выплачено' : c.status === 'reversed' ? 'Отменено' : 'К выплате') + '</td><td class="p-3 font-mono text-xs">' + esc(c.paymentId) + '</td></tr>').join('') || '<tr><td colspan="6" class="p-3 text-slate-400">Пока нет партнёрских оплат.</td></tr>';
+  }
+  async function refresh() {
+    setStatus('Загружаем реестр…');
+    try { const data = await api('GET'); partners = data.partners || []; commissions = data.commissions || []; render(); setStatus('Данные обновлены. Всего партнёров: ' + partners.length + '.'); }
+    catch (e) { setStatus(e.message, true); }
+  }
+  $('load-button').addEventListener('click', refresh);
+  $('refresh-button').addEventListener('click', refresh);
+  $('create-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    try { const data = await api('POST', {action:'create', name:$('new-name').value, code:$('new-code').value}); $('new-name').value=''; $('new-code').value=''; setStatus('Партнёр добавлен.'); await refresh(); }
+    catch (err) { setStatus(err.message, true); }
+  });
+  $('partners-body').addEventListener('click', async e => {
+    const button = e.target.closest('button');
+    if (!button) return;
+    try {
+      if (button.dataset.copy) { await navigator.clipboard.writeText(button.dataset.copy); setStatus('Ссылка скопирована.'); return; }
+      if (button.dataset.save) { const input = document.querySelector('[data-rename="' + CSS.escape(button.dataset.save) + '"]'); await api('POST',{action:'rename',code:button.dataset.save,name:input.value}); setStatus('Имя сохранено.'); await refresh(); return; }
+      if (button.dataset.pay) { if (!confirm('Отметить все текущие начисления этого партнёра как выплаченные?')) return; const data=await api('POST',{action:'mark-paid',code:button.dataset.pay}); setStatus('Отмечено выплат: ' + data.count + ', сумма ' + money(data.amount) + '.'); await refresh(); return; }
+      if (button.dataset.toggle) { await api('POST',{action:'toggle',code:button.dataset.toggle}); await refresh(); }
+    } catch (err) { setStatus(err.message, true); }
+  });
+})();
+</script>
+</body>
+</html>
