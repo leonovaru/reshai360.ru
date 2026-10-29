@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Диагностический тест по математике | 8 класс — базовый уровень</title>
+  
+  <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш номер счетчика) -->
+  <script type="text/javascript" >
+     (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+     m[i].l=1*new Date();
+     for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+     k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+     (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+     ym(113852589, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true });
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/113852589" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+
+  <!-- MathJax SVG с локальным кешем шрифтов -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
+      svg: { fontCache: 'local' },
+      options: {
+        renderActions: {
+          assistiveMML: [],
+          addMenu: []
+        }
+      }
+    };
+  </script>
+  <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  
+  <!-- Библиотеки генерации PDF из canvas (html2canvas + jsPDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --primary-dark: #1b365d;
+      --primary-blue: #2563eb;
+      --bg-light: #f4f6f9;
+      --card-bg: #ffffff;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: var(--bg-light); color: #333; margin: 0; padding: 0; }
+    .container { max-width: 900px; margin: 40px auto; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .top-instruction { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 15px 20px; margin-bottom: 25px; color: #334155; font-size: 0.95em; line-height: 1.6; }
+    .top-instruction-title { font-weight: 700; color: var(--primary-dark); margin-bottom: 4px; }
+    .top-instruction ul { margin: 0; padding-left: 18px; }
+    .top-instruction li { margin-bottom: 3px; }
+    h2.block-title { margin-top: 30px; color: var(--primary-dark); border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-size: 1.3em; }
+    h3.theme-title { margin-top: 20px; color: var(--primary-blue); font-size: 1.1em; }
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+    .question-title { font-weight: 600; font-size: 1.05em; margin-bottom: 12px; line-height: 1.5; }
+    .options { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .option-label { display: flex; align-items: flex-start; gap: 10px; background: #fff; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; line-height: 1.4; }
+    .option-label:hover { background: #eff6ff; }
+    .option-label input[type="radio"] { margin-top: 3px; flex-shrink: 0; }
+    .option-label span { flex: 1; word-break: break-word; }
+    .input-row { display: flex; align-items: center; gap: 8px; max-width: 350px; margin-top: 10px; }
+    .text-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1em; box-sizing: border-box; margin-top: 0; }
+    .text-input:disabled { background-color: #e2e8f0; cursor: not-allowed; color: #475569; }
+    .btn-minus-toggle { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 6px; width: 44px; height: 42px; font-weight: bold; font-size: 1.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s; flex-shrink: 0; }
+    .btn-minus-toggle:hover { background: #e2e8f0; border-color: #94a3b8; }
+    .btn-minus-toggle.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+    .btn-minus-toggle:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+    .btn-check { background: var(--primary-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 12px; transition: 0.2s; }
+    .btn-check:hover { background: #1d4ed8; }
+    .feedback { display: inline-block; margin-left: 15px; font-weight: bold; font-size: 1.05em; }
+    .btn-final { display: block; width: 100%; padding: 16px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.2s; }
+    .btn-final:hover { background: #15803d; }
+    .btn-pdf { display: inline-block; background: var(--primary-dark); color: #fff; border: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 1.05em; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .btn-pdf:hover:not(:disabled) { background: var(--primary-blue); }
+    .btn-pdf:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.8; box-shadow: none; }
+    mjx-container[jax="SVG"] { display: inline-block !important; margin: 0 2px !important; }
+    mjx-container[jax="SVG"] svg { overflow: visible !important; vertical-align: middle !important; max-width: none !important; }
+    mjx-assistive-mml, .mjx-assistive-mml { display: none !important; visibility: hidden !important; }
+    #result-wrapper { max-width: 900px; margin: 20px auto; display: none; padding: 0 15px; box-sizing: border-box; }
+    .screen-section-title { color: var(--primary-dark); border-bottom: 2px solid var(--primary-blue); padding-bottom: 8px; font-size: 1.25em; margin: 30px 0 15px 0; }
+    #pdf-export-container { position: fixed; top: 0; left: 0; z-index: -9999; opacity: 0; pointer-events: none; width: 794px !important; }
+    .pdf-page { width: 794px !important; height: 1122px !important; background: #ffffff !important; padding: 25px 40px !important; box-sizing: border-box !important; margin: 0 auto !important; position: relative !important; overflow: hidden !important; font-size: 15px !important; }
+    #result-screen .pdf-page { width: 100% !important; max-width: 794px; height: auto !important; min-height: auto !important; padding: 20px !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
+    .pdf-header-title { font-size: 1.35em; font-weight: 800; color: #1b2a4a; margin: 0 0 12px 0; }
+    .pdf-score-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; gap: 15px; flex-wrap: wrap; }
+    .pdf-student-info { font-size: 0.95em; color: #1e293b; line-height: 1.5; }
+    .pdf-student-info strong { color: var(--primary-dark); }
+    .pdf-score-right { text-align: right; }
+    .pdf-score-label { font-size: 0.85em; color: #64748b; margin-bottom: 2px; }
+    .pdf-score-main { font-size: 1.3em; font-weight: 800; color: #1b365d; }
+    .pdf-analytics-title { font-size: 1em; font-weight: 700; color: #1b365d; margin-bottom: 6px; border-bottom: 2px solid #2563eb; padding-bottom: 3px; }
+    .pdf-progress-row { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+    .pdf-progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; font-weight: 700; color: #1e293b; margin-bottom: 6px; gap: 15px; }
+    .pdf-progress-track { height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
+    .pdf-progress-fill { height: 100%; border-radius: 6px; }
+    .bg-green { background-color: #22c55e; }
+    .bg-yellow { background-color: #eab308; }
+    .bg-red { background-color: #ef4444; }
+    .pdf-topics-container { display: flex; flex-direction: row !important; gap: 12px; margin-top: 8px; }
+    .pdf-topics-box { flex: 1; border-radius: 8px; padding: 10px 12px; font-size: 0.72em; line-height: 1.35; max-height: none; overflow: visible; }
+    .pdf-topics-box.repeat { flex: 1 1 0; background: #fefce8; border: 1px solid #fde047; color: #713f12; }
+    .pdf-topics-box.repeat h4 { margin: 0 0 4px 0; color: #a16207; font-size: 0.95em; }
+    .pdf-topics-box.study { flex: 2 1 0; background: #fef2f2; border: 1px solid #fca5a5; color: #7f1d1d; }
+    .pdf-topics-box.study h4 { margin: 0 0 4px 0; color: #b91c1c; font-size: 0.95em; }
+    .pdf-topics-box ol { margin: 0; padding-left: 16px; column-count: 2; column-gap: 10px; }
+    .pdf-topics-box li { margin-bottom: 3px; break-inside: avoid; }
+    .pdf-topics-box { font-size: 0.68em; line-height: 1.22; }
+    .detail-section-title { margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); border-bottom: 2px solid #2563eb; padding-bottom: 5px; font-size: 1.05em; }
+    .pdf-card { background: #ffffff; border-left: 4px solid #cbd5e1; border-radius: 5px; padding: 10px 14px; margin-bottom: 10px; position: relative; }
+    .pdf-card.correct { border-left-color: #16a34a; background: #f0fdf4; }
+    .pdf-card.incorrect { border-left-color: #eab308; background: #fefce8; }
+    .pdf-card.skipped { border-left-color: #dc2626; background: #fef2f2; }
+    .pdf-q { font-weight: 600; margin-bottom: 4px; color: #1e293b; font-size: 0.9em; line-height: 1.35; }
+    .pdf-ans { font-size: 0.85em; color: #475569; line-height: 1.4; padding-right: 95px; }
+    .badge { position: absolute; bottom: 10px; right: 12px; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; white-space: nowrap; }
+    .badge-ok { background: #dcfce7; color: #15803d; }
+    .badge-err { background: #fef9c3; color: #a16207; }
+    .badge-skip { background: #fee2e2; color: #b91c1c; }
+    .page-footer { position: absolute; bottom: 10px; left: 40px; right: 40px; text-align: center; font-size: 0.72em; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="container" id="main-container">
+  <div id="quiz-screen" style="display: block;">
+    <div class="top-instruction">
+      <div style="font-weight:700;color:#2563eb;margin:0 0 6px 0;">Диагностика 8 класса — базовый уровень</div>
+      <div class="top-instruction-title">📋 Правила прохождения теста:</div>
+      <ul>
+        <li>Решайте задания самостоятельно и не пытайтесь угадывать ответы наугад.</li>
+        <li>Если в ответе получается десятичная дробь, используйте запятую (например, <strong>2,5</strong>).</li>
+        <li>Чтобы ввести отрицательное число, нажмите на кнопку <strong>«±»</strong> рядом с полем ввода.</li>
+        <li>Все ваши проверенные ответы и прогресс сохраняются.</li>
+        <li><strong>Важно:</strong> не закрывайте и не покидайте страницу во время прохождения теста.</li>
+      </ul>
+    </div>
+    <div id="quiz-container"></div>
+    <button class="btn-final" id="finishBtn" onclick="checkAll()">Завершить и посмотреть результаты</button>
+  </div>
+</div>
+
+<div id="result-wrapper">
+  <div id="result-screen"></div>
+  <div id="promo-code-result" style="display:none; margin:18px auto 28px; max-width:794px; padding:22px; border:2px solid #6366f1; border-radius:16px; background:linear-gradient(135deg,#eef2ff,#f5f3ff); color:#1e1b4b; box-shadow:0 10px 28px rgba(79,70,229,.12);">
+    <div style="font-size:1.2em; font-weight:800; margin-bottom:8px;">🎁 Ваш подарок за прохождение диагностики</div>
+    <p style="margin:0 0 12px;">Скидка <strong>90 ₽</strong> на следующую диагностику. Промокод одноразовый, действует 180 дней — используйте его сами или передайте другу.</p>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:12px; background:#fff; border:1px dashed #818cf8; border-radius:10px;"><strong id="promo-code-result-value" style="font-size:1.35em; letter-spacing:.08em;"></strong><button type="button" onclick="copyPromoCode()" style="padding:9px 14px; border-radius:8px; background:#4338ca; color:white; font-weight:700; border:0; cursor:pointer;">Скопировать</button></div>
+    <p id="promo-code-result-note" style="margin:10px 0 0; font-size:.9em;"></p>
+    <div id="report-email-status" style="margin:14px 0 0; padding:12px; background:#fff; border-radius:10px; font-size:.92em;" aria-live="polite"></div>
+    <div style="margin-top:14px; padding-top:14px; border-top:1px solid #c7d2fe;"><p style="font-size:.9em; font-weight:800; margin:0 0 8px;">Есть вопросы по тесту или отчёту? Свяжитесь с нами:</p><div style="display:flex; flex-wrap:wrap; gap:10px 16px; font-size:.88em;"><a href="mailto:support@reshai360.ru" style="color:#4338ca; text-decoration:underline;">✉ support@reshai360.ru</a><a href="tel:+789044766535" style="color:#4338ca; text-decoration:underline;">☎ 8 (904) 476-65-35</a><a href="https://t.me/leonovaru" target="_blank" rel="noopener noreferrer" style="color:#4338ca; text-decoration:underline;">Telegram</a><a href="https://vk.ru/leonovaru" target="_blank" rel="noopener noreferrer" style="color:#4338ca; text-decoration:underline;">ВКонтакте</a></div></div>
+    <div id="feedback-upgrade" style="margin-top:18px; padding-top:16px; border-top:1px solid #c7d2fe;"><h3 style="font-size:1.05em; font-weight:800; margin:0 0 6px;">💬 Помогите сделать Решай360 лучше — получите скидку 190 ₽</h3><p style="font-size:.9em; line-height:1.5; margin:0 0 12px;">Расскажите, что было неудобно, какие темы или форматы добавить, что улучшить в заданиях или отчёте. После отправки обратной связи скидка по вашему промокоду увеличится с 90 до 190 ₽.</p>
+      <form id="feedback-form" style="display:grid; gap:10px;"><label for="feedback-kind" style="font-weight:700; font-size:.9em;">Что хотите предложить?</label><select id="feedback-kind" required style="width:100%; padding:11px 12px; border:1px solid #c7d2fe; border-radius:9px; background:#fff; color:#1e1b4b;"><option value="Улучшение теста">Улучшить задания и диагностику</option><option value="Удобство прохождения">Сделать прохождение удобнее</option><option value="Новый продукт">Предложить новый продукт или тему</option><option value="Отзыв">Оставить отзыв</option><option value="Другое">Другое</option></select><label for="feedback-message" style="font-weight:700; font-size:.9em;">Ваши идеи и пожелания</label><textarea id="feedback-message" required minlength="5" maxlength="5000" rows="4" placeholder="Например: хотелось бы больше задач на… / было неудобно… / мне пригодился бы продукт для…" style="width:100%; box-sizing:border-box; padding:12px; border:1px solid #c7d2fe; border-radius:9px; background:#fff; color:#1e1b4b; resize:vertical;"></textarea><button id="feedback-submit" type="submit" style="padding:12px 16px; border-radius:10px; background:#4338ca; color:white; font-weight:800; border:0; cursor:pointer;">Отправить обратную связь и получить скидку 190 ₽</button><p id="feedback-status" style="margin:0; font-size:.9em;" aria-live="polite"></p></form>
+    </div>
+  </div>
+</div>
+
+<div id="pdf-export-container">
+  <div id="result-pdf"></div>
+</div>
+
+<script>
+  let studentData = { fullName: "Ученик", email: "" };
+  let currentToken = "";
+  let generatedPdfBlob = null;
+
+  // Проверка токена при загрузке страницы (защита от пересылки и повторного прохождения)
+  window.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    currentToken = params.get('token') || localStorage.getItem('testToken');
+
+    if (!currentToken) {
+      alert("Доступ запрещен. Требуется оплата диагностики.");
+      window.location.href = "index.html";
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/verify-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: currentToken })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Сервер проверки доступа ответил с кодом ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (!result.valid) {
+        alert(result.message || "Ссылка недействительна или уже была использована.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      if (result.data) {
+        if (result.data.productKey !== '8_basic') {
+          alert("Эта ссылка не соответствует выбранному уровню диагностики.");
+          window.location.href = "index.html";
+          return;
+        }
+        studentData.fullName = result.data.studentName || localStorage.getItem('studentName') || "Ученик";
+        studentData.email = result.data.email || localStorage.getItem('studentEmail') || "";
+      }
+    } catch (err) {
+      console.error("Ошибка проверки токена:", err);
+      alert("Не удалось проверить доступ к тесту. Проверьте подключение к интернету и попробуйте открыть ссылку ещё раз.");
+      window.location.href = "index.html";
+      return;
+    }
+
+    renderQuiz();
+  });
+
+  function escapeHtml(text) {
+    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function toggleMinus(qId) {
+    const input = document.getElementById(qId);
+    if (!input || input.disabled) return;
+    let val = input.value.trim();
+    if (val.startsWith('-')) {
+      input.value = val.substring(1);
+    } else {
+      input.value = '-' + val;
+    }
+    updateMinusBtnState(qId);
+  }
+
+  function updateMinusBtnState(qId) {
+    const input = document.getElementById(qId);
+    const btn = document.getElementById(`btn_toggle_${qId}`);
+    if (input && btn) {
+      if (input.value.trim().startsWith('-')) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    }
+  }
+
+  window.onbeforeunload = function() {
+    return "Вы уверены, что хотите покинуть страницу?";
+  };
+
+  async function safeTypeset(targetElement) {
+    if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+      try {
+        await MathJax.typesetPromise(targetElement ? [targetElement] : []);
+      } catch (err) {
+        console.error("MathJax error:", err);
+      }
+    }
+  }
+
+  const quizData = [
+    {
+      "block": "Блок 1. Числа и вычисления",
+      "themes": [
+        {
+          "theme": "1. Порядок действий",
+          "questions": [
+            {
+              "type": "text",
+              "q": "54 : 6 + 4 · 7",
+              "a": "37"
+            },
+            {
+              "type": "text",
+              "q": "120 − 48 : 6 · 5",
+              "a": "80"
+            }
+          ]
+        },
+        {
+          "theme": "2. Натуральные числа",
+          "questions": [
+            {
+              "type": "text",
+              "q": "348 + 257",
+              "a": "605"
+            },
+            {
+              "type": "text",
+              "q": "900 − 468",
+              "a": "432"
+            }
+          ]
+        },
+        {
+          "theme": "3. Делимость",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Наименьшее число, кратное 6 и 8",
+              "a": "24"
+            },
+            {
+              "type": "text",
+              "q": "Количество делителей числа 12",
+              "a": "6"
+            }
+          ]
+        },
+        {
+          "theme": "4. Обыкновенные дроби",
+          "questions": [
+            {
+              "type": "text",
+              "q": "1/3 + 1/6, десятичный ответ",
+              "a": "0.5"
+            },
+            {
+              "type": "text",
+              "q": "3/4 − 1/4, десятичный ответ",
+              "a": "0.5"
+            }
+          ]
+        },
+        {
+          "theme": "5. Сокращение дробей",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Сократите 18/24: знаменатель",
+              "a": "4"
+            },
+            {
+              "type": "text",
+              "q": "17/5: целая часть смешанного числа",
+              "a": "3"
+            }
+          ]
+        },
+        {
+          "theme": "6. Десятичные дроби",
+          "questions": [
+            {
+              "type": "text",
+              "q": "3.7 + 2.85",
+              "a": "6.55"
+            },
+            {
+              "type": "text",
+              "q": "4.8 : 0.6",
+              "a": "8"
+            }
+          ]
+        },
+        {
+          "theme": "7. Отрицательные числа",
+          "questions": [
+            {
+              "type": "text",
+              "q": "−18 + 7",
+              "a": "-11"
+            },
+            {
+              "type": "text",
+              "q": "Какое число больше: −3 или −8?",
+              "a": "-3"
+            }
+          ]
+        },
+        {
+          "theme": "8. Степени",
+          "questions": [
+            {
+              "type": "text",
+              "q": "2³",
+              "a": "8"
+            },
+            {
+              "type": "text",
+              "q": "5²",
+              "a": "25"
+            }
+          ]
+        },
+        {
+          "theme": "9. НОД и НОК",
+          "questions": [
+            {
+              "type": "text",
+              "q": "НОД чисел 18 и 30",
+              "a": "6"
+            },
+            {
+              "type": "text",
+              "q": "НОК чисел 4 и 6",
+              "a": "12"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "block": "Блок 2. Отношения и практические задачи",
+      "themes": [
+        {
+          "theme": "10. Отношения",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Сократите 12 : 18: второй член",
+              "a": "3"
+            },
+            {
+              "type": "text",
+              "q": "Отношение мальчиков к девочкам 2 : 3, всего 25 детей. Сколько мальчиков?",
+              "a": "10"
+            }
+          ]
+        },
+        {
+          "theme": "11. Пропорции и масштаб",
+          "questions": [
+            {
+              "type": "text",
+              "q": "x/6 = 4/3. Найдите x",
+              "a": "8"
+            },
+            {
+              "type": "text",
+              "q": "Масштаб 1 : 100000. Сколько км соответствуют 2 см?",
+              "a": "2"
+            }
+          ]
+        },
+        {
+          "theme": "12. Проценты",
+          "questions": [
+            {
+              "type": "text",
+              "q": "20% от 150",
+              "a": "30"
+            },
+            {
+              "type": "text",
+              "q": "Цена 800 ₽ снижена на 10%. Новая цена",
+              "a": "720"
+            },
+            {
+              "type": "text",
+              "q": "После увеличения на 20% получили 72. Исходное число",
+              "a": "60"
+            }
+          ]
+        },
+        {
+          "theme": "13. Движение",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Путь за 3 ч со скоростью 12 км/ч",
+              "a": "36"
+            },
+            {
+              "type": "text",
+              "q": "За 4 ч велосипедист проехал 52 км. Скорость",
+              "a": "13"
+            }
+          ]
+        },
+        {
+          "theme": "14. Единицы измерения",
+          "questions": [
+            {
+              "type": "text",
+              "q": "3 м 45 см. Сколько сантиметров?",
+              "a": "345"
+            },
+            {
+              "type": "text",
+              "q": "2.5 кг. Сколько граммов?",
+              "a": "2500"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "block": "Блок 3. Выражения и уравнения",
+      "themes": [
+        {
+          "theme": "15. Среднее арифметическое",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Среднее чисел 4, 7 и 10",
+              "a": "7"
+            },
+            {
+              "type": "text",
+              "q": "Среднее чисел 6 и 14",
+              "a": "10"
+            }
+          ]
+        },
+        {
+          "theme": "16. Числовые выражения",
+          "questions": [
+            {
+              "type": "text",
+              "q": "(18 + 12) : 5",
+              "a": "6"
+            },
+            {
+              "type": "text",
+              "q": "7 · (9 − 4)",
+              "a": "35"
+            }
+          ]
+        },
+        {
+          "theme": "17. Буквенные выражения",
+          "questions": [
+            {
+              "type": "text",
+              "q": "3a + 5 при a = 4",
+              "a": "17"
+            },
+            {
+              "type": "text",
+              "q": "7x − 2x. Коэффициент при x",
+              "a": "5"
+            }
+          ]
+        },
+        {
+          "theme": "18. Упрощение выражений",
+          "questions": [
+            {
+              "type": "text",
+              "q": "4x + 3x. Коэффициент при x",
+              "a": "7"
+            },
+            {
+              "type": "text",
+              "q": "2a + 5 + 3a. Свободный член",
+              "a": "5"
+            }
+          ]
+        },
+        {
+          "theme": "19. Простейшие уравнения",
+          "questions": [
+            {
+              "type": "text",
+              "q": "x + 8 = 23. Найдите x",
+              "a": "15"
+            },
+            {
+              "type": "text",
+              "q": "3x = 27. Найдите x",
+              "a": "9"
+            }
+          ]
+        },
+        {
+          "theme": "20. Задачи с уравнением",
+          "questions": [
+            {
+              "type": "text",
+              "q": "К числу прибавили 8 и получили 23. Число",
+              "a": "15"
+            },
+            {
+              "type": "text",
+              "q": "Периметр прямоугольника 34 см, сторона 10 см. Другая сторона",
+              "a": "7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "block": "Блок 4. Геометрия",
+      "themes": [
+        {
+          "theme": "21. Координаты",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Какое число на 4 единицы правее −2?",
+              "a": "2"
+            },
+            {
+              "type": "text",
+              "q": "Абсцисса точки A(−4; 7)",
+              "a": "-4"
+            }
+          ]
+        },
+        {
+          "theme": "22. Углы и прямые",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Смежный угол к 65°",
+              "a": "115"
+            },
+            {
+              "type": "text",
+              "q": "Вертикальный угол к 48°",
+              "a": "48"
+            },
+            {
+              "type": "text",
+              "q": "<div>Найдите третий угол треугольника.<br><svg viewBox='0 0 220 95' role='img' aria-label='Треугольник с углами 45 и 65 градусов' style='max-width:220px;width:100%;height:auto'><path d='M15 82 L110 10 L205 82 Z' fill='#dbeafe' stroke='#2563eb' stroke-width='2'/><text x='30' y='75' font-size='12' fill='#1e3a8a'>45°</text><text x='165' y='75' font-size='12' fill='#1e3a8a'>65°</text></svg></div>",
+              "a": "70"
+            }
+          ]
+        },
+        {
+          "theme": "23. Треугольники",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Углы треугольника 50° и 60°. Третий угол",
+              "a": "70"
+            },
+            {
+              "type": "text",
+              "q": "В равнобедренном треугольнике угол при вершине 40°. Угол при основании",
+              "a": "70"
+            }
+          ]
+        },
+        {
+          "theme": "24. Периметр многоугольника",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Периметр квадрата со стороной 6 см",
+              "a": "24"
+            },
+            {
+              "type": "text",
+              "q": "Периметр прямоугольника со сторонами 8 и 5 см",
+              "a": "26"
+            },
+            {
+              "type": "text",
+              "q": "<div>Найдите площадь прямоугольника.<br><svg viewBox='0 0 220 80' role='img' aria-label='Прямоугольник 9 на 4 см' style='max-width:220px;width:100%;height:auto'><rect x='30' y='18' width='160' height='42' fill='#dcfce7' stroke='#15803d' stroke-width='2'/><text x='100' y='14' font-size='12' fill='#166534'>9 см</text><text x='2' y='43' font-size='12' fill='#166534'>4 см</text></svg></div>",
+              "a": "36"
+            }
+          ]
+        },
+        {
+          "theme": "25. Площадь прямоугольника",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Площадь прямоугольника 8 см на 5 см",
+              "a": "40"
+            },
+            {
+              "type": "text",
+              "q": "Площадь квадрата со стороной 7 см",
+              "a": "49"
+            }
+          ]
+        },
+        {
+          "theme": "26. Окружность и круг",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Диаметр окружности 10 см. Радиус",
+              "a": "5"
+            },
+            {
+              "type": "text",
+              "q": "Радиус круга 4 см. Диаметр",
+              "a": "8"
+            }
+          ]
+        },
+        {
+          "theme": "27. Объём",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Коробка размером 2 × 3 × 4 см. Объём",
+              "a": "24"
+            },
+            {
+              "type": "text",
+              "q": "Куб с ребром 3 см. Объём",
+              "a": "27"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "block": "Блок 5. Данные и вероятность",
+      "themes": [
+        {
+          "theme": "28. Симметрия",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Сколько осей симметрии у квадрата",
+              "a": "4"
+            },
+            {
+              "type": "text",
+              "q": "Сколько осей симметрии у прямоугольника, не являющегося квадратом",
+              "a": "2"
+            }
+          ]
+        },
+        {
+          "theme": "29. Таблицы и данные",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Продажи за 3 дня: 4, 6 и 8 книг. Всего книг",
+              "a": "18"
+            },
+            {
+              "type": "text",
+              "q": "В группе 12 девочек и 10 мальчиков. Всего детей",
+              "a": "22"
+            }
+          ]
+        },
+        {
+          "theme": "30. Медиана и размах",
+          "questions": [
+            {
+              "type": "text",
+              "q": "Медиана чисел 2, 5, 8",
+              "a": "5"
+            },
+            {
+              "type": "text",
+              "q": "Размах чисел 3, 7, 10",
+              "a": "7"
+            }
+          ]
+        },
+        {
+          "theme": "31. Вероятность",
+          "questions": [
+            {
+              "type": "text",
+              "q": "В коробке 3 красных и 2 синих шара. Всего шаров",
+              "a": "5"
+            },
+            {
+              "type": "text",
+              "q": "На кубике числа от 1 до 6. Количество исходов",
+              "a": "6"
+            }
+          ]
+        }
+      ]
+    }
+  ];
+  async function renderQuiz() {
+    let html = "";
+    let qIndex = 1;
+
+    quizData.forEach((block, bIdx) => {
+      html += `<h2 class="block-title">${block.block}</h2>`;
+      block.themes.forEach((theme, tIdx) => {
+        html += `<h3 class="theme-title">${theme.theme}</h3>`;
+        theme.questions.forEach((qDef, qIdx) => {
+          qDef.checkCount = 0;
+          qDef.attemptsHistory = [];
+          const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
+          html += `<div class="card" id="card_${qId}">`;
+          html += `<div class="question-title">${qIndex}. ${qDef.q}</div>`;
+          
+          if (qDef.type === "radio") {
+            html += `<div class="options" id="opt_${qId}">`;
+            const shuffledOptions = qDef.options.map((opt, originalIndex) => ({ opt, originalIndex }));
+            for (let i = shuffledOptions.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+            }
+            shuffledOptions.forEach(({ opt, originalIndex }) => {
+              html += `<label class="option-label"><input type="radio" name="${qId}" value="${originalIndex}"> <span>${opt}</span></label>`;
+            });
+            html += `</div>`;
+          } else {
+            html += `<div class="input-row">`;
+            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Введите ответ" oninput="this.value = this.value.replace(/[^0-9,.\\-\\+\\*\\/]/g, ''); updateMinusBtnState('${qId}');">`;
+            html += `<button type="button" class="btn-minus-toggle" id="btn_toggle_${qId}" onclick="toggleMinus('${qId}')" title="Изменить знак (+/−)">±</button>`;
+            html += `</div>`;
+          }
+
+          html += `<div style="margin-top:12px;">`;
+          html += `<button class="btn-check" id="btn_${qId}" onclick="checkSingle(${bIdx}, ${tIdx}, ${qIdx})">Проверить задание</button>`;
+          html += `<div class="feedback" id="feed_${qId}"></div></div>`;
+          html += `</div>`;
+          qIndex++;
+        });
+      });
+    });
+
+    const quizContainer = document.getElementById("quiz-container");
+    quizContainer.innerHTML = html;
+    await safeTypeset(quizContainer);
+  }
+
+  function checkSingle(bIdx, tIdx, qIdx, silent = false) {
+    const qDef = quizData[bIdx].themes[tIdx].questions[qIdx];
+    const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
+    let userAns = "";
+    let formattedUserAns = "";
+
+    if (qDef.type === "radio") {
+      const els = document.getElementsByName(qId);
+      for (let el of els) { if (el.checked) userAns = el.value; }
+      formattedUserAns = (userAns !== "") ? qDef.options[parseInt(userAns)] : "Не выбрано";
+      qDef.correctText = qDef.options[qDef.a];
+    } else {
+      const inputEl = document.getElementById(qId);
+      userAns = inputEl ? inputEl.value.trim().replace(/\s+/g, "").replace(/,/g, ".") : "";
+      formattedUserAns = (userAns !== "") ? userAns.replace(/\./g, ",") : "Не введено";
+      qDef.correctText = qDef.a;
+    }
+
+    if (!silent) {
+      qDef.checkCount = (qDef.checkCount || 0) + 1;
+      if (userAns !== "") {
+        if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
+        qDef.attemptsHistory.push(formattedUserAns);
+      }
+    } else {
+      if (userAns !== "") {
+        if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
+        if (qDef.attemptsHistory.length === 0 || qDef.attemptsHistory[qDef.attemptsHistory.length - 1] !== formattedUserAns) {
+          qDef.attemptsHistory.push(formattedUserAns);
+        }
+      }
+    }
+
+    qDef.userText = formattedUserAns;
+
+    if (userAns === "") {
+      if (!silent) {
+        const feedEl = document.getElementById(`feed_${qId}`);
+        if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Ответ не введен!</span>";
+      }
+      qDef.isCorrect = false;
+      return;
+    }
+
+    const expectedAnswer = qDef.type === "text" ? String(qDef.a).trim().replace(/\s+/g, "").replace(/,/g, ".") : qDef.a;
+    const isRight = (qDef.type === "radio")
+      ? (parseInt(userAns, 10) === qDef.a)
+      : (userAns !== "" && Number.isFinite(Number(userAns)) && Number.isFinite(Number(expectedAnswer))
+          ? Math.abs(Number(userAns) - Number(expectedAnswer)) < 1e-9
+          : userAns === expectedAnswer);
+
+    if (isRight) {
+      qDef.isCorrect = true;
+      if (!silent) {
+        const feedEl = document.getElementById(`feed_${qId}`);
+        if (feedEl) feedEl.innerHTML = "<span style='color: #16a34a'>Верно! ✅</span>";
+        if (qDef.type === "radio") {
+          const els = document.getElementsByName(qId);
+          els.forEach(el => el.disabled = true);
+        } else {
+          const inputEl = document.getElementById(qId);
+          if (inputEl) inputEl.disabled = true;
+          const toggleBtn = document.getElementById(`btn_toggle_${qId}`);
+          if (toggleBtn) toggleBtn.disabled = true;
+        }
+        const btnEl = document.getElementById(`btn_${qId}`);
+        if (btnEl) btnEl.style.display = "none";
+      }
+    } else {
+      qDef.isCorrect = false;
+      if (!silent) {
+        const feedEl = document.getElementById(`feed_${qId}`);
+        if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Неверно ❌</span>";
+      }
+    }
+  }
+
+  async function buildPerfectPdfBlob() {
+    const { jsPDF } = window.jspdf;
+    const pdfContainer = document.getElementById("result-pdf");
+    const pages = pdfContainer.querySelectorAll(".pdf-page");
+    
+    const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
+
+    for (let i = 0; i < pages.length; i++) {
+      if (i > 0) pdf.addPage();
+      const canvas = await html2canvas(pages[i], { scale: 2, useCORS: true, logging: false, windowWidth: 794 });
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      pdf.addImage(imgData, "JPEG", 0, 0, 210, 297);
+    }
+    return pdf.output("blob");
+  }
+
+  function downloadPDF() {
+    if (!generatedPdfBlob) return;
+    const url = URL.createObjectURL(generatedPdfBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Отчет_${studentData.fullName}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  let pdfCountdownTimer = null;
+  let pdfCountdownRemaining = 60;
+  function startPdfCountdown() {
+    const button = document.getElementById("downloadPdfBtn");
+    if (!button) return;
+    pdfCountdownRemaining = 60; button.innerText = "⏳ Подготовка PDF: 60 сек";
+    if (pdfCountdownTimer) clearInterval(pdfCountdownTimer);
+    pdfCountdownTimer = setInterval(() => {
+      const currentButton = document.getElementById("downloadPdfBtn");
+      if (!currentButton || !currentButton.disabled) { clearInterval(pdfCountdownTimer); pdfCountdownTimer = null; return; }
+      pdfCountdownRemaining = Math.max(0, pdfCountdownRemaining - 1);
+      currentButton.innerText = pdfCountdownRemaining > 0 ? "⏳ Подготовка PDF: " + pdfCountdownRemaining + " сек" : "⏳ PDF ещё формируется…";
+      if (pdfCountdownRemaining <= 0) { clearInterval(pdfCountdownTimer); pdfCountdownTimer = null; }
+    }, 1000);
+  }
+  function copyPromoCode() {
+    const code = document.getElementById("promo-code-result-value")?.textContent || "";
+    if (!code || !navigator.clipboard || !navigator.clipboard.writeText) return;
+    navigator.clipboard.writeText(code).then(() => { const note = document.getElementById("promo-code-result-note"); if (note) note.textContent = "Промокод скопирован."; }).catch(() => {});
+  }
+  async function submitFeedback(event) {
+    event.preventDefault();
+    const button = document.getElementById("feedback-submit"), status = document.getElementById("feedback-status");
+    const message = document.getElementById("feedback-message").value.trim(), category = document.getElementById("feedback-kind").value;
+    if (message.length < 5) { status.textContent = "Напишите, пожалуйста, чуть подробнее — хотя бы 5 символов."; return; }
+    button.disabled = true; button.textContent = "Отправляем…"; status.textContent = "";
+    try {
+      const response = await fetch("/api/submit-feedback", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({token:currentToken,category,message,name:studentData.fullName,email:studentData.email,promoCode:document.getElementById("promo-code-result-value").textContent}) });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) throw new Error(result.message || "Не удалось отправить обратную связь.");
+      const p = document.querySelector("#promo-code-result > p");
+      if (p) p.innerHTML = 'Скидка <strong>190 ₽</strong> на следующую диагностику. Промокод одноразовый, действует 180 дней — используйте его сами или передайте другу.';
+      status.textContent = result.emailSent ? "Спасибо! Ваш промокод теперь даёт скидку 190 ₽. Обновлённый код отправлен на вашу почту." : "Спасибо! Ваш промокод теперь даёт скидку 190 ₽. Сохраните код на этой странице.";
+      document.getElementById("feedback-upgrade").innerHTML = '<div style="padding:12px; border-radius:10px; background:#dcfce7; color:#166534; font-weight:700;">✓ Обратная связь получена. Спасибо, что помогаете развивать Решай360!</div>';
+    } catch (error) { status.textContent = error.message || "Ошибка отправки. Попробуйте ещё раз."; button.disabled = false; button.textContent = "Отправить обратную связь и получить скидку 190 ₽"; }
+  }
+  document.addEventListener("DOMContentLoaded", () => { const form = document.getElementById("feedback-form"); if (form) form.addEventListener("submit", submitFeedback); });
+
+  async function checkAll() {
+    let totalCorrect = 0;
+    let totalQuestions = 0;
+    let pdfAnalyticsRowsHtml = "";
+    let screenCardsHtml = "";
+    let pdfCardsArray = [];
+    let topicsToRepeatSet = new Set();
+    let topicsToStudySet = new Set();
+    let qIndex = 1;
+
+    quizData.forEach((block, bIdx) => {
+      let blockCorrect = 0;
+      let blockTotal = 0;
+
+      block.themes.forEach((theme, tIdx) => {
+        let themeCorrect = 0;
+        let themeTotal = theme.questions.length;
+        const cleanThemeName = theme.theme.replace(/^\d+\.\s*/, '');
+
+        theme.questions.forEach((qDef, qIdx) => {
+          checkSingle(bIdx, tIdx, qIdx, true); 
+          if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано") {
+            if (!qDef.attemptsHistory || qDef.attemptsHistory.length === 0) {
+              qDef.attemptsHistory = [qDef.userText];
+            }
+          }
+
+          if (qDef.isCorrect) themeCorrect++;
+
+          const isSkipped = (qDef.userText === "Не введено" || qDef.userText === "Не выбрано");
+          const isGuessedByBruteForce = (qDef.type === 'radio' && qDef.checkCount > 1);
+
+          let statusClass = "incorrect";
+          let badgeStatus = "Ошибка ⚠️";
+          let badgeClass = "badge-err";
+
+          if (qDef.isCorrect && !isGuessedByBruteForce) {
+            statusClass = "correct";
+            badgeStatus = "Верно ✅";
+            badgeClass = "badge-ok";
+          } else if (qDef.isCorrect && isGuessedByBruteForce) {
+            statusClass = "incorrect";
+            badgeStatus = "Перебор ⚠️";
+            badgeClass = "badge-err";
+            topicsToRepeatSet.add(cleanThemeName);
+          } else if (isSkipped) {
+            statusClass = "skipped";
+            badgeStatus = "Не решено ❌";
+            badgeClass = "badge-skip";
+            topicsToStudySet.add(cleanThemeName);
+          } else {
+            statusClass = "incorrect";
+            badgeStatus = "Ошибка ⚠️";
+            badgeClass = "badge-err";
+            topicsToRepeatSet.add(cleanThemeName);
+          }
+
+          let attemptsList = qDef.attemptsHistory && qDef.attemptsHistory.length > 0 ? qDef.attemptsHistory.join(" ➔ ") : (isSkipped ? "Нет попыток" : qDef.userText);
+          const checkCountVal = qDef.checkCount || 0;
+
+          const cardHtml = `
+            <div class="pdf-card ${statusClass}">
+              <div class="pdf-q">${qIndex}. ${qDef.q}</div>
+              <div class="pdf-ans">
+                <b>Попыток ввода:</b> ${checkCountVal} | <b>Ответ:</b> ${attemptsList}<br>
+                <b>Правильный ответ:</b> ${qDef.correctText}
+              </div>
+              <span class="badge ${badgeClass}">${badgeStatus}</span>
+            </div>
+          `;
+          screenCardsHtml += cardHtml;
+          pdfCardsArray.push(cardHtml);
+          qIndex++;
+        });
+        blockCorrect += themeCorrect;
+        blockTotal += themeTotal;
+      });
+
+      const blockPercent = Math.round((blockCorrect / blockTotal) * 100);
+      let fillClass = blockPercent < 50 ? "bg-red" : (blockPercent < 70 ? "bg-yellow" : "bg-green");
+
+      pdfAnalyticsRowsHtml += `
+        <div class="pdf-progress-row">
+          <div class="pdf-progress-header">
+            <span>${block.block}</span>
+            <span>${blockPercent}%</span>
+          </div>
+          <div class="pdf-progress-track">
+            <div class="pdf-progress-fill ${fillClass}" style="width: ${blockPercent}%"></div>
+          </div>
+        </div>
+      `;
+      totalCorrect += blockCorrect;
+      totalQuestions += blockTotal;
+    });
+
+    const percent = Math.round((totalCorrect / totalQuestions) * 100);
+    const topicsToRepeat = Array.from(topicsToRepeatSet);
+    const topicsToStudy = Array.from(topicsToStudySet);
+
+    let repeatBoxHtml = topicsToRepeat.length > 0 ? `<ol>${topicsToRepeat.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Ошибок в решенных заданиях нет.</p>`;
+    let studyBoxHtml = topicsToStudy.length > 0 ? `<ol>${topicsToStudy.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Пропущенных заданий нет.</p>`;
+
+    const pdfTopicsSplitHtml = `
+      <div class="pdf-topics-container">
+        <div class="pdf-topics-box repeat">
+          <h4>⚠️ Темы для повторения (ошибки / перебор):</h4>
+          ${repeatBoxHtml}
+        </div>
+        <div class="pdf-topics-box study">
+          <h4>📌 Темы для изучения (не решено):</h4>
+          ${studyBoxHtml}
+        </div>
+      </div>
+    `;
+
+    const now = new Date();
+    const testDateStr = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    const firstPageHtml = `
+      <h1 class="pdf-header-title">Диагностическая карта знаний</h1>
+      <div class="pdf-score-card">
+        <div class="pdf-student-info">
+          7 класс<br>
+          <strong>Ученик:</strong> ${escapeHtml(studentData.fullName)}<br>
+          Дата прохождения: ${testDateStr}
+        </div>
+        <div class="pdf-score-right">
+          <div class="pdf-score-label">Итоговый результат</div>
+          <div class="pdf-score-main">${totalCorrect} из ${totalQuestions} (${percent}%)</div>
+        </div>
+      </div>
+      <div class="pdf-analytics-title">Результат диагностики</div>
+      <div>${pdfAnalyticsRowsHtml}</div>
+      ${pdfTopicsSplitHtml}
+    `;
+
+    const screenResultHtml = `
+      <div class="pdf-page" style="position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; margin-bottom: 25px;">
+        ${firstPageHtml}
+      </div>
+      <div style="text-align: center; margin: 25px 0 35px 0;">
+        <button id="downloadPdfBtn" class="btn-pdf" disabled onclick="downloadPDF()">⏳ Подготовка PDF: 60 сек</button>
+      </div>
+      <h3 class="screen-section-title">Детализация ответов</h3>
+      ${screenCardsHtml}
+    `;
+
+    document.getElementById("result-screen").innerHTML = screenResultHtml;
+    startPdfCountdown();
+
+    let measureContainer = document.createElement('div');
+    measureContainer.style.cssText = 'position: fixed; top: 0; left: -9999px; width: 714px; visibility: hidden; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;';
+    document.body.appendChild(measureContainer);
+
+    let detailPagesCards = [];
+    let currentPageCards = [];
+    const MAX_PAGE_CONTENT_HEIGHT = 1000;
+
+    for (let i = 0; i < pdfCardsArray.length; i++) {
+      let testCards = [...currentPageCards, pdfCardsArray[i]];
+      measureContainer.innerHTML = `<h3 class="detail-section-title">Результаты выполнения заданий</h3>` + testCards.join('');
+      await safeTypeset(measureContainer);
+      let currentHeight = measureContainer.offsetHeight;
+
+      if (currentHeight > MAX_PAGE_CONTENT_HEIGHT && currentPageCards.length > 0) {
+        detailPagesCards.push(currentPageCards);
+        currentPageCards = [pdfCardsArray[i]];
+      } else {
+        currentPageCards.push(pdfCardsArray[i]);
+      }
+    }
+    if (currentPageCards.length > 0) detailPagesCards.push(currentPageCards);
+    document.body.removeChild(measureContainer);
+
+    const totalPages = 1 + detailPagesCards.length;
+    let pagesHtml = `<div class="pdf-page">${firstPageHtml}<div class="page-footer">Диагностический отчет | Страница 1 из ${totalPages}</div></div>`;
+
+    let cardGlobalIndex = 0;
+    detailPagesCards.forEach((pageCards, p) => {
+      const pageNum = p + 2;
+      const startQ = cardGlobalIndex + 1;
+      const endQ = cardGlobalIndex + pageCards.length;
+      cardGlobalIndex += pageCards.length;
+
+      pagesHtml += `
+        <div class="pdf-page">
+          <h3 class="detail-section-title">Результаты выполнения заданий (Задания ${startQ}–${endQ})</h3>
+          ${pageCards.join("")}
+          <div class="page-footer">Диагностический отчет | Страница ${pageNum} из ${totalPages}</div>
+        </div>
+      `;
+    });
+
+    document.getElementById("result-pdf").innerHTML = pagesHtml;
+    document.getElementById("main-container").style.display = "none";
+    document.getElementById("result-wrapper").style.display = "block";
+    window.scrollTo(0, 0);
+
+    await new Promise(resolve => setTimeout(resolve, 150));
+    await safeTypeset(document.getElementById("result-screen"));
+    await new Promise(resolve => setTimeout(resolve, 200));
+    await safeTypeset(document.getElementById("result-pdf"));
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const downloadBtn = document.getElementById("downloadPdfBtn");
+    try {
+      generatedPdfBlob = await buildPerfectPdfBlob();
+      if (pdfCountdownTimer) { clearInterval(pdfCountdownTimer); pdfCountdownTimer = null; }
+      if (downloadBtn) { downloadBtn.disabled = false; downloadBtn.innerText = "📄 Скачать PDF-отчёт"; }
+
+      // Фиксируем цель Яндекс.Метрики: Тест решен до конца
+      if (typeof ym !== 'undefined') {
+        ym(113852589, 'reachGoal', 'test_completed');
+      }
+
+      // Отправляем PDF на сервер (в Telegram и на Email)
+      if (currentToken) {
+        const formData = new FormData();
+        formData.append('token', currentToken);
+        if (studentData.email) formData.append('email', studentData.email);
+        formData.append('name', studentData.fullName);
+        formData.append('score', totalCorrect);
+        formData.append('total', totalQuestions);
+        formData.append('document', generatedPdfBlob, `Отчет_${studentData.fullName}.pdf`);
+
+        const reportResponse = await fetch('/api/send-report', {
+          method: 'POST',
+          body: formData
+        });
+        const reportResult = await reportResponse.json().catch(() => ({}));
+        if (reportResponse.ok && reportResult.promoCode) {
+          document.getElementById('promo-code-result-value').textContent = reportResult.promoCode;
+          document.getElementById('promo-code-result').style.display = 'block';
+          const emailStatus = document.getElementById('report-email-status');
+          if (reportResult.emailSent && studentData.email) emailStatus.innerHTML = '📩 Письмо с PDF-отчётом и промокодом на скидку 90 ₽ отправлено на <strong>' + escapeHtml(studentData.email) + '</strong>. Если письма нет, проверьте папку «Спам».';
+          else if (studentData.email) emailStatus.innerHTML = '⚠️ Отчёт сформирован, но сервер не подтвердил отправку письма на <strong>' + escapeHtml(studentData.email) + '</strong>. Проверьте адрес или обратитесь в поддержку.';
+          else emailStatus.textContent = 'Отчёт сформирован. Email не был указан, поэтому письмо не отправлялось.';
+        } else {
+          document.getElementById('promo-code-result-note').textContent = 'Не удалось загрузить промокод. Обратитесь в поддержку, если он не появится.';
+          document.getElementById('promo-code-result').style.display = 'block';
+        }
+      }
+
+    } catch (err) {
+      console.error("Ошибка при генерации/отправке PDF:", err);
+      if (downloadBtn) downloadBtn.innerText = "⚠️ Ошибка генерации PDF";
+    }
+  }
+</script>
+</body>
+</html>
