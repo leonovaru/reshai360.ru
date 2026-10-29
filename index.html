@@ -14,6 +14,23 @@
     <!-- Внешний файл данных и конфигурации -->
     <script src="config.js?v=20261029-9"></script>
 
+    <!-- Партнёрская атрибуция: сохраняется в этом браузере без срока истечения. -->
+    <script>
+      (function () {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var referral = (params.get('ref') || '').trim().toLowerCase();
+          if (/^[a-z0-9_-]{3,32}$/.test(referral)) {
+            localStorage.setItem('r360_partner_ref', referral);
+            localStorage.setItem('r360_partner_ref_saved_at', new Date().toISOString());
+          }
+        } catch (_) {}
+      })();
+      function getSavedPartnerReferral() {
+        try { return localStorage.getItem('r360_partner_ref') || ''; } catch (_) { return ''; }
+      }
+    </script>
+
     <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш реальный номер счетчика) -->
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -885,7 +902,8 @@
                         studentName: studentName, 
                         email: email, 
                         productKey: currentSelectedProductKey,
-                        promoCode: promoCode
+                        promoCode: promoCode,
+                        referralCode: getSavedPartnerReferral()
                     })
                 });
 
