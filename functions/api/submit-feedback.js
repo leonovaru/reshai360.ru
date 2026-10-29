@@ -62,7 +62,7 @@ export async function onRequestPost({ request, env }) {
 
     const oldPercent = Number(promo?.discountPercent);
     const promoDiscountBefore = promo ? (Number.isFinite(oldPercent) && oldPercent > 0 ? oldPercent + "%" : (Number(promo.discount) || 90) + " ₽") : null;
-    const upgradedNow = Boolean(promo && !promo.feedbackUpgrade && Number(promo.discountPercent) !== 15);
+    const upgradedNow = Boolean(promo && Number(promo.discountPercent) !== 15);
     const feedback = {
       id: feedbackId,
       createdAt: new Date().toISOString(),
