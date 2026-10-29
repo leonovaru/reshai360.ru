@@ -60,7 +60,7 @@ export async function onRequest(context) {
         .sort((a, b) => String(a.code).localeCompare(String(b.code)));
       const commissions = (await listValues(env.TEST_TOKENS, "partner:commission:"))
         .sort((a, b) => String(b.paidAt || b.createdAt).localeCompare(String(a.paidAt || a.createdAt)));
-      return json({ partners, commissions });
+      return json({ partners, commissions, commissionEnabled: env.PARTNER_PROGRAM_ENABLED === "true" });
     }
 
     if (request.method !== "POST") return json({ message: "Метод не поддерживается." }, 405);
