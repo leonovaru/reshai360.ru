@@ -12,6 +12,14 @@ export async function onRequestPost(context) {
 
     const tokenData = JSON.parse(tokenDataRaw);
 
+    // Доступ выдаётся только после подтверждения платежа webhook-ом.
+    if (tokenData.isPaid !== true) {
+      return new Response(JSON.stringify({ valid: false, message: 'Оплата ещё не подтверждена. Подождите несколько секунд и обновите страницу.' }), {
+        status: 402,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     // СЕРВЕРНАЯ ЗАЩИТА: если тест уже решен по этой ссылке (в любом браузере), блокируем вход навсегда
     if (tokenData.isCompleted) {
       return new Response(JSON.stringify({ valid: false, message: 'Тест по этой ссылке уже был решен. Повторный доступ с других устройств или браузеров запрещен.' }), {
