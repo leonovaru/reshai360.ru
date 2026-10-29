@@ -29,7 +29,9 @@ export async function onRequestPost(context) {
 
     // Помечаем токен как использованный
     tokenData.isUsed = true;
-    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData));
+    // Сохраняем исходный срок жизни заказа: обновление записи без TTL могло бы
+    // превратить временный токен в бессрочный.
+    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
 
     return new Response(JSON.stringify({ valid: true, data: tokenData }), {
       headers: { 'Content-Type': 'application/json' }
