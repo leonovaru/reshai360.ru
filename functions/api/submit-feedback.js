@@ -80,8 +80,6 @@ export async function onRequestPost({ request, env }) {
       promoDiscountAfter: promo ? "15%" : null
     };
 
-    await env.TEST_TOKENS.put(feedbackKey, JSON.stringify(feedback), { expirationTtl: 31536000 });
-
     if (promo && promoKey && upgradedNow) {
       promo.discountPercent = 15;
       delete promo.discount;
@@ -90,6 +88,9 @@ export async function onRequestPost({ request, env }) {
       const ttl = Math.max(60, Math.floor(((promo.expiresAt || (Date.now() + 15552000000)) - Date.now()) / 1000));
       await env.TEST_TOKENS.put(promoKey, JSON.stringify(promo), { expirationTtl: ttl });
     }
+
+    // Сначала фиксируем повышение скидки, затем сохраняем отзыв: повторный запрос сможет безопасно повторить повышение, если KV-операция завершилась ошибкой.
+    await env.TEST_TOKENS.put(feedbackKey, JSON.stringify(feedback), { expirationTtl: 31536000 });
 
     let telegramSent = false;
     if (env.TG_BOT_TOKEN && env.TG_CHAT_ID) {
