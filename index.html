@@ -23,6 +23,18 @@
           if (/^[a-z0-9_-]{3,32}$/.test(referral)) {
             localStorage.setItem('r360_partner_ref', referral);
             localStorage.setItem('r360_partner_ref_saved_at', new Date().toISOString());
+            var visitorId = localStorage.getItem('r360_partner_visitor');
+            if (!visitorId && window.crypto && typeof window.crypto.randomUUID === 'function') {
+              visitorId = window.crypto.randomUUID();
+              localStorage.setItem('r360_partner_visitor', visitorId);
+            }
+            if (visitorId) {
+              fetch('/api/partner-click', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ referralCode: referral, visitorId: visitorId })
+              }).catch(function () {});
+            }
           }
         } catch (_) {}
       })();
