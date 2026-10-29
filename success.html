@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Проверка оплаты — Решай360</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Яндекс.Метрика -->
@@ -15,13 +15,13 @@
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/113852589" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 </head>
-<body class="bg-[#090d16] text-white flex items-center justify-center h-screen">
-    <div class="text-center space-y-3 p-6 max-w-sm bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
-        <div id="loader" class="inline-block animate-spin text-indigo-500 text-3xl mb-1">
+<body class="bg-[#090d16] text-white flex items-center justify-center min-h-screen px-4 py-6">
+    <div class="w-full max-w-md text-center space-y-4 p-6 sm:p-8 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
+        <div id="loader" class="inline-block animate-spin text-indigo-400 text-4xl mb-2">
             <i class="fa-solid fa-spinner"></i>
         </div>
-        <h1 id="status-title" class="text-lg font-bold">Проверяем статус оплаты...</h1>
-        <p id="status-desc" class="text-xs text-slate-400">Секунду, настраиваем вашу диагностику...</p>
+        <h1 id="status-title" class="text-xl sm:text-2xl font-bold leading-tight">Проверяем статус оплаты...</h1>
+        <p id="status-desc" class="text-sm sm:text-base text-slate-300 leading-relaxed">Секунду, настраиваем вашу диагностику...</p>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
