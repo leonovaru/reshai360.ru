@@ -32,11 +32,17 @@
             const token = urlParams.get('token');
 
             const testFiles = {
-                '7': 'test_7.html',
-                '8': 'test_8.html',
-                '9': 'test_9.html',
-                '10': 'test_10.html',
-                '11': 'test_11.html',
+                '7': 'test_7_basic.html',
+                '7_basic': 'test_7_basic.html',
+                '7_advanced': 'test_7_advanced.html',
+                '8': 'test_8_basic.html',
+                '8_basic': 'test_8_basic.html',
+                '8_advanced': 'test_8_advanced.html',
+                '9': 'test_9_basic.html',
+                '9_basic': 'test_9_basic.html',
+                '9_advanced': 'test_9_advanced.html',
+                '10': 'test_10_basic.html',
+                '11': 'test_11_basic.html',
                 '10_basic': 'test_10_basic.html',
                 '10_advanced': 'test_10_advanced.html',
                 '11_basic': 'test_11_basic.html',
@@ -51,13 +57,17 @@
             }
 
             try {
-                const response = await fetch('/api/verify-token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token })
-                });
-
-                const result = await response.json();
+                let result = null;
+                for (let attempt = 0; attempt < 8; attempt++) {
+                    const response = await fetch('/api/verify-token', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token })
+                    });
+                    result = await response.json();
+                    if (result.valid || response.status !== 402) break;
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                }
 
                 if (result.valid && result.data) {
                     const productKey = result.data.productKey || requestedProductKey || '11';
