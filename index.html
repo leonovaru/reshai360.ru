@@ -10,7 +10,7 @@
     <!-- PDF.js CDN для просмотра PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Внешний файл данных и конфигурации -->
-    <script src="config.js?v=20261029-8"></script>
+    <script src="config.js?v=20261029-9"></script>
 
     <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш реальный номер счетчика) -->
     <script type="text/javascript" >
@@ -211,7 +211,7 @@
                             <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
                         <p id="payment-readiness-note" class="hidden text-xs leading-relaxed text-amber-200/90 text-center">Отдельные тесты для этого класса и уровня ещё готовятся. Оплата пока недоступна.</p>
-                        <p class="text-[10px] leading-relaxed text-slate-500 text-center">После успешной оплаты вы получите доступ к выбранной диагностике.</p>
+                        <p class="text-[10px] leading-relaxed text-slate-500 text-center">ТЕСТОВЫЙ РЕЖИМ: сейчас платёж составляет 1 ₽, а не указанную цену 790/990 ₽. Не используйте сайт для реальных продаж до переключения суммы.</p>
                     </form>
                 </div>
 
@@ -738,13 +738,13 @@
             document.getElementById('card-title').innerText = 'Диагностика ' + gradeKey + ' класса';
             document.getElementById('card-level').innerText = key.endsWith('_basic') ? 'Базовый уровень' : 'Продвинутый уровень';
             document.getElementById('card-desc').innerText = 'Содержание программы одинаковое для обоих уровней; меняется сложность заданий.';
-            const paymentAvailable = gradeKey === '10' || gradeKey === '11';
+            const paymentAvailable = true;
             appliedPromoCode = '';
             appliedPromoDiscount = 0;
             document.getElementById('promo-code').value = '';
             document.getElementById('promo-status').classList.add('hidden');
             const displayedPrice = Number(String(data.price).replace(/[^0-9]/g, '')) || 0;
-            document.getElementById('payment-button-label').innerText = paymentAvailable ? ('Перейти к оплате · ' + displayedPrice + ' ₽') : 'Диагностика готовится';
+            document.getElementById('payment-button-label').innerText = paymentAvailable ? 'Тестовый платёж · 1 ₽ (проверка)' : 'Диагностика готовится';
             document.getElementById('pay-button').disabled = !paymentAvailable;
             document.getElementById('payment-readiness-note').classList.toggle('hidden', paymentAvailable);
             const programme = programs[gradeKey] || data;
