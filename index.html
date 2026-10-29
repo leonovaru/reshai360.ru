@@ -868,7 +868,7 @@
                     let widget;
                     widget = new window.YooMoneyCheckoutWidget({
                         confirmation_token: data.confirmationToken,
-                        return_url: `https://reshai360.ru/success.html?productKey=${encodeURIComponent(currentSelectedProductKey)}`,
+                        return_url: data.returnUrl,
                         customization: {
                             modal: true,
                             colors: { control_primary: '#6366f1' }
