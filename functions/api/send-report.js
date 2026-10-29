@@ -92,6 +92,30 @@ export async function onRequestPost({ request, env }) {
           }), { expirationTtl: 45 * 24 * 60 * 60 });
           tokenData.promoCodeIssued = promoCode;
         }
+
+        // Связываем промокод с email заказа, чтобы форму ОС можно было заполнить позже по ссылке из письма.
+        const normalizedEmail = String(email || "").trim().toLowerCase();
+        if (promoCode && normalizedEmail) {
+          const promoKey = "promo:" + promoCode;
+          const promoRaw = await env.TEST_TOKENS.get(promoKey);
+          if (promoRaw) {
+            const promoRecord = JSON.parse(promoRaw);
+            promoRecord.email = normalizedEmail;
+            promoRecord.issuedAt = Number(promoRecord.issuedAt || promoRecord.createdAt || Date.now());
+            const promoTtl = Math.max(60, Math.floor(((promoRecord.expiresAt || (Date.now() + 45 * 24 * 60 * 60 * 1000)) - Date.now()) / 1000));
+            await env.TEST_TOKENS.put(promoKey, JSON.stringify(promoRecord), { expirationTtl: promoTtl });
+
+            const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalizedEmail));
+            const emailHash = Array.from(new Uint8Array(hashBuffer), byte => byte.toString(16).padStart(2, "0")).join("");
+            const emailIndexKey = "promo-email:" + emailHash;
+            const indexRaw = await env.TEST_TOKENS.get(emailIndexKey);
+            const index = indexRaw ? JSON.parse(indexRaw) : [];
+            if (!index.some(item => item && item.code === promoCode)) {
+              index.push({ code: promoCode, createdAt: Number(promoRecord.issuedAt || Date.now()) });
+            }
+            await env.TEST_TOKENS.put(emailIndexKey, JSON.stringify(index), { expirationTtl: promoTtl });
+          }
+        }
         await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
     }
 
@@ -146,7 +170,7 @@ export async function onRequestPost({ request, env }) {
             html: `
               <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
               <body style="margin:0;padding:0;background:#eef2ff;font-family:Arial,Helvetica,sans-serif;color:#172033;">
-                <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Ваша диагностика завершена — PDF-отчёт и персональный промокод внутри.</div>
+                <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Диагностика завершена — PDF-отчёт во вложении, промокод указан отдельно в письме.</div>
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:linear-gradient(135deg,#eef2ff,#f5f3ff);padding:28px 12px;">
                   <tr><td align="center">
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 12px 35px rgba(30,41,59,.12);">
