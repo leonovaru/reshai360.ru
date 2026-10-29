@@ -56,7 +56,7 @@
   }
   async function refresh() {
     setStatus('Загружаем реестр…');
-    try { const data = await api('GET'); partners = data.partners || []; commissions = data.commissions || []; render(); setStatus('Данные обновлены. Всего партнёров: ' + partners.length + '.'); }
+    try { const data = await api('GET'); partners = data.partners || []; commissions = data.commissions || []; render(); setStatus('Данные обновлены. Всего партнёров: ' + partners.length + '. Начисления: ' + (data.commissionEnabled ? 'ВКЛЮЧЕНЫ' : 'ВЫКЛЮЧЕНЫ — тестовый режим') + '.'); }
     catch (e) { setStatus(e.message, true); }
   }
   $('load-button').addEventListener('click', refresh);
