@@ -264,7 +264,6 @@
                             <span id="payment-button-label">Перейти к оплате</span>
                             <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
-                        <p id="payment-mode-note" class="hidden text-[11px] leading-relaxed text-center text-amber-200/90" aria-live="polite"></p>
                         <div class="space-y-2 pt-1">
                             <div class="flex items-start gap-2.5 text-xs text-slate-400">
                                 <input type="checkbox" id="consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
@@ -745,40 +744,6 @@
             topButton.setAttribute('aria-expanded', String(isOpen));
         }
 
-        let paymentModeInfo = null;
-        function formatPaymentAmount(value) {
-            const amount = Number(value);
-            if (!Number.isFinite(amount)) return '';
-            return amount.toLocaleString('ru-RU', {
-                minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
-                maximumFractionDigits: 2
-            }) + ' ₽';
-        }
-        function updateTestPaymentLabel() {
-            const note = document.getElementById('payment-mode-note');
-            if (!paymentModeInfo || !paymentModeInfo.testMode) {
-                if (note) { note.textContent = ''; note.classList.add('hidden'); }
-                return;
-            }
-            if (note) {
-                note.textContent = 'Сейчас действует тестовая цена: ' + formatPaymentAmount(paymentModeInfo.paymentAmount) + '. ЮKassa не принимает оплату картой меньше 1 ₽; скидка применяется к обычной стоимости диагностики.';
-                note.classList.remove('hidden');
-            }
-            if (currentSelectedProductKey && !appliedPromoCode) {
-                document.getElementById('payment-button-label').textContent = 'Оплатить · ' + formatPaymentAmount(paymentModeInfo.paymentAmount);
-            }
-        }
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const response = await fetch('/api/payment-info', { cache: 'no-store' });
-                if (!response.ok) return;
-                paymentModeInfo = await response.json();
-                updateTestPaymentLabel();
-            } catch (error) {
-                console.warn('Не удалось получить режим оплаты:', error);
-            }
-        });
-
         // Выбор класса и уровня: программа и стоимость синхронно обновляются из CONFIG.
         function selectOption(key) {
             if (!key) {
@@ -882,7 +847,6 @@
             const displayedPrice = Number(String(data.price).replace(/[^0-9]/g, '')) || 0;
             document.getElementById('payment-button-label').innerText = paymentAvailable ? 'Перейти к оплате · ' + (data.price || '—') : 'Диагностика готовится';
             document.getElementById('pay-button').disabled = !paymentAvailable;
-            updateTestPaymentLabel();
             document.getElementById('payment-readiness-note').classList.toggle('hidden', paymentAvailable);
             const programme = programs[gradeKey] || data;
             const container = document.getElementById('blocks-container');
@@ -929,7 +893,6 @@
             if (data && document.getElementById('pay-button') && !document.getElementById('pay-button').disabled) {
                 const price = Number(String(data.price).replace(/[^0-9]/g, '')) || 0;
                 document.getElementById('payment-button-label').textContent = 'Перейти к оплате · ' + price + ' ₽';
-                updateTestPaymentLabel();
             }
         }
 
@@ -949,19 +912,9 @@
                 if (!response.ok || !result.valid) throw new Error(result.message || 'Промокод недействителен.');
                 appliedPromoCode = code; appliedPromoDiscount = result.discount || 0;
                 const regularPriceText = result.finalPrice + ' ₽';
-                const testPaymentText = result.testMode ? ' Сумма оплаты сейчас: ' + formatPaymentAmount(result.paymentAmount) + ' (минимум ЮKassa).' : '';
-                status.textContent = 'Промокод применён: скидка ' + (result.discountPercent ? result.discountPercent + '% (' + appliedPromoDiscount + ' ₽)' : appliedPromoDiscount + ' ₽') + '. Обычная цена после скидки: ' + regularPriceText + '.' + testPaymentText;
+                status.textContent = 'Промокод применён: скидка ' + (result.discountPercent ? result.discountPercent + '% (' + appliedPromoDiscount + ' ₽)' : appliedPromoDiscount + ' ₽') + '. Итоговая стоимость диагностики: ' + regularPriceText + '.';
                 status.className = 'text-xs leading-relaxed text-emerald-300'; status.classList.remove('hidden');
-                if (result.testMode) {
-                    const modeNote = document.getElementById('payment-mode-note');
-                    if (modeNote) {
-                        modeNote.textContent = 'Сейчас к оплате: ' + formatPaymentAmount(result.paymentAmount) + ' (минимум ЮKassa). Обычная стоимость после скидки: ' + regularPriceText + '.';
-                        modeNote.classList.remove('hidden');
-                    }
-                }
-                document.getElementById('payment-button-label').textContent = result.testMode
-                    ? 'Оплатить · ' + formatPaymentAmount(result.paymentAmount)
-                    : 'Перейти к оплате · ' + regularPriceText;
+                document.getElementById('payment-button-label').textContent = 'Перейти к оплате · ' + regularPriceText;
                 const selectedLevelButton = document.getElementById('btn-' + currentSelectedProductKey);
                 if (selectedLevelButton) selectedLevelButton.querySelector('.level-price').textContent = result.finalPrice + ' ₽';
             } catch (error) {
