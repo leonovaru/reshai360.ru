@@ -85,9 +85,14 @@
                         document.getElementById('status-desc').innerText = "Не удалось определить выбранную диагностику. Обратитесь в поддержку.";
                         return;
                     }
-                    localStorage.setItem('studentName', result.data.studentName);
-                    localStorage.setItem('studentEmail', result.data.email);
-                    localStorage.setItem('testToken', token);
+                    // localStorage необязателен: токен и данные заказа уже передаются сервером.
+                    try {
+                        localStorage.setItem('studentName', result.data.studentName || '');
+                        localStorage.setItem('studentEmail', result.data.email || '');
+                        localStorage.setItem('testToken', token);
+                    } catch (storageError) {
+                        console.warn('Не удалось сохранить данные в браузере; продолжаем по токену из URL.', storageError);
+                    }
 
                     // Фиксируем цель Яндекс.Метрики: Успешная оплата
                     if (typeof ym !== 'undefined') {
