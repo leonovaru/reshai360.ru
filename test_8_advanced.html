@@ -247,6 +247,7 @@
         studentData.email = result.data.email || localStorage.getItem('studentEmail') || "";
         wasCompleted = result.data.isCompleted === true;
         completedSnapshot = result.data.answersSnapshot || null;
+        serverCompletedSnapshot = completedSnapshot;
       }
     } catch (err) {
       console.error("Ошибка проверки токена:", err);
@@ -302,6 +303,7 @@
   let questionNavigation = [];
   let markedQuestions = new Set();
   let progressStorageKey = "";
+  let serverCompletedSnapshot = null;
 
   function getQuestionAnswer(qId, qDef) {
     if (qDef.type === "radio") {
@@ -340,9 +342,13 @@
   function restoreQuizProgress() {
     if (!progressStorageKey) return;
     try {
-      const raw = localStorage.getItem(progressStorageKey);
-      if (!raw) return;
-      const saved = JSON.parse(raw);
+      // Завершённый снимок с сервера используем даже при отключённом localStorage.
+      let saved = serverCompletedSnapshot ? { version: 1, ...serverCompletedSnapshot } : null;
+      if (!saved) {
+        const raw = localStorage.getItem(progressStorageKey);
+        if (!raw) return;
+        saved = JSON.parse(raw);
+      }
       if (!saved || saved.version !== 1) return;
       markedQuestions = new Set(Array.isArray(saved.marked) ? saved.marked : []);
       questionNavigation.forEach(item => {
