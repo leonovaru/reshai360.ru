@@ -181,7 +181,7 @@ export async function onRequestPost({ request, env }) {
           method: "POST",
           headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
           body: JSON.stringify({
-            from: "Решай360 <no-reply@reshai360.ru>",
+            from: "Решай360 <info@reshai360.ru>",
             to: [email],
             subject: "Ваш промокод Решай360 теперь даёт скидку 15%",
             html: `<!doctype html><html lang="ru"><head><meta charset="utf-8"></head>
