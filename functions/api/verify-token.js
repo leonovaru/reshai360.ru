@@ -31,7 +31,7 @@ export async function onRequestPost(context) {
             '10': '1.00', '10_basic': '1.00', '10_advanced': '1.00',
             '11': '1.00', '11_basic': '1.00', '11_advanced': '1.00'
           };
-          const expectedAmount = expectedAmountByProduct[tokenData.productKey];
+          const expectedAmount = tokenData.expectedPaymentAmount || expectedAmountByProduct[tokenData.productKey];
           const actualAmount = payment.amount;
           const metadata = payment.metadata || {};
           const paymentMatchesOrder =
@@ -61,14 +61,13 @@ export async function onRequestPost(context) {
       return Response.json({ valid: false, message: 'Платёж ещё подтверждается.' }, { status: 402 });
     }
 
-    if (tokenData.isCompleted) {
-      return Response.json({ valid: false, message: 'Тест по этой ссылке уже был решен. Повторный доступ с других устройств или браузеров запрещен.' });
+    // Завершённый заказ можно открыть повторно: клиент восстановит сохранённые ответы
+    // и покажет результат, не начиная новую диагностику.
+    if (!tokenData.isCompleted) {
+      tokenData.isUsed = true;
+      await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
     }
-
-    tokenData.isUsed = true;
-    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
-
-    return Response.json({ valid: true, data: tokenData });
+    return Response.json({ valid: true, data: tokenData, completed: tokenData.isCompleted === true });
   } catch (err) {
     console.error('Verify token error:', err);
     return Response.json({ valid: false, message: 'Ошибка проверки оплаты.' }, { status: 500 });
