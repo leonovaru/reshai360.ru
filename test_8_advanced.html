@@ -116,7 +116,21 @@
     .badge-err { background: #fef9c3; color: #a16207; }
     .badge-skip { background: #fee2e2; color: #b91c1c; }
     .page-footer { position: absolute; bottom: 10px; left: 40px; right: 40px; text-align: center; font-size: 0.72em; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; }
-  </style>
+  
+    .result-actions { display:flex; justify-content:center; align-items:stretch; flex-wrap:wrap; gap:10px; margin:24px auto 18px; width:100%; }
+    .result-actions > button { flex:1 1 190px; min-width:0; }
+    .result-action-secondary { padding:13px 16px; border:1px solid #c7d2fe; border-radius:10px; background:#eef2ff; color:#312e81; font-weight:700; cursor:pointer; }
+    #result-screen #promo-code-result { box-sizing:border-box; width:100%; max-width:794px; }
+    @media (max-width: 640px) {
+      #result-screen { padding:14px 10px !important; font-size:14px !important; }
+      #result-screen .pdf-page { width:100% !important; max-width:100% !important; padding:14px !important; box-sizing:border-box !important; overflow-wrap:anywhere; }
+      #result-screen .pdf-topics-container { display:flex !important; flex-direction:column !important; gap:10px !important; }
+      #result-screen .pdf-topics-box { width:100% !important; min-width:0 !important; box-sizing:border-box !important; overflow-wrap:anywhere; }
+      #result-screen .pdf-topics-box ol { column-count:1 !important; padding-left:20px; }
+      .result-actions { display:grid; grid-template-columns:1fr; gap:9px; }
+      .result-actions > button { width:100%; }
+    }
+</style>
 </head>
 <body>
 
@@ -126,7 +140,7 @@
       <div style="font-weight:700;color:#2563eb;margin:0 0 6px 0;">Диагностика 8 класса — продвинутый уровень</div>
       <div class="top-instruction-title">📋 Правила прохождения теста:</div>
       <ul>
-        <li>Решайте задания самостоятельно и не пытайтесь угадывать ответы наугад.</li>
+        <li>Решайте задания самостоятельно и внимательно проверяйте свои ответы.</li>
         <li>Если в ответе получается десятичная дробь, используйте запятую (например, <strong>2,5</strong>).</li>
         <li>Чтобы ввести отрицательное число, нажмите на кнопку <strong>«±»</strong> рядом с полем ввода.</li>
         <li>Все ваши проверенные ответы и прогресс сохраняются.</li>
@@ -217,13 +231,17 @@
   function toggleMinus(qId) {
     const input = document.getElementById(qId);
     if (!input || input.disabled) return;
-    let val = input.value.trim();
-    if (val.startsWith('-')) {
-      input.value = val.substring(1);
-    } else {
-      input.value = '-' + val;
-    }
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? start;
+    const val = input.value.trim();
+    input.value = val.startsWith('-') ? val.substring(1) : '-' + val;
     updateMinusBtnState(qId);
+    // Keep focus on the answer field so the mobile keyboard stays open.
+    input.focus({ preventScroll: true });
+    const shift = val.startsWith('-') ? -1 : 1;
+    const nextStart = Math.max(0, start + shift);
+    const nextEnd = Math.max(nextStart, end + shift);
+    try { input.setSelectionRange(nextStart, nextEnd); } catch (_) {}
   }
 
   function updateMinusBtnState(qId) {
@@ -822,7 +840,13 @@
           qDef.attemptsHistory = [];
           const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
           html += `<div class="card" id="card_${qId}">`;
-          html += `<div class="question-title">${qIndex}. ${qDef.q}</div>`;
+          const questionText = String(qDef.q || "");
+          const hasActionWord = /^(найдите|вычислите|решите|определите|посчитайте|укажите|сравните)\\b/i.test(questionText.trim());
+          const isExpressionOnly = /^[\\d\\s()+\\-−×·*/:,.=√%]+$/u.test(questionText.trim());
+          const questionInstruction = qDef.type === "text" && !hasActionWord
+            ? (isExpressionOnly ? "Вычислите: " : "Найдите ответ: ")
+            : "";
+          html += `<div class="question-title">${qIndex}. ${questionInstruction}${questionText}</div>`;
           
           if (qDef.type === "radio") {
             html += `<div class="options" id="opt_${qId}">`;
@@ -838,7 +862,7 @@
           } else {
             html += `<div class="input-row">`;
             html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Введите ответ" oninput="this.value = this.value.replace(/[^0-9,.\\-\\+\\*\\/]/g, ''); updateMinusBtnState('${qId}');">`;
-            html += `<button type="button" class="btn-minus-toggle" id="btn_toggle_${qId}" onclick="toggleMinus('${qId}')" title="Изменить знак (+/−)">±</button>`;
+            html += `<button type="button" class="btn-minus-toggle" id="btn_toggle_${qId}" onpointerdown="event.preventDefault(); document.getElementById('${qId}').focus({preventScroll:true})" onclick="toggleMinus('${qId}')" title="Изменить знак (+/−)">±</button>`;
             html += `</div>`;
           }
 
@@ -1000,6 +1024,23 @@
   document.addEventListener("DOMContentLoaded", () => { const form = document.getElementById("feedback-form"); if (form) form.addEventListener("submit", submitFeedback); });
 
   async function checkAll() {
+    const unansweredQuestions = [];
+    quizData.forEach((block, bIdx) => block.themes.forEach((theme, tIdx) => theme.questions.forEach((qDef, qIdx) => {
+      const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
+      let answered = false;
+      if (qDef.type === "radio") {
+        answered = Array.from(document.getElementsByName(qId)).some(option => option.checked);
+      } else {
+        const input = document.getElementById(qId);
+        answered = !!(input && input.value.trim());
+      }
+      if (!answered) unansweredQuestions.push(qId);
+    })));
+    if (unansweredQuestions.length > 0) {
+      const message = `Остались незаполненные задания: ${unansweredQuestions.length}.\\n\\nЗавершить тест и посмотреть результаты без них?`;
+      if (!window.confirm(message)) return;
+    }
+
     let totalCorrect = 0;
     let totalQuestions = 0;
     let pdfAnalyticsRowsHtml = "";
@@ -1019,7 +1060,10 @@
         const cleanThemeName = theme.theme.replace(/^\d+\.\s*/, '');
 
         theme.questions.forEach((qDef, qIdx) => {
-          checkSingle(bIdx, tIdx, qIdx, true); 
+          checkSingle(bIdx, tIdx, qIdx, true);
+          if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано" && !(qDef.checkCount > 0)) {
+            qDef.checkCount = 1;
+          }
           if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано") {
             if (!qDef.attemptsHistory || qDef.attemptsHistory.length === 0) {
               qDef.attemptsHistory = [qDef.userText];
@@ -1140,14 +1184,19 @@
       <div class="pdf-page" style="position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; margin-bottom: 25px;">
         ${firstPageHtml}
       </div>
-      <div style="text-align: center; margin: 25px 0 35px 0;">
+      <div class="result-actions">
         <button id="downloadPdfBtn" class="btn-pdf" disabled onclick="downloadPDF()">⏳ Подготовка PDF: 60 сек</button>
+        <button type="button" class="result-action-secondary" onclick="const p=document.getElementById('promo-code-result'); const n=document.getElementById('promo-code-result-note'); if(p){p.style.display='block'; if(n && !n.textContent) n.textContent='Промокод формируется и появится здесь после обработки отчёта.'; p.scrollIntoView({behavior:'smooth',block:'center'});}">🎁 Забрать промокод</button>
+        <button type="button" class="result-action-secondary" onclick="document.querySelector('#result-screen .screen-section-title')?.scrollIntoView({behavior:'smooth',block:'start'})">Посмотреть задания с ответами</button>
       </div>
       <h3 class="screen-section-title">Детализация ответов</h3>
       ${screenCardsHtml}
     `;
 
     document.getElementById("result-screen").innerHTML = screenResultHtml;
+    const promoCard = document.getElementById("promo-code-result");
+    const resultActions = document.querySelector("#result-screen .result-actions");
+    if (promoCard && resultActions) resultActions.insertAdjacentElement("afterend", promoCard);
     startPdfCountdown();
 
     let measureContainer = document.createElement('div');
