@@ -64,7 +64,7 @@
                 let lastStatus = 0;
                 // Сначала сервер проверяет статус напрямую в ЮKassa; повторяем коротко,
                 // если платёжный статус ещё обновляется.
-                for (let attempt = 0; attempt < 10; attempt++) {
+                for (let attempt = 0; attempt < 8; attempt++) {
                     const response = await fetch('/api/verify-token', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -73,7 +73,7 @@
                     lastStatus = response.status;
                     result = await response.json();
                     if (result.valid || lastStatus !== 402) break;
-                    if (attempt < 9) await new Promise(resolve => setTimeout(resolve, 1000));
+                    if (attempt < 9) await new Promise(resolve => setTimeout(resolve, 300));
                 }
 
                 if (result.valid && result.data) {
