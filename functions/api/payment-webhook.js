@@ -54,7 +54,9 @@ export async function onRequestPost(context) {
     const tokenDataRaw = await env.TEST_TOKENS.get(token);
     if (!tokenDataRaw) return new Response('Order token not found', { status: 200 });
     const tokenData = JSON.parse(tokenDataRaw);
-    if (metadata.productKey !== tokenData.productKey) return new Response('Order mismatch', { status: 400 });
+    if (metadata.productKey !== tokenData.productKey || (tokenData.paymentId && tokenData.paymentId !== confirmedPayment.id)) {
+      return new Response('Order mismatch', { status: 400 });
+    }
 
     // Сейчас все товары намеренно оплачиваются по 1 ₽ в тестовом режиме.
     // Перед включением реальных цен обязательно обновить ожидаемую сумму здесь.
