@@ -9,6 +9,7 @@ export async function onRequestPost({ request, env }) {
     const score = formData.get("score");
     const total = formData.get("total");
     const pdfFile = formData.get("document");
+    const forceEmail = String(formData.get("forceEmail") || "") === "true";
     let answersSnapshot = null;
     try {
       const rawSnapshot = formData.get("answersSnapshot");
@@ -81,6 +82,7 @@ export async function onRequestPost({ request, env }) {
 
     let promoCode = null;
     let emailSent = false;
+    let emailError = null;
     {
         tokenData.isCompleted = true;
         if (answersSnapshot) tokenData.answersSnapshot = answersSnapshot;
@@ -173,7 +175,10 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    if (env.RESEND_API_KEY && email && !tokenData.reportEmailSentAt) {
+    if (!env.RESEND_API_KEY) emailError = "На сервере не настроен ключ почтового сервиса.";
+    else if (!email) emailError = "В заказе не указан адрес электронной почты.";
+
+    if (env.RESEND_API_KEY && email && (!tokenData.reportEmailSentAt || forceEmail)) {
       try {
         const bytes = new Uint8Array(await pdfFile.arrayBuffer());
         let binary = "";
@@ -242,18 +247,20 @@ export async function onRequestPost({ request, env }) {
         });
 
         if (!emailResponse.ok) {
-          console.error("Resend API error:", await emailResponse.text());
+          emailError = (await emailResponse.text()).slice(0, 700);
+          console.error("Resend API error:", emailError);
         } else {
           emailSent = true;
           tokenData.reportEmailSentAt = new Date().toISOString();
           await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
         }
       } catch (resendErr) {
+        emailError = String(resendErr && resendErr.message || resendErr).slice(0, 500);
         console.error("Resend email error:", resendErr);
       }
     }
 
-    return Response.json({ success: true, promoCode, emailSent: emailSent || Boolean(tokenData.reportEmailSentAt) });
+    return Response.json({ success: true, promoCode, emailSent, emailPreviouslyAccepted: Boolean(tokenData.reportEmailSentAt && !emailSent), emailError, pdfBytes: Number(pdfFile.size || 0) });
   } catch (err) {
     console.error("Send report global error:", err);
 
