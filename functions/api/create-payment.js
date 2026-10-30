@@ -100,7 +100,11 @@ export async function onRequestPost(context) {
     // В тестовом режиме базовая сумма — 1 ₽; скидка промокода применяется и к ней.
     // Поэтому тестовый платёж со скидкой 10% составит 0,90 ₽, а с 15% — 0,85 ₽.
     const testMode = env.PAYMENT_TEST_MODE !== 'false';
-    const discountPercent = promoRecord ? Math.max(0, Math.min(100, Number(promoRecord.discountPercent) || 0)) : 0;
+    const discountPercent = promoRecord
+      ? (Number.isFinite(Number(promoRecord.discountPercent)) && Number(promoRecord.discountPercent) > 0
+          ? Math.max(0, Math.min(100, Number(promoRecord.discountPercent)))
+          : Math.max(0, Math.min(100, (Number(promoRecord.discount) || 0) / product.displayPrice * 100)))
+      : 0;
     const basePaymentAmount = testMode ? 1 : product.displayPrice;
     const paymentAmount = Math.max(0.01, Math.round(basePaymentAmount * (100 - discountPercent)) / 100);
     const discountedDisplayPrice = Math.max(1, Math.round(product.displayPrice * (100 - discountPercent) / 100));
@@ -194,6 +198,9 @@ export async function onRequestPost(context) {
 
     return new Response(JSON.stringify({
       confirmationToken: payment.confirmation.confirmation_token,
+      paymentAmount: expectedPaymentAmount,
+      testMode,
+      displayAmount: discountedDisplayPrice,
       returnUrl: `https://reshai360.ru/success.html?token=${encodeURIComponent(createdToken)}&productKey=${encodeURIComponent(productKey)}`
     }), {
       headers: { 'Content-Type': 'application/json' }
