@@ -80,12 +80,6 @@ export async function onRequestPost(context) {
     if (!product) {
       return new Response(JSON.stringify({ message: 'Выбран неизвестный класс' }), { status: 400 });
     }
-    const testMode = env.PAYMENT_TEST_MODE !== 'false';
-    const discountPercent = promoRecord ? Math.max(0, Math.min(100, Number(promoRecord.discountPercent) || 0)) : 0;
-    const discountedDisplayPrice = Math.max(1, Math.round(product.displayPrice * (100 - discountPercent) / 100));
-    const paymentAmount = testMode ? 1 : discountedDisplayPrice;
-    const expectedPaymentAmount = paymentAmount.toFixed(2);
-
     // Проверяем промокод на сервере. Сам код хранится в KV, а не в браузере.
     let promoRecord = null;
     if (promoCode) {
@@ -102,6 +96,14 @@ export async function onRequestPost(context) {
       }
       if (!product.displayPrice) return new Response(JSON.stringify({ message: 'Промокод доступен только для поддерживаемых диагностик.' }), { status: 400 });
     }
+
+    // Тестовый режим сохраняет списание 1 ₽. В боевом режиме применяется
+    // опубликованная цена с учётом действующей скидки промокода.
+    const testMode = env.PAYMENT_TEST_MODE !== 'false';
+    const discountPercent = promoRecord ? Math.max(0, Math.min(100, Number(promoRecord.discountPercent) || 0)) : 0;
+    const discountedDisplayPrice = Math.max(1, Math.round(product.displayPrice * (100 - discountPercent) / 100));
+    const paymentAmount = testMode ? 1 : discountedDisplayPrice;
+    const expectedPaymentAmount = paymentAmount.toFixed(2);
 
     // Генерируем уникальный защищенный токен
     const token = crypto.randomUUID() + '-' + crypto.randomUUID();
