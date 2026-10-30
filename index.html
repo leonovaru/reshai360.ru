@@ -952,6 +952,13 @@
                 const testPaymentText = result.testMode ? ' Тестовое списание сейчас: ' + formatPaymentAmount(result.paymentAmount) + '.' : '';
                 status.textContent = 'Промокод применён: скидка ' + (result.discountPercent ? result.discountPercent + '% (' + appliedPromoDiscount + ' ₽)' : appliedPromoDiscount + ' ₽') + '. Обычная цена после скидки: ' + regularPriceText + '.' + testPaymentText;
                 status.className = 'text-xs leading-relaxed text-emerald-300'; status.classList.remove('hidden');
+                if (result.testMode) {
+                    const modeNote = document.getElementById('payment-mode-note');
+                    if (modeNote) {
+                        modeNote.textContent = 'Тестовый режим: сейчас будет списана тестовая сумма ' + formatPaymentAmount(result.paymentAmount) + '. Обычная стоимость после скидки: ' + regularPriceText + '.';
+                        modeNote.classList.remove('hidden');
+                    }
+                }
                 document.getElementById('payment-button-label').textContent = result.testMode
                     ? 'Тестовая оплата · ' + formatPaymentAmount(result.paymentAmount)
                     : 'Перейти к оплате · ' + regularPriceText;
