@@ -9,6 +9,22 @@ export async function onRequestPost({ request, env }) {
     const score = formData.get("score");
     const total = formData.get("total");
     const pdfFile = formData.get("document");
+    let answersSnapshot = null;
+    try {
+      const rawSnapshot = formData.get("answersSnapshot");
+      if (rawSnapshot) {
+        const parsed = JSON.parse(String(rawSnapshot));
+        if (parsed && typeof parsed === "object" && parsed.answers && typeof parsed.answers === "object") {
+          answersSnapshot = {
+            answers: parsed.answers,
+            marked: Array.isArray(parsed.marked) ? parsed.marked : [],
+            stats: parsed.stats && typeof parsed.stats === "object" ? parsed.stats : {}
+          };
+        }
+      }
+    } catch (_) {
+      return Response.json({ success: false, message: "Не удалось сохранить ответы диагностики." }, { status: 400 });
+    }
 
     // Отчёт и бонусный промокод доступны только по действительному оплаченному заказу.
     if (!token || !env.TEST_TOKENS) {
@@ -67,6 +83,8 @@ export async function onRequestPost({ request, env }) {
     let emailSent = false;
     {
         tokenData.isCompleted = true;
+        if (answersSnapshot) tokenData.answersSnapshot = answersSnapshot;
+        tokenData.completedAt = tokenData.completedAt || new Date().toISOString();
 
         // Один промокод на завершённую диагностику; повторный запрос отчёта не создаёт новый.
         if (tokenData.promoCodeIssued) {
