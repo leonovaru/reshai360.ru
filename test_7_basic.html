@@ -422,7 +422,8 @@
         updateQuestionNavigator();
       }
     });
-    container.addEventListener("click", event => {
+    const grid = document.getElementById("question-nav-grid");
+    if (grid) grid.addEventListener("click", event => {
       const navButton = event.target.closest(".question-nav-item");
       if (navButton) navigateToQuestion(navButton.dataset.questionId);
     });
