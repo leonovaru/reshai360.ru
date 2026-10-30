@@ -51,7 +51,20 @@ export async function onRequestPost({ request, env }) {
       // Поддержка ранее выданных промокодов с фиксированной скидкой в рублях.
       discount = Math.min(Number(promo.discount) || 90, basePrice);
     }
-    return Response.json({ valid: true, discount, discountPercent, finalPrice: basePrice - discount });
+    const effectiveDiscountPercent = discountPercent !== null
+      ? discountPercent
+      : Math.max(0, Math.min(100, discount / basePrice * 100));
+    const testMode = env.PAYMENT_TEST_MODE !== 'false';
+    const paymentBase = testMode ? 1 : basePrice;
+    const paymentAmount = (Math.max(0.01, Math.round(paymentBase * (100 - effectiveDiscountPercent)) / 100)).toFixed(2);
+    return Response.json({
+      valid: true,
+      discount,
+      discountPercent: discountPercent || (discount > 0 ? Number(effectiveDiscountPercent.toFixed(2)) : null),
+      finalPrice: basePrice - discount,
+      testMode,
+      paymentAmount
+    });
   } catch (error) {
     console.error("Validate promo error:", error);
     return Response.json({ valid: false, message: "Не удалось проверить промокод." }, { status: 500 });
