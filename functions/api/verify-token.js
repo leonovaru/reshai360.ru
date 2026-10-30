@@ -61,6 +61,24 @@ export async function onRequestPost(context) {
       return Response.json({ valid: false, message: 'Платёж ещё подтверждается.' }, { status: 402 });
     }
 
+    // Синхронизируем одноразовый промокод и при прямой проверке оплаты,
+    // даже если webhook ЮKassa задержался или не был доставлен.
+    if (tokenData.promoCode && env.TEST_TOKENS) {
+      const promoKey = 'promo:' + String(tokenData.promoCode).toUpperCase();
+      const promoRaw = await env.TEST_TOKENS.get(promoKey);
+      if (promoRaw) {
+        const promo = JSON.parse(promoRaw);
+        if (promo.reservedBy === token && !promo.used) {
+          promo.used = true;
+          promo.usedAt = Date.now();
+          promo.usedByEmail = tokenData.email || null;
+          promo.reservedBy = null;
+          promo.reservedUntil = null;
+          await env.TEST_TOKENS.put(promoKey, JSON.stringify(promo), { expirationTtl: 15552000 });
+        }
+      }
+    }
+
     // Завершённый заказ можно открыть повторно: клиент восстановит сохранённые ответы
     // и покажет результат, не начиная новую диагностику.
     if (!tokenData.isCompleted) {
