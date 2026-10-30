@@ -260,7 +260,7 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    return Response.json({ success: true, promoCode, emailSent, emailPreviouslyAccepted: Boolean(tokenData.reportEmailSentAt && !emailSent), emailError, pdfBytes: Number(pdfFile.size || 0) });
+    return Response.json({ success: true, promoCode, emailSent, emailPreviouslyAccepted: Boolean(tokenData.reportEmailSentAt && !emailSent && !forceEmail), emailError, pdfBytes: Number(pdfFile.size || 0) });
   } catch (err) {
     console.error("Send report global error:", err);
 
