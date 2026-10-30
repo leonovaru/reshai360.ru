@@ -99,14 +99,20 @@ export async function onRequestPost(context) {
 
     // В тестовом режиме базовая сумма — 1 ₽. Из-за минимального платежа ЮKassa скидка не может уменьшить тестовое списание ниже 1 ₽.
     const testMode = env.PAYMENT_TEST_MODE !== 'false';
-    const discountPercent = promoRecord
-      ? (Number.isFinite(Number(promoRecord.discountPercent)) && Number(promoRecord.discountPercent) > 0
-          ? Math.max(0, Math.min(100, Number(promoRecord.discountPercent)))
-          : Math.max(0, Math.min(100, (Number(promoRecord.discount) || 0) / product.displayPrice * 100)))
+    const promoDiscountPercent = promoRecord && Number.isFinite(Number(promoRecord.discountPercent)) && Number(promoRecord.discountPercent) > 0
+      ? Math.max(0, Math.min(100, Number(promoRecord.discountPercent)))
       : 0;
-    const basePaymentAmount = testMode ? 1 : product.displayPrice;
-    const paymentAmount = Math.max(1, Math.round(basePaymentAmount * (100 - discountPercent)) / 100);
-    const discountedDisplayPrice = Math.max(1, Math.round(product.displayPrice * (100 - discountPercent) / 100));
+    const discountAmount = !promoRecord
+      ? 0
+      : promoDiscountPercent > 0
+        ? Math.min(Math.round(product.displayPrice * promoDiscountPercent / 100), product.displayPrice)
+        : Math.min(Number(promoRecord.discount) || 90, product.displayPrice);
+    const discountPercent = product.displayPrice > 0
+      ? Number((discountAmount / product.displayPrice * 100).toFixed(4))
+      : 0;
+    const discountedDisplayPrice = product.displayPrice - discountAmount;
+    // В тестовом режиме — 1 ₽; в реальном — ровно цена после округлённой скидки.
+    const paymentAmount = testMode ? 1 : Math.max(1, Number(discountedDisplayPrice.toFixed(2)));
     const expectedPaymentAmount = paymentAmount.toFixed(2);
 
     // Генерируем уникальный защищенный токен
