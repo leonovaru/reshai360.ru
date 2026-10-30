@@ -142,10 +142,11 @@ export async function onRequestPost(context) {
       recordedAt: consentAt
     }), { expirationTtl: 94608000 });
 
-    // Короткая резервация не даёт параллельно применить один промокод в нескольких заказах.
+    // Резервируем промокод на срок с запасом относительно окна подтверждения платежа ЮKassa.
+    // Отменённый платёж освобождает промокод через webhook; успешный — помечается использованным.
     if (promoCode && promoRecord) {
       promoRecord.reservedBy = token;
-      promoRecord.reservedUntil = Date.now() + 30 * 60 * 1000;
+      promoRecord.reservedUntil = Date.now() + 2 * 60 * 60 * 1000;
       await env.TEST_TOKENS.put('promo:' + promoCode, JSON.stringify(promoRecord), { expirationTtl: 15552000 });
     }
 
