@@ -55,8 +55,7 @@ export async function onRequestPost({ request, env }) {
       ? discountPercent
       : Math.max(0, Math.min(100, discount / basePrice * 100));
     const testMode = env.PAYMENT_TEST_MODE !== 'false';
-    const paymentBase = testMode ? 1 : basePrice;
-    const paymentAmount = (Math.max(1, Math.round(paymentBase * (100 - effectiveDiscountPercent)) / 100)).toFixed(2);
+    const paymentAmount = (testMode ? 1 : Math.max(1, basePrice - discount)).toFixed(2);
     return Response.json({
       valid: true,
       discount,
