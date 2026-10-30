@@ -80,6 +80,11 @@ export async function onRequestPost(context) {
     if (!product) {
       return new Response(JSON.stringify({ message: 'Выбран неизвестный класс' }), { status: 400 });
     }
+    const testMode = env.PAYMENT_TEST_MODE !== 'false';
+    const discountPercent = promoRecord ? Math.max(0, Math.min(100, Number(promoRecord.discountPercent) || 0)) : 0;
+    const discountedDisplayPrice = Math.max(1, Math.round(product.displayPrice * (100 - discountPercent) / 100));
+    const paymentAmount = testMode ? 1 : discountedDisplayPrice;
+    const expectedPaymentAmount = paymentAmount.toFixed(2);
 
     // Проверяем промокод на сервере. Сам код хранится в KV, а не в браузере.
     let promoRecord = null;
@@ -112,7 +117,11 @@ export async function onRequestPost(context) {
       referralCode,
       consentRecord,
       isPaid: false,
-      isUsed: false
+      isUsed: false,
+      expectedPaymentAmount,
+      paymentTestMode: testMode,
+      discountPercent,
+      displayAmount: discountedDisplayPrice
     }), { expirationTtl: 86400 });
     // Отдельная запись подтверждения согласия нужна для доказуемости факта и версии документов.
     await env.TEST_TOKENS.put("consent:" + token, JSON.stringify({
@@ -141,7 +150,7 @@ export async function onRequestPost(context) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        amount: { value: `${product.price}.00`, currency: 'RUB' },
+        amount: { value: expectedPaymentAmount, currency: 'RUB' },
         confirmation: { type: 'embedded' },
         capture: true,
         description: `${product.title} (${email})`,
@@ -151,7 +160,7 @@ export async function onRequestPost(context) {
           items: [{
             description: product.title,
             quantity: '1.00',
-            amount: { value: `${product.price}.00`, currency: 'RUB' },
+            amount: { value: expectedPaymentAmount, currency: 'RUB' },
             vat_code: '1'
           }]
         }
