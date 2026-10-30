@@ -217,6 +217,8 @@
       return;
     }
 
+    let completedSnapshot = null;
+    let wasCompleted = false;
     try {
       const response = await fetch('/api/verify-token', {
         method: 'POST',
@@ -243,6 +245,8 @@
         }
         studentData.fullName = result.data.studentName || localStorage.getItem('studentName') || "Ученик";
         studentData.email = result.data.email || localStorage.getItem('studentEmail') || "";
+        wasCompleted = result.data.isCompleted === true;
+        completedSnapshot = result.data.answersSnapshot || null;
       }
     } catch (err) {
       console.error("Ошибка проверки токена:", err);
@@ -252,7 +256,11 @@
     }
 
     progressStorageKey = "reshai360_progress_9_advanced_" + currentToken;
+    if (completedSnapshot && !localStorage.getItem(progressStorageKey)) {
+      try { localStorage.setItem(progressStorageKey, JSON.stringify({ version: 1, ...completedSnapshot, savedAt: Date.now() })); } catch (_) {}
+    }
     renderQuiz();
+    if (wasCompleted) setTimeout(() => checkAll(true), 700);
   });
 
   function escapeHtml(text) {
@@ -1049,12 +1057,10 @@
       qDef.correctText = qDef.a;
     }
 
-    if (!silent) {
+    if (!silent && userAns !== "") {
       qDef.checkCount = (qDef.checkCount || 0) + 1;
-      if (userAns !== "") {
-        if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
-        qDef.attemptsHistory.push(formattedUserAns);
-      }
+      if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
+      qDef.attemptsHistory.push(formattedUserAns);
     } else {
       if (userAns !== "") {
         if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
@@ -1077,10 +1083,19 @@
     }
 
     const expectedAnswer = qDef.type === "text" ? String(qDef.a).trim().replace(/\s+/g, "").replace(/,/g, ".") : qDef.a;
+    const parseNumericAnswer = value => {
+      const normalized = String(value).trim().replace(/,/g, ".");
+      if (/^[+-]?\d+(?:\.\d+)?$/.test(normalized)) return Number(normalized);
+      const fraction = normalized.match(/^([+-]?\d+)\/([+-]?\d+)$/);
+      if (fraction && Number(fraction[2]) !== 0) return Number(fraction[1]) / Number(fraction[2]);
+      return NaN;
+    };
+    const userNumeric = parseNumericAnswer(userAns);
+    const expectedNumeric = parseNumericAnswer(expectedAnswer);
     const isRight = (qDef.type === "radio")
       ? (parseInt(userAns, 10) === qDef.a)
-      : (userAns !== "" && Number.isFinite(Number(userAns)) && Number.isFinite(Number(expectedAnswer))
-          ? Math.abs(Number(userAns) - Number(expectedAnswer)) < 1e-9
+      : (userAns !== "" && Number.isFinite(userNumeric) && Number.isFinite(expectedNumeric)
+          ? Math.abs(userNumeric - expectedNumeric) < 1e-9
           : userAns === expectedAnswer);
 
     if (isRight) {
@@ -1152,6 +1167,36 @@
       if (pdfCountdownRemaining <= 0) { clearInterval(pdfCountdownTimer); pdfCountdownTimer = null; }
     }, 1000);
   }
+  async function retryReportEmail() {
+    const status = document.getElementById('report-email-status');
+    if (!generatedPdfBlob || !currentToken || !status) return;
+    status.textContent = 'Повторно отправляем письмо…';
+    try {
+      const formData = new FormData();
+      formData.append('token', currentToken);
+      formData.append('email', studentData.email || '');
+      formData.append('name', studentData.fullName || 'Ученик');
+      formData.append('score', String(window.__lastReportScore || 0));
+      formData.append('total', String(window.__lastReportTotal || 1));
+      formData.append('document', generatedPdfBlob, `Отчет_${studentData.fullName || 'Ученик'}.pdf`);
+      const snapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {} };
+      questionNavigation.forEach(item => {
+        const answer = getQuestionAnswer(item.id, item.qDef);
+        if (answer) snapshot.answers[item.id] = answer;
+        snapshot.stats[item.id] = { checkCount: item.qDef.checkCount || 0, attemptsHistory: item.qDef.attemptsHistory || [] };
+      });
+      formData.append('answersSnapshot', JSON.stringify(snapshot));
+      const response = await fetch('/api/send-report', { method: 'POST', body: formData });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) throw new Error(result.message || 'Не удалось отправить письмо.');
+      status.textContent = result.emailSent ? 'Письмо успешно отправлено. Проверьте входящие и папку «Спам».' : 'Сервер пока не подтвердил отправку письма.';
+      if (!result.emailSent) status.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Повторить отправку</button>';
+    } catch (error) {
+      status.textContent = error.message || 'Ошибка отправки.';
+      status.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Повторить отправку</button>';
+    }
+  }
+
   function copyPromoCode() {
     const code = document.getElementById("promo-code-result-value")?.textContent || "";
     if (!code || !navigator.clipboard || !navigator.clipboard.writeText) return;
@@ -1175,7 +1220,7 @@
   }
   document.addEventListener("DOMContentLoaded", () => { const form = document.getElementById("feedback-form"); if (form) form.addEventListener("submit", submitFeedback); });
 
-  async function checkAll() {
+  async function checkAll(skipUnansweredConfirm = false) {
     saveQuizProgress();
     const unansweredQuestions = [];
     quizData.forEach((block, bIdx) => block.themes.forEach((theme, tIdx) => theme.questions.forEach((qDef, qIdx) => {
@@ -1189,7 +1234,7 @@
       }
       if (!answered) unansweredQuestions.push(qId);
     })));
-    if (unansweredQuestions.length > 0) {
+    if (unansweredQuestions.length > 0 && !skipUnansweredConfirm) {
       const message = `Остались незаполненные задания: ${unansweredQuestions.length}.\\n\\nЗавершить тест и посмотреть результаты без них?`;
       if (!window.confirm(message)) return;
     }
@@ -1293,6 +1338,8 @@
     });
 
     const percent = Math.round((totalCorrect / totalQuestions) * 100);
+    window.__lastReportScore = totalCorrect;
+    window.__lastReportTotal = totalQuestions;
     const topicsToRepeat = Array.from(topicsToRepeatSet);
     const topicsToStudy = Array.from(topicsToStudySet);
 
@@ -1426,6 +1473,13 @@
         formData.append('score', totalCorrect);
         formData.append('total', totalQuestions);
         formData.append('document', generatedPdfBlob, `Отчет_${studentData.fullName}.pdf`);
+        const answersSnapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {} };
+        questionNavigation.forEach(item => {
+          const answer = getQuestionAnswer(item.id, item.qDef);
+          if (answer) answersSnapshot.answers[item.id] = answer;
+          answersSnapshot.stats[item.id] = { checkCount: item.qDef.checkCount || 0, attemptsHistory: item.qDef.attemptsHistory || [] };
+        });
+        formData.append('answersSnapshot', JSON.stringify(answersSnapshot));
 
         const reportResponse = await fetch('/api/send-report', {
           method: 'POST',
@@ -1437,7 +1491,7 @@
           document.getElementById('promo-code-result').style.display = 'block';
           const emailStatus = document.getElementById('report-email-status');
           if (reportResult.emailSent && studentData.email) emailStatus.innerHTML = '📩 Письмо с PDF-отчётом и промокодом на скидку 10% отправлено на <strong>' + escapeHtml(studentData.email) + '</strong>. Если письма нет, проверьте папку «Спам».';
-          else if (studentData.email) emailStatus.innerHTML = '⚠️ Отчёт сформирован, но сервер не подтвердил отправку письма на <strong>' + escapeHtml(studentData.email) + '</strong>. Проверьте адрес или обратитесь в поддержку.';
+          else if (studentData.email) emailStatus.innerHTML = '⚠️ Отчёт сформирован, но сервер не подтвердил отправку письма на <strong>' + escapeHtml(studentData.email) + '</strong>. <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Повторить отправку</button>';
           else emailStatus.textContent = 'Отчёт сформирован. Email не был указан, поэтому письмо не отправлялось.';
         } else {
           document.getElementById('promo-code-result-note').textContent = 'Не удалось загрузить промокод. Обратитесь в поддержку, если он не появится.';
