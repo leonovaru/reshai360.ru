@@ -59,9 +59,12 @@
             }
 
             try {
+                const verificationStartedAt = Date.now();
                 let result = null;
                 let lastStatus = 0;
-                for (let attempt = 0; attempt < 20; attempt++) {
+                // Сначала сервер проверяет статус напрямую в ЮKassa; повторяем коротко,
+                // если платёжный статус ещё обновляется.
+                for (let attempt = 0; attempt < 10; attempt++) {
                     const response = await fetch('/api/verify-token', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -70,7 +73,7 @@
                     lastStatus = response.status;
                     result = await response.json();
                     if (result.valid || lastStatus !== 402) break;
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    if (attempt < 9) await new Promise(resolve => setTimeout(resolve, 1000));
                 }
 
                 if (result.valid && result.data) {
@@ -94,9 +97,13 @@
                     document.getElementById('status-title').innerText = "Оплата успешно подтверждена!";
                     document.getElementById('status-desc').innerText = "Открываем вашу диагностику...";
 
+                    // Небольшая пауза, чтобы пользователь увидел подтверждение оплаты.
+                    // Переход происходит не раньше чем через 2 секунды и только после
+                    // серверного подтверждения статуса succeeded.
+                    const redirectDelay = Math.max(0, 2000 - (Date.now() - verificationStartedAt));
                     setTimeout(() => {
-                        window.location.href = `${targetFile}?token=${encodeURIComponent(token)}`;
-                    }, 1000);
+                        window.location.replace(`${targetFile}?token=${encodeURIComponent(token)}`);
+                    }, redirectDelay);
                 } else {
                     document.getElementById('loader').style.display = 'none';
                     if (lastStatus === 402) {
