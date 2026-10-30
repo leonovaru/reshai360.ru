@@ -761,11 +761,11 @@
                 return;
             }
             if (note) {
-                note.textContent = 'Тестовый режим: списание составит ' + formatPaymentAmount(paymentModeInfo.paymentAmount) + '. ЮKassa не принимает оплату картой меньше 1 ₽; скидка применяется к обычной стоимости диагностики.';
+                note.textContent = 'Сейчас действует тестовая цена: ' + formatPaymentAmount(paymentModeInfo.paymentAmount) + '. ЮKassa не принимает оплату картой меньше 1 ₽; скидка применяется к обычной стоимости диагностики.';
                 note.classList.remove('hidden');
             }
             if (currentSelectedProductKey && !appliedPromoCode) {
-                document.getElementById('payment-button-label').textContent = 'Тестовая оплата · ' + formatPaymentAmount(paymentModeInfo.paymentAmount);
+                document.getElementById('payment-button-label').textContent = 'Оплатить · ' + formatPaymentAmount(paymentModeInfo.paymentAmount);
             }
         }
         document.addEventListener('DOMContentLoaded', async () => {
@@ -949,18 +949,18 @@
                 if (!response.ok || !result.valid) throw new Error(result.message || 'Промокод недействителен.');
                 appliedPromoCode = code; appliedPromoDiscount = result.discount || 0;
                 const regularPriceText = result.finalPrice + ' ₽';
-                const testPaymentText = result.testMode ? ' Тестовое списание: ' + formatPaymentAmount(result.paymentAmount) + ' (минимальная сумма ЮKassa).' : '';
+                const testPaymentText = result.testMode ? ' Сумма оплаты сейчас: ' + formatPaymentAmount(result.paymentAmount) + ' (минимум ЮKassa).' : '';
                 status.textContent = 'Промокод применён: скидка ' + (result.discountPercent ? result.discountPercent + '% (' + appliedPromoDiscount + ' ₽)' : appliedPromoDiscount + ' ₽') + '. Обычная цена после скидки: ' + regularPriceText + '.' + testPaymentText;
                 status.className = 'text-xs leading-relaxed text-emerald-300'; status.classList.remove('hidden');
                 if (result.testMode) {
                     const modeNote = document.getElementById('payment-mode-note');
                     if (modeNote) {
-                        modeNote.textContent = 'Тестовый режим: списание составит ' + formatPaymentAmount(result.paymentAmount) + ' (минимальная сумма ЮKassa). Обычная стоимость после скидки: ' + regularPriceText + '.';
+                        modeNote.textContent = 'Сейчас к оплате: ' + formatPaymentAmount(result.paymentAmount) + ' (минимум ЮKassa). Обычная стоимость после скидки: ' + regularPriceText + '.';
                         modeNote.classList.remove('hidden');
                     }
                 }
                 document.getElementById('payment-button-label').textContent = result.testMode
-                    ? 'Тестовая оплата · ' + formatPaymentAmount(result.paymentAmount)
+                    ? 'Оплатить · ' + formatPaymentAmount(result.paymentAmount)
                     : 'Перейти к оплате · ' + regularPriceText;
                 const selectedLevelButton = document.getElementById('btn-' + currentSelectedProductKey);
                 if (selectedLevelButton) selectedLevelButton.querySelector('.level-price').textContent = result.finalPrice + ' ₽';
