@@ -282,6 +282,8 @@
     const nextStart = Math.max(0, start + shift);
     const nextEnd = Math.max(nextStart, end + shift);
     try { input.setSelectionRange(nextStart, nextEnd); } catch (_) {}
+    saveQuizProgress();
+    updateQuestionNavigator();
   }
 
   function updateMinusBtnState(qId) {
