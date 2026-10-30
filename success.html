@@ -59,7 +59,6 @@
             }
 
             try {
-                const verificationStartedAt = Date.now();
                 let result = null;
                 let lastStatus = 0;
                 // Сначала сервер проверяет статус напрямую в ЮKassa; повторяем коротко,
@@ -102,13 +101,8 @@
                     document.getElementById('status-title').innerText = "Оплата успешно подтверждена!";
                     document.getElementById('status-desc').innerText = "Открываем вашу диагностику...";
 
-                    // Небольшая пауза, чтобы пользователь увидел подтверждение оплаты.
-                    // Переход происходит не раньше чем через 2 секунды и только после
-                    // серверного подтверждения статуса succeeded.
-                    const redirectDelay = Math.max(0, 2000 - (Date.now() - verificationStartedAt));
-                    setTimeout(() => {
-                        window.location.replace(`${targetFile}?token=${encodeURIComponent(token)}`);
-                    }, redirectDelay);
+                    // Сервер уже подтвердил оплату — открываем тест без искусственной паузы.
+                    window.location.replace(`${targetFile}?token=${encodeURIComponent(token)}`);
                 } else {
                     document.getElementById('loader').style.display = 'none';
                     if (lastStatus === 402) {
