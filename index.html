@@ -762,6 +762,7 @@
             const isLevelKey = /^(7|8|9|10|11)_(basic|advanced)$/.test(key);
             const gradeKey = isLevelKey ? key.split('_')[0] : key;
             const gradeSelect = document.getElementById('grade-select');
+            const gradeWasAlreadySelected = !!(gradeSelect && gradeSelect.value === gradeKey);
             if (gradeSelect && gradeSelect.value !== gradeKey) gradeSelect.value = gradeKey;
             if (gradeSelect) { gradeSelect.classList.add('bg-indigo-600', 'border-indigo-400'); gradeSelect.classList.remove('bg-slate-950', 'border-slate-700'); }
             const levelSelector = document.getElementById('level-selector');
@@ -842,7 +843,9 @@
             if (!container.innerHTML) container.innerHTML = '<div class="sm:col-span-2 text-sm text-slate-300">Программа для этого варианта пока не заполнена.</div>';
             document.getElementById('mobile-blocks-container').innerHTML = container.innerHTML;
             document.getElementById('mobile-program-accordion').classList.remove('hidden');
-            toggleMobileProgram(true);
+            // Если класс выбрали прямо через кнопку уровня, покажем программу.
+            // Если пользователь уже открыл класс и свернул программу вручную — сохраняем его выбор.
+            if (!gradeWasAlreadySelected) toggleMobileProgram(true);
             requestAnimationFrame(syncProgramPanelHeight);
         }
 
