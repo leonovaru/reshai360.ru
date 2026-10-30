@@ -77,7 +77,19 @@
         @keyframes feedback-bulb-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         .feedback-bulb { animation: feedback-bulb-float 3s ease-in-out infinite; }
         @media (prefers-reduced-motion: reduce) { .feedback-bulb { animation: none; } }
-    </style>
+    
+        @keyframes programReadyPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(129, 140, 248, 0.12); border-color: rgba(129, 140, 248, 0.45); }
+            50% { box-shadow: 0 0 0 5px rgba(129, 140, 248, 0.12); border-color: rgba(165, 180, 252, 0.95); }
+        }
+        #mobile-program-accordion.program-ready-highlight {
+            border-color: rgba(165, 180, 252, 0.9);
+            background: rgba(49, 46, 129, 0.28);
+            animation: programReadyPulse 1.8s ease-in-out 3;
+        }
+        #mobile-program-toggle-top { min-height: 44px; }
+        #mobile-program-toggle-label { text-decoration: underline; text-decoration-color: rgba(165, 180, 252, 0.65); text-underline-offset: 4px; }
+</style>
 </head>
 <body class="font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col justify-between pt-20">
 
@@ -801,8 +813,13 @@
                 ).join('');
                 if (!container.innerHTML) container.innerHTML = '<div class="sm:col-span-2 text-sm text-slate-300">Программа для этого класса пока не заполнена.</div>';
                 document.getElementById('mobile-blocks-container').innerHTML = container.innerHTML;
-                document.getElementById('mobile-program-accordion').classList.remove('hidden');
-                toggleMobileProgram(true);
+                const mobileProgram = document.getElementById('mobile-program-accordion');
+                mobileProgram.classList.remove('hidden');
+                // Показываем заметную подсказку, но не раскрываем программу автоматически.
+                toggleMobileProgram(false);
+                mobileProgram.classList.add('program-ready-highlight');
+                const programToggle = document.getElementById('mobile-program-toggle-top');
+                programToggle.setAttribute('aria-label', 'Посмотреть программу диагностики для ' + gradeKey + ' класса');
                 return;
             }
             const data = programs[key];
