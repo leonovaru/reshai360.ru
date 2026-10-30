@@ -841,8 +841,9 @@
           const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
           html += `<div class="card" id="card_${qId}">`;
           const questionText = String(qDef.q || "");
-          const hasActionWord = /^(найдите|вычислите|решите|определите|посчитайте|укажите|сравните)\\b/i.test(questionText.trim());
-          const isExpressionOnly = /^[\\d\\s()+\\-−×·*/:,.=√%]+$/u.test(questionText.trim());
+          const normalizedQuestion = questionText.trim().toLocaleLowerCase("ru-RU");
+          const hasActionWord = ["найдите", "вычислите", "решите", "определите", "посчитайте", "укажите", "сравните"].some(word => normalizedQuestion.startsWith(word));
+          const isExpressionOnly = questionText.trim().length > 0 && !/[a-zа-яё?]/i.test(questionText);
           const questionInstruction = qDef.type === "text" && !hasActionWord
             ? (isExpressionOnly ? "Вычислите: " : "Найдите ответ: ")
             : "";
