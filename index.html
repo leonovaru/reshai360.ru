@@ -89,7 +89,8 @@
         }
         #mobile-program-toggle-top { min-height: 44px; }
         #mobile-program-toggle-label { text-decoration: underline; text-decoration-color: rgba(165, 180, 252, 0.65); text-underline-offset: 4px; }
-</style>
+    @media (max-width: 768px) { input, select, textarea { font-size: 16px !important; } }
+  </style>
 </head>
 <body class="font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col justify-between pt-20">
 
@@ -978,6 +979,7 @@
                     let paymentFinished = false;
                     widget = new window.YooMoneyCheckoutWidget({
                         confirmation_token: data.confirmationToken,
+                        return_url: data.returnUrl,
                         customization: {
                             modal: true,
                             colors: { control_primary: '#6366f1' }
@@ -991,25 +993,9 @@
                         }
                     });
 
-                    // Без return_url ЮKassa вызывает события success/fail. После успеха
-                    // сами переводим основное окно браузера на серверную проверку заказа,
-                    // а не оставляем страницу результата внутри модального виджета.
-                    widget.on('success', function() {
-                        if (paymentFinished) return;
-                        paymentFinished = true;
-                        try { widget.destroy(); } catch (_) {}
-                        window.location.assign(data.returnUrl);
-                    });
-
-                    widget.on('fail', function() {
-                        if (paymentFinished) return;
-                        paymentFinished = true;
-                        try { widget.destroy(); } catch (_) {}
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnContent;
-                        alert('Платёж не был завершён. Проверьте статус в банке; если деньги списались, обратитесь в поддержку — повторно оплачивать не нужно.');
-                    });
-
+                    // return_url обрабатывается самим виджетом ЮKassa.
+                    // Это важно для T-Pay: после подтверждения в приложении банк возвращает
+                    // пользователя на страницу проверки заказа, а не требует повторной покупки.
                     widget.on('modal_close', function() {
                         if (paymentFinished) return;
                         submitBtn.disabled = false;
