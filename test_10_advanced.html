@@ -256,8 +256,12 @@
     }
 
     progressStorageKey = "reshai360_progress_10_advanced_" + currentToken;
-    if (completedSnapshot && !localStorage.getItem(progressStorageKey)) {
-      try { localStorage.setItem(progressStorageKey, JSON.stringify({ version: 1, ...completedSnapshot, savedAt: Date.now() })); } catch (_) {}
+    if (completedSnapshot) {
+      try {
+        if (!localStorage.getItem(progressStorageKey)) {
+          localStorage.setItem(progressStorageKey, JSON.stringify({ version: 1, ...completedSnapshot, savedAt: Date.now() }));
+        }
+      } catch (_) {}
     }
     await renderQuiz();
     if (wasCompleted) await checkAll(true);
