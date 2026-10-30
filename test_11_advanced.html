@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Диагностический тест по математике | 11 класс — продвинутый уровень</title>
   
   <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш номер счетчика) -->
@@ -64,7 +64,7 @@
     .btn-minus-toggle:hover { background: #e2e8f0; border-color: #94a3b8; }
     .btn-minus-toggle.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
     .btn-minus-toggle:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
-    .btn-check { background: var(--primary-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 0; transition: 0.2s; }
+    .btn-check { background: var(--primary-blue); color: #fff; border: none; min-height: 42px; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 0; transition: 0.2s; }
     .btn-check:hover { background: #1d4ed8; }
     .feedback { display: inline-block; margin-left: 15px; font-weight: bold; font-size: 1.05em; }
     .btn-final { display: block; width: 100%; padding: 16px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.2s; }
@@ -146,7 +146,7 @@
     .question-nav-item.marked::after { content:""; position:absolute; width:8px; height:8px; border-radius:50%; background:#facc15; border:1px solid #854d0e; top:-3px; right:-3px; }
     .question-nav-item:focus-visible,.question-flag:focus-visible,.question-nav-toggle:focus-visible { outline:3px solid #fbbf24; outline-offset:2px; }
     .question-action-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:12px; }
-    .question-flag { display:inline-flex; align-items:center; justify-content:center; flex:0 0 42px; width:42px; height:42px; margin:0; padding:0; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#64748b; font-size:23px; line-height:1; cursor:pointer; }
+    .question-flag { display:inline-flex; align-items:center; justify-content:center; flex:0 0 42px; width:42px; min-height:42px; height:42px; margin:0; padding:0; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#64748b; font-size:23px; line-height:1; cursor:pointer; }
     .question-flag.active { background:#fef3c7; border-color:#f59e0b; color:#92400e; }
     .question-action-row .feedback { margin-left:0; }
     @media (max-width: 768px) { input, select, textarea { font-size:16px !important; } }
@@ -435,14 +435,26 @@
   function bindQuestionProgressEvents() {
     const container = document.getElementById("quiz-container");
     if (!container) return;
+    function clearEditedQuestionFeedback(target) {
+      if (!target || !target.matches("input")) return;
+      const qId = target.type === "radio" ? target.name : target.id;
+      if (!/^q_\\d+_\\d+_\\d+$/.test(qId || "")) return;
+      const feedback = document.getElementById("feed_" + qId);
+      if (feedback) feedback.textContent = "";
+      const [, bIdx, tIdx, qIdx] = qId.split("_").map(Number);
+      const question = quizData[bIdx]?.themes[tIdx]?.questions[qIdx];
+      if (question) question.isCorrect = null;
+    }
     container.addEventListener("input", event => {
       if (event.target.matches("input")) {
+        clearEditedQuestionFeedback(event.target);
         saveQuizProgress();
         updateQuestionNavigator();
       }
     });
     container.addEventListener("change", event => {
       if (event.target.matches("input")) {
+        clearEditedQuestionFeedback(event.target);
         saveQuizProgress();
         updateQuestionNavigator();
       }
@@ -498,12 +510,12 @@
           {
                     type: "text",
                     a: "1",
-                    q: "Вычислите tan(5π/4)."
+                    q: "Вычислите \\(\\tan\\left(\\frac{5\\pi}{4}\\right)\\)."
           },
           {
                     type: "text",
                     a: "3",
-                    q: "Сколько полных колебаний совершает график y = cos(3x) на отрезке [0; 2π]?"
+                    q: "Сколько полных колебаний совершает график \\(y = \\cos(3x)\\) на отрезке \\([0; 2\\pi]\\)?"
           }
 ]
         },
