@@ -228,7 +228,7 @@
                     </div>
 
                     <form id="checkout-form" onsubmit="handleSubmit(event)" class="mt-5 pt-5 border-t border-slate-800 space-y-4">
-                        <div class="flex items-center gap-2 mb-1"><span class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-black shrink-0">3</span><h3 class="text-sm font-bold text-white">Данные для заказа</h3></div>
+                        <h3 class="text-sm font-bold text-white mb-1">Данные для заказа</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="min-w-0">
                                 <label for="student-name" class="block pl-3 text-xs font-semibold text-slate-300 mb-1.5">Имя для отчёта</label>
@@ -239,22 +239,8 @@
                                 <input type="email" id="student-email" required autocomplete="email" placeholder="student@mail.ru" class="w-full min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 text-sm">
                             </div>
                         </div>
-                        <div class="flex items-start gap-2.5 pt-1 text-xs text-slate-400">
-                            <input type="checkbox" id="consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
-                            <label for="consent" class="text-[11px] leading-relaxed text-slate-400">
-                                Даю отдельное согласие на обработку персональных данных в соответствии с
-                                <a id="link-consent" href="/consent.html" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">текстом согласия</a>. Ознакомился(ась) с
-                                <a id="link-policy" href="/policy.html" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Политикой обработки персональных данных</a>.
-                            </label>
-                        </div>
-                        <div class="flex items-start gap-2.5 pt-1 text-xs text-slate-400">
-                            <input type="checkbox" id="offer-consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
-                            <label for="offer-consent" class="text-[11px] leading-relaxed text-slate-400">
-                                Принимаю условия <a id="link-offer" href="/offer.html" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Публичной оферты</a>.
-                            </label>
-                        </div>
                         <div class="space-y-2 border-t border-slate-800 pt-4">
-                            <div class="flex items-center gap-2 mb-1"><span class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500/15 text-indigo-300 text-xs font-black shrink-0">4</span><h3 class="text-sm font-bold text-white">Промокод</h3></div>
+                            <h3 class="text-xs font-semibold text-slate-300 mb-1">Есть промокод? Примените его перед оплатой</h3>
                             <div class="flex gap-2">
                                 <input type="text" id="promo-code" maxlength="24" autocomplete="off" oninput="clearAppliedPromoCode()" placeholder="Введите промокод" class="min-w-0 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white uppercase placeholder:normal-case placeholder:text-slate-500 focus:outline-none focus:border-indigo-500">
                                 <button type="button" id="apply-promo-button" onclick="applyPromoCode()" class="shrink-0 rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-2 text-xs font-bold text-white">Применить</button>
@@ -265,6 +251,22 @@
                             <span id="payment-button-label">Перейти к оплате</span>
                             <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
+                        <div class="space-y-2 pt-1">
+                            <div class="flex items-start gap-2.5 text-xs text-slate-400">
+                                <input type="checkbox" id="consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
+                                <label for="consent" class="text-[11px] leading-relaxed text-slate-400">
+                                    Даю отдельное согласие на обработку персональных данных в соответствии с
+                                    <a id="link-consent" href="/consent.html" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">текстом согласия</a>. Ознакомился(ась) с
+                                    <a id="link-policy" href="/policy.html" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Политикой обработки персональных данных</a>.
+                                </label>
+                            </div>
+                            <div class="flex items-start gap-2.5 text-xs text-slate-400">
+                                <input type="checkbox" id="offer-consent" required class="mt-0.5 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
+                                <label for="offer-consent" class="text-[11px] leading-relaxed text-slate-400">
+                                    Принимаю условия <a id="link-offer" href="/offer.html" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-400">Публичной оферты</a>.
+                                </label>
+                            </div>
+                        </div>
                         <p class="text-xs leading-relaxed text-slate-400 text-center">После диагностики на email придёт промокод со скидкой <strong class="text-indigo-300">10%</strong> для следующей диагностики или для друга.</p>
                         <p id="payment-readiness-note" class="hidden text-xs leading-relaxed text-amber-200/90 text-center">Отдельные тесты для этого класса и уровня ещё готовятся. Оплата пока недоступна.</p>
                         
@@ -799,6 +801,7 @@
                 if (!container.innerHTML) container.innerHTML = '<div class="sm:col-span-2 text-sm text-slate-300">Программа для этого класса пока не заполнена.</div>';
                 document.getElementById('mobile-blocks-container').innerHTML = container.innerHTML;
                 document.getElementById('mobile-program-accordion').classList.remove('hidden');
+                toggleMobileProgram(true);
                 return;
             }
             const data = programs[key];
@@ -839,6 +842,7 @@
             if (!container.innerHTML) container.innerHTML = '<div class="sm:col-span-2 text-sm text-slate-300">Программа для этого варианта пока не заполнена.</div>';
             document.getElementById('mobile-blocks-container').innerHTML = container.innerHTML;
             document.getElementById('mobile-program-accordion').classList.remove('hidden');
+            toggleMobileProgram(true);
             requestAnimationFrame(syncProgramPanelHeight);
         }
 
