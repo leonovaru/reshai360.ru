@@ -2,10 +2,40 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   try {
     const event = await request.json();
+    const eventPaymentId = event.object && event.object.id;
+
+    // При отмене платежа проверяем фактический статус в ЮKassa и сразу освобождаем промокод.
+    if (event.event === 'payment.canceled' && eventPaymentId && env.YOKASSA_SHOP_ID && env.YOKASSA_SECRET_KEY && env.TEST_TOKENS) {
+      const cancelCredentials = btoa(`${env.YOKASSA_SHOP_ID}:${env.YOKASSA_SECRET_KEY}`);
+      const cancelResponse = await fetch(`https://api.yookassa.ru/v3/payments/${encodeURIComponent(eventPaymentId)}`, {
+        headers: { 'Authorization': `Basic ${cancelCredentials}` }
+      });
+      if (!cancelResponse.ok) return new Response('Payment verification failed', { status: 502 });
+      const canceledPayment = await cancelResponse.json();
+      const canceledToken = canceledPayment.metadata && canceledPayment.metadata.token;
+      if (canceledPayment.status === 'canceled' && canceledToken) {
+        const orderRaw = await env.TEST_TOKENS.get(canceledToken);
+        if (orderRaw) {
+          const order = JSON.parse(orderRaw);
+          if (order.paymentId === canceledPayment.id && order.isPaid !== true && order.promoCode) {
+            const promoKey = 'promo:' + String(order.promoCode).toUpperCase();
+            const promoRaw = await env.TEST_TOKENS.get(promoKey);
+            if (promoRaw) {
+              const promo = JSON.parse(promoRaw);
+              if (promo.reservedBy === canceledToken && !promo.used) {
+                promo.reservedBy = null;
+                promo.reservedUntil = null;
+                await env.TEST_TOKENS.put(promoKey, JSON.stringify(promo), { expirationTtl: 15552000 });
+              }
+            }
+          }
+        }
+      }
+      return new Response('OK', { status: 200 });
+    }
     if (event.event !== 'payment.succeeded') return new Response('OK', { status: 200 });
 
     // Не доверяем телу входящего webhook: сверяем платёж напрямую с API ЮKassa.
-    const eventPaymentId = event.object && event.object.id;
     if (!eventPaymentId || !env.YOKASSA_SHOP_ID || !env.YOKASSA_SECRET_KEY || !env.TEST_TOKENS) {
       return new Response('Missing payment configuration', { status: 400 });
     }
@@ -35,7 +65,7 @@ export async function onRequestPost(context) {
       '10': '1.00', '10_basic': '1.00', '10_advanced': '1.00',
       '11': '1.00', '11_basic': '1.00', '11_advanced': '1.00'
     };
-    const expectedAmount = expectedAmountByProduct[tokenData.productKey];
+    const expectedAmount = tokenData.expectedPaymentAmount || expectedAmountByProduct[tokenData.productKey];
     const actualAmount = confirmedPayment.amount;
     if (
       !expectedAmount ||
