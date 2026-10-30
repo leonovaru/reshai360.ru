@@ -98,7 +98,7 @@ export async function onRequestPost(context) {
     }
 
     // В тестовом режиме базовая сумма — 1 ₽; скидка промокода применяется и к ней.
-    // Поэтому тестовый платёж со скидкой 10% составит 0,90 ₽, а с 15% — 0,85 ₽.
+    // ЮKassa не принимает оплату банковской картой меньше 1 ₽, поэтому тестовая сумма не опускается ниже 1 ₽.
     const testMode = env.PAYMENT_TEST_MODE !== 'false';
     const discountPercent = promoRecord
       ? (Number.isFinite(Number(promoRecord.discountPercent)) && Number(promoRecord.discountPercent) > 0
@@ -106,7 +106,7 @@ export async function onRequestPost(context) {
           : Math.max(0, Math.min(100, (Number(promoRecord.discount) || 0) / product.displayPrice * 100)))
       : 0;
     const basePaymentAmount = testMode ? 1 : product.displayPrice;
-    const paymentAmount = Math.max(0.01, Math.round(basePaymentAmount * (100 - discountPercent)) / 100);
+    const paymentAmount = Math.max(1, Math.round(basePaymentAmount * (100 - discountPercent)) / 100);
     const discountedDisplayPrice = Math.max(1, Math.round(product.displayPrice * (100 - discountPercent) / 100));
     const expectedPaymentAmount = paymentAmount.toFixed(2);
 
