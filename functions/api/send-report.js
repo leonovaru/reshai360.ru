@@ -191,7 +191,7 @@ export async function onRequestPost({ request, env }) {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            from: "Решай360 <no-reply@reshai360.ru>",
+            from: "Решай360 <info@reshai360.ru>",
             to: [email],
             subject: `Результаты диагностики по математике — ${name || "ученик"}`,
             html: `
