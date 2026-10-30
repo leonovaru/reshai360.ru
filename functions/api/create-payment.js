@@ -167,8 +167,17 @@ export async function onRequestPost(context) {
     }
 
     const payment = await response.json();
-    if (!payment.confirmation || !payment.confirmation.confirmation_token) {
+    if (!payment.confirmation || !payment.confirmation.confirmation_token || !payment.id) {
       throw new Error('Некорректный ответ от платежного шлюза');
+    }
+
+    // Сохраняем ID платежа в заказе. Тогда success-страница сможет сама
+    // запросить актуальный статус у ЮKassa, не ожидая webhook.
+    const latestTokenRaw = await env.TEST_TOKENS.get(createdToken);
+    if (latestTokenRaw) {
+      const latestTokenData = JSON.parse(latestTokenRaw);
+      latestTokenData.paymentId = payment.id;
+      await env.TEST_TOKENS.put(createdToken, JSON.stringify(latestTokenData), { expirationTtl: 86400 });
     }
 
     return new Response(JSON.stringify({
