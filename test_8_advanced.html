@@ -130,7 +130,30 @@
       .result-actions { display:grid; grid-template-columns:1fr; gap:9px; }
       .result-actions > button { width:100%; }
     }
-</style>
+
+    .question-navigator { border:1px solid #cbd5e1; border-radius:12px; background:#fff; padding:12px; margin:0 0 22px; }
+    .question-nav-toggle { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; border:0; background:transparent; color:#1b365d; font-weight:700; font-size:15px; cursor:pointer; padding:4px 2px; text-align:left; }
+    .question-nav-legend { display:flex; gap:14px; flex-wrap:wrap; color:#475569; font-size:12px; font-weight:500; }
+    .question-nav-legend span { display:inline-flex; align-items:center; gap:5px; }
+    .question-nav-legend i { width:10px; height:10px; border-radius:3px; display:inline-block; background:#2563eb; }
+    .question-nav-legend .legend-empty { background:#ef4444; }
+    .question-nav-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr)); gap:7px; margin-top:12px; }
+    .question-nav-item { position:relative; min-height:38px; border:1px solid #2563eb; border-radius:8px; background:#2563eb; color:#fff; font-weight:700; cursor:pointer; }
+    .question-nav-item.unanswered { border-color:#ef4444; background:#ef4444; }
+    .question-nav-item.marked::after { content:""; position:absolute; width:8px; height:8px; border-radius:50%; background:#facc15; border:1px solid #854d0e; top:-3px; right:-3px; }
+    .question-nav-item:focus-visible,.question-flag:focus-visible,.question-nav-toggle:focus-visible { outline:3px solid #fbbf24; outline-offset:2px; }
+    .question-flag { display:inline-flex; align-items:center; gap:6px; margin:0 0 12px; padding:7px 10px; border:1px solid #cbd5e1; border-radius:7px; background:#fff; color:#475569; font-size:13px; font-weight:600; cursor:pointer; }
+    .question-flag.active { background:#fef3c7; border-color:#f59e0b; color:#92400e; }
+    @media (max-width:640px) {
+      .question-navigator { position:sticky; top:6px; z-index:20; padding:9px 10px; box-shadow:0 3px 12px rgba(15,23,42,.10); }
+      .question-nav-grid { display:none; grid-template-columns:repeat(6,minmax(0,1fr)); }
+      .question-navigator.expanded .question-nav-grid { display:grid; }
+      .question-nav-item { min-height:40px; }
+      .question-nav-legend { gap:9px; font-size:11px; }
+      .question-flag { min-height:36px; }
+    }
+
+  </style>
 </head>
 <body>
 
@@ -146,6 +169,13 @@
         <li>Все ваши проверенные ответы и прогресс сохраняются.</li>
         <li><strong>Важно:</strong> не закрывайте и не покидайте страницу во время прохождения теста.</li>
       </ul>
+    </div>
+    <div id="question-navigator" class="question-navigator" aria-label="Навигация по заданиям">
+      <button type="button" id="question-nav-toggle" class="question-nav-toggle" onclick="toggleQuestionNavigator()" aria-expanded="false">
+        <span>Задания: <span id="question-nav-count">0</span></span><span aria-hidden="true">⌄</span>
+      </button>
+      <div class="question-nav-legend"><span><i></i> Есть ответ</span><span><i class="legend-empty"></i> Нет ответа</span><span>● Отмечено для возврата</span></div>
+      <div id="question-nav-grid" class="question-nav-grid"></div>
     </div>
     <div id="quiz-container"></div>
     <button class="btn-final" id="finishBtn" onclick="checkAll()">Завершить и посмотреть результаты</button>
@@ -221,6 +251,7 @@
       return;
     }
 
+    progressStorageKey = "reshai360_progress_8_advanced_" + currentToken;
     renderQuiz();
   });
 
@@ -256,7 +287,153 @@
     }
   }
 
+
+  let questionNavigation = [];
+  let markedQuestions = new Set();
+  let progressStorageKey = "";
+
+  function getQuestionAnswer(qId, qDef) {
+    if (qDef.type === "radio") {
+      const selected = Array.from(document.getElementsByName(qId)).find(option => option.checked);
+      return selected ? { type: "radio", value: selected.value } : null;
+    }
+    const input = document.getElementById(qId);
+    return input && input.value.trim() ? { type: "text", value: input.value } : null;
+  }
+
+  function saveQuizProgress() {
+    if (!progressStorageKey || !questionNavigation.length) return;
+    try {
+      const answers = {};
+      const stats = {};
+      questionNavigation.forEach(item => {
+        const answer = getQuestionAnswer(item.id, item.qDef);
+        if (answer) answers[item.id] = answer;
+        stats[item.id] = {
+          checkCount: item.qDef.checkCount || 0,
+          attemptsHistory: item.qDef.attemptsHistory || []
+        };
+      });
+      localStorage.setItem(progressStorageKey, JSON.stringify({
+        version: 1,
+        answers,
+        marked: Array.from(markedQuestions),
+        stats,
+        savedAt: Date.now()
+      }));
+    } catch (error) {
+      console.warn("Не удалось сохранить прогресс диагностики:", error);
+    }
+  }
+
+  function restoreQuizProgress() {
+    if (!progressStorageKey) return;
+    try {
+      const raw = localStorage.getItem(progressStorageKey);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (!saved || saved.version !== 1) return;
+      markedQuestions = new Set(Array.isArray(saved.marked) ? saved.marked : []);
+      questionNavigation.forEach(item => {
+        const answer = saved.answers && saved.answers[item.id];
+        if (answer && answer.type === "radio" && item.qDef.type === "radio") {
+          const option = Array.from(document.getElementsByName(item.id)).find(el => el.value === String(answer.value));
+          if (option) option.checked = true;
+        } else if (answer && answer.type === "text" && item.qDef.type === "text") {
+          const input = document.getElementById(item.id);
+          if (input) {
+            input.value = String(answer.value || "");
+            updateMinusBtnState(item.id);
+          }
+        }
+        const stat = saved.stats && saved.stats[item.id];
+        if (stat) {
+          item.qDef.checkCount = Number(stat.checkCount) || 0;
+          item.qDef.attemptsHistory = Array.isArray(stat.attemptsHistory) ? stat.attemptsHistory : [];
+        }
+      });
+    } catch (error) {
+      console.warn("Не удалось восстановить прогресс диагностики:", error);
+    }
+  }
+
+  function updateQuestionNavigator() {
+    const grid = document.getElementById("question-nav-grid");
+    const count = document.getElementById("question-nav-count");
+    if (!grid) return;
+    let answeredCount = 0;
+    grid.innerHTML = questionNavigation.map(item => {
+      const answered = !!getQuestionAnswer(item.id, item.qDef);
+      if (answered) answeredCount++;
+      const marked = markedQuestions.has(item.id);
+      return '<button type="button" class="question-nav-item ' + (answered ? 'answered' : 'unanswered') + (marked ? ' marked' : '') +
+        '" data-question-id="' + item.id + '" aria-label="Задание ' + item.number + (answered ? ', есть ответ' : ', нет ответа') + (marked ? ', вернуться позже' : '') + '">' + item.number + '</button>';
+    }).join("");
+    if (count) count.textContent = answeredCount + " из " + questionNavigation.length + " с ответом";
+  }
+
+  function toggleQuestionFlag(qId) {
+    if (markedQuestions.has(qId)) markedQuestions.delete(qId);
+    else markedQuestions.add(qId);
+    const button = document.getElementById("flag_" + qId);
+    if (button) {
+      const active = markedQuestions.has(qId);
+      button.classList.toggle("active", active);
+      button.textContent = active ? "⚑ Отмечено — вернуться позже" : "⚑ Вернуться позже";
+      button.setAttribute("aria-pressed", String(active));
+    }
+    saveQuizProgress();
+    updateQuestionNavigator();
+  }
+
+  function toggleQuestionNavigator() {
+    const nav = document.getElementById("question-navigator");
+    if (!nav) return;
+    nav.classList.toggle("expanded");
+    const toggle = document.getElementById("question-nav-toggle");
+    if (toggle) toggle.setAttribute("aria-expanded", String(nav.classList.contains("expanded")));
+  }
+
+  function navigateToQuestion(qId) {
+    const card = document.getElementById("card_" + qId);
+    if (!card) return;
+    const nav = document.getElementById("question-navigator");
+    if (window.innerWidth <= 640 && nav) {
+      nav.classList.remove("expanded");
+      const toggle = document.getElementById("question-nav-toggle");
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
+    }
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function bindQuestionProgressEvents() {
+    const container = document.getElementById("quiz-container");
+    if (!container) return;
+    container.addEventListener("input", event => {
+      if (event.target.matches("input")) {
+        saveQuizProgress();
+        updateQuestionNavigator();
+      }
+    });
+    container.addEventListener("change", event => {
+      if (event.target.matches("input")) {
+        saveQuizProgress();
+        updateQuestionNavigator();
+      }
+    });
+    container.addEventListener("click", event => {
+      const navButton = event.target.closest(".question-nav-item");
+      if (navButton) navigateToQuestion(navButton.dataset.questionId);
+    });
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") saveQuizProgress();
+  });
+  window.addEventListener("pagehide", saveQuizProgress);
+
   window.onbeforeunload = function() {
+    saveQuizProgress();
     return "Вы уверены, что хотите покинуть страницу?";
   };
 
@@ -828,6 +1005,7 @@
     }
 ];
   async function renderQuiz() {
+    questionNavigation = [];
     let html = "";
     let qIndex = 1;
 
@@ -836,9 +1014,10 @@
       block.themes.forEach((theme, tIdx) => {
         html += `<h3 class="theme-title">${theme.theme}</h3>`;
         theme.questions.forEach((qDef, qIdx) => {
-          qDef.checkCount = 0;
-          qDef.attemptsHistory = [];
+          qDef.checkCount = qDef.checkCount || 0;
+          qDef.attemptsHistory = qDef.attemptsHistory || [];
           const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
+          questionNavigation.push({ id: qId, number: qIndex, qDef });
           html += `<div class="card" id="card_${qId}">`;
           const questionText = String(qDef.q || "");
           const normalizedQuestion = questionText.trim().toLocaleLowerCase("ru-RU");
@@ -848,6 +1027,7 @@
             ? (isExpressionOnly ? "Вычислите: " : "Найдите ответ: ")
             : "";
           html += `<div class="question-title">${qIndex}. ${questionInstruction}${questionText}</div>`;
+          html += `<button type="button" class="question-flag" id="flag_${qId}" onclick="toggleQuestionFlag('${qId}')" aria-pressed="false">⚑ Вернуться позже</button>`;
           
           if (qDef.type === "radio") {
             html += `<div class="options" id="opt_${qId}">`;
@@ -878,6 +1058,14 @@
 
     const quizContainer = document.getElementById("quiz-container");
     quizContainer.innerHTML = html;
+    restoreQuizProgress();
+    bindQuestionProgressEvents();
+    questionNavigation.forEach(item => {
+      const button = document.getElementById("flag_" + item.id);
+      const active = markedQuestions.has(item.id);
+      if (button) { button.classList.toggle("active", active); button.textContent = active ? "⚑ Отмечено — вернуться позже" : "⚑ Вернуться позже"; button.setAttribute("aria-pressed", String(active)); }
+    });
+    updateQuestionNavigator();
     await safeTypeset(quizContainer);
   }
 
@@ -915,6 +1103,7 @@
     }
 
     qDef.userText = formattedUserAns;
+    if (!silent) { saveQuizProgress(); updateQuestionNavigator(); }
 
     if (userAns === "") {
       if (!silent) {
@@ -1025,6 +1214,7 @@
   document.addEventListener("DOMContentLoaded", () => { const form = document.getElementById("feedback-form"); if (form) form.addEventListener("submit", submitFeedback); });
 
   async function checkAll() {
+    saveQuizProgress();
     const unansweredQuestions = [];
     quizData.forEach((block, bIdx) => block.themes.forEach((theme, tIdx) => theme.questions.forEach((qDef, qIdx) => {
       const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
