@@ -1192,6 +1192,7 @@
     try {
       const formData = new FormData();
       formData.append('token', currentToken);
+      formData.append('forceEmail', 'true');
       formData.append('email', studentData.email || '');
       formData.append('name', studentData.fullName || 'Ученик');
       formData.append('score', String(window.__lastReportScore || 0));
@@ -1207,8 +1208,8 @@
       const response = await fetch('/api/send-report', { method: 'POST', body: formData });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.success) throw new Error(result.message || 'Не удалось отправить письмо.');
-      status.textContent = result.emailSent ? 'Письмо успешно отправлено. Проверьте входящие и папку «Спам».' : 'Сервер пока не подтвердил отправку письма.';
-      if (!result.emailSent) status.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Повторить отправку</button>';
+      status.textContent = result.emailSent ? 'Почтовый сервис принял письмо с PDF. Проверьте входящие, «Спам» и «Промоакции».' : (result.emailError ? 'Не удалось отправить PDF: ' + result.emailError : 'Почтовый сервис не подтвердил отправку PDF.');
+      status.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Отправить ещё раз</button>';
     } catch (error) {
       status.textContent = error.message || 'Ошибка отправки.';
       status.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Повторить отправку</button>';
@@ -1511,9 +1512,13 @@
           document.getElementById('promo-code-result-value').textContent = reportResult.promoCode;
           document.getElementById('promo-code-result').style.display = 'block';
           const emailStatus = document.getElementById('report-email-status');
-          if (reportResult.emailSent && studentData.email) emailStatus.innerHTML = '📩 Письмо с PDF-отчётом и промокодом на скидку 10% отправлено на <strong>' + escapeHtml(studentData.email) + '</strong>. Если письма нет, проверьте папку «Спам».';
-          else if (studentData.email) emailStatus.innerHTML = '⚠️ Отчёт сформирован, но сервер не подтвердил отправку письма на <strong>' + escapeHtml(studentData.email) + '</strong>. <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Повторить отправку</button>';
-          else emailStatus.textContent = 'Отчёт сформирован. Email не был указан, поэтому письмо не отправлялось.';
+          if (studentData.email) {
+            const accepted = reportResult.emailSent || reportResult.emailPreviouslyAccepted;
+            emailStatus.textContent = accepted
+              ? 'Почтовый сервис принял письмо с PDF для ' + studentData.email + '. Если письма нет, проверьте «Спам» и «Промоакции».'
+              : 'Отчёт сформирован, но письмо не отправлено. ' + (reportResult.emailError || 'Причина пока не определена.');
+            emailStatus.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">' + (accepted ? 'Не получили? Отправить ещё раз' : 'Повторить отправку') + '</button>';
+          } else emailStatus.textContent = 'Отчёт сформирован. Email не был указан, поэтому письмо не отправлялось.';
         } else {
           document.getElementById('promo-code-result-note').textContent = 'Не удалось загрузить промокод. Обратитесь в поддержку, если он не появится.';
           document.getElementById('promo-code-result').style.display = 'block';
