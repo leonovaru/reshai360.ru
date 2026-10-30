@@ -97,12 +97,13 @@ export async function onRequestPost(context) {
       if (!product.displayPrice) return new Response(JSON.stringify({ message: 'Промокод доступен только для поддерживаемых диагностик.' }), { status: 400 });
     }
 
-    // Тестовый режим сохраняет списание 1 ₽. В боевом режиме применяется
-    // опубликованная цена с учётом действующей скидки промокода.
+    // В тестовом режиме базовая сумма — 1 ₽; скидка промокода применяется и к ней.
+    // Поэтому тестовый платёж со скидкой 10% составит 0,90 ₽, а с 15% — 0,85 ₽.
     const testMode = env.PAYMENT_TEST_MODE !== 'false';
     const discountPercent = promoRecord ? Math.max(0, Math.min(100, Number(promoRecord.discountPercent) || 0)) : 0;
+    const basePaymentAmount = testMode ? 1 : product.displayPrice;
+    const paymentAmount = Math.max(0.01, Math.round(basePaymentAmount * (100 - discountPercent)) / 100);
     const discountedDisplayPrice = Math.max(1, Math.round(product.displayPrice * (100 - discountPercent) / 100));
-    const paymentAmount = testMode ? 1 : discountedDisplayPrice;
     const expectedPaymentAmount = paymentAmount.toFixed(2);
 
     // Генерируем уникальный защищенный токен
