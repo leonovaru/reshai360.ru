@@ -257,11 +257,8 @@
 
     progressStorageKey = "reshai360_progress_10_basic_" + currentToken;
     if (completedSnapshot) {
-      try {
-        if (!localStorage.getItem(progressStorageKey)) {
-          localStorage.setItem(progressStorageKey, JSON.stringify({ version: 1, ...completedSnapshot, savedAt: Date.now() }));
-        }
-      } catch (_) {}
+      // Серверный снимок завершённой диагностики важнее локального черновика с другого устройства.
+      try { localStorage.setItem(progressStorageKey, JSON.stringify({ version: 1, ...completedSnapshot, savedAt: Date.now() })); } catch (_) {}
     }
     await renderQuiz();
     if (wasCompleted) await checkAll(true);
