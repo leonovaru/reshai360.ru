@@ -83,6 +83,7 @@ export async function onRequestPost({ request, env }) {
     let promoCode = null;
     let emailSent = false;
     let emailError = null;
+    let feedbackPrefillToken = null;
     {
         tokenData.isCompleted = true;
         if (answersSnapshot) tokenData.answersSnapshot = answersSnapshot;
@@ -115,7 +116,7 @@ export async function onRequestPost({ request, env }) {
 
         // Одноразово сгенерированный непрозрачный токен позволяет предзаполнить форму,
         // не помещая имя и email в URL письма или историю браузера.
-        const feedbackPrefillToken = crypto.randomUUID().replace(/-/g, "");
+        feedbackPrefillToken = crypto.randomUUID().replace(/-/g, "");
         await env.TEST_TOKENS.put("feedback-prefill:" + feedbackPrefillToken, JSON.stringify({
           name: String(name || "").trim(),
           email: String(email || "").trim().toLowerCase(),
