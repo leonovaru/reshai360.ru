@@ -81,8 +81,8 @@
     .pdf-page { width: 794px !important; height: 1122px !important; min-height: 1122px !important; max-height: 1122px !important; background: #ffffff !important; padding: 25px 40px !important; box-sizing: border-box !important; margin: 0 auto !important; position: relative !important; overflow: hidden !important; font-size: 15px !important; }
     .pdf-first-page-content { transform-origin: top left; }
     .pdf-card { box-sizing: border-box; break-inside: avoid; page-break-inside: avoid; overflow-wrap: anywhere; }
-    .pdf-q, .pdf-ans { overflow-wrap: anywhere; }
-    #result-screen .pdf-page { width: 100% !important; max-width: 794px; height: auto !important; min-height: auto !important; padding: 20px !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
+    .pdf-q, .pdf-ans { overflow-wrap: anywhere; min-width:0; }\n    .pdf-card mjx-container { max-width:100%; }
+    #result-screen .pdf-page { width: 100% !important; max-width: 794px; height: auto !important; min-height: auto !important; max-height: none !important; overflow: visible !important; padding: 20px !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
     .pdf-header-title { font-size: 1.35em; font-weight: 800; color: #1b2a4a; margin: 0 0 12px 0; }
     .pdf-score-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; gap: 15px; flex-wrap: wrap; }
     .pdf-student-info { font-size: 0.95em; color: #1e293b; line-height: 1.5; }
@@ -93,6 +93,9 @@
     .pdf-analytics-title { font-size: 1em; font-weight: 700; color: #1b365d; margin-bottom: 6px; border-bottom: 2px solid #2563eb; padding-bottom: 3px; }
     .pdf-progress-row { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
     .pdf-progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; font-weight: 700; color: #1e293b; margin-bottom: 6px; gap: 15px; }
+    #result-screen .pdf-progress-header { display:grid; grid-template-columns:minmax(0,1fr) 64px; align-items:center; gap:12px; }
+    #result-screen .pdf-progress-header > span:first-child { min-width:0; overflow-wrap:anywhere; }
+    #result-screen .pdf-progress-header > span:last-child { display:block; width:100%; min-width:64px; white-space:nowrap; text-align:center; justify-self:center; }
     .pdf-progress-track { height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
     .pdf-progress-fill { height: 100%; border-radius: 6px; }
     .bg-green { background-color: #22c55e; }
@@ -118,6 +121,12 @@
     .badge-ok { background: #dcfce7; color: #15803d; }
     .badge-err { background: #fef9c3; color: #a16207; }
     .badge-skip { background: #fee2e2; color: #b91c1c; }
+    /* Единая типографика и безопасная высота карточек в отчёте */
+    .pdf-card { font-family: Arial, Helvetica, sans-serif !important; box-sizing:border-box; height:auto; min-height:0; overflow:visible; break-inside:avoid; page-break-inside:avoid; }
+    .pdf-card .pdf-q, .pdf-card .pdf-ans, .pdf-card .badge { font-family:Arial, Helvetica, sans-serif !important; }
+    .pdf-card .pdf-q, .pdf-card .pdf-ans { min-width:0; white-space:normal; overflow-wrap:anywhere; word-break:normal; }
+    .pdf-card .pdf-ans { padding-right:0 !important; }
+    .pdf-card .badge { position:static !important; display:inline-flex; align-items:center; margin-top:7px; white-space:normal; max-width:100%; }
     .page-footer { position: absolute; bottom: 10px; left: 40px; right: 40px; text-align: center; font-size: 0.72em; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; }
   
     .result-actions { display:flex; justify-content:center; align-items:stretch; flex-wrap:wrap; gap:10px; margin:24px auto 18px; width:100%; }
@@ -128,7 +137,7 @@
       #result-screen { padding:14px 10px !important; font-size:14px !important; }
       #result-screen .pdf-page { width:100% !important; max-width:100% !important; padding:14px !important; box-sizing:border-box !important; overflow-wrap:anywhere; }
       #result-screen .pdf-topics-container { display:flex !important; flex-direction:column !important; gap:10px !important; }
-      #result-screen .pdf-topics-box { width:100% !important; min-width:0 !important; box-sizing:border-box !important; overflow-wrap:anywhere; }
+      #result-screen .pdf-topics-box { width:100% !important; min-width:0 !important; max-height:none !important; height:auto !important; overflow:visible !important; box-sizing:border-box !important; overflow-wrap:anywhere; }
       #result-screen .pdf-topics-box ol { column-count:1 !important; padding-left:20px; }
       .result-actions { display:grid; grid-template-columns:1fr; gap:9px; }
       .result-actions > button { width:100%; }
@@ -146,7 +155,7 @@
     .question-nav-item.marked::after { content:""; position:absolute; width:8px; height:8px; border-radius:50%; background:#facc15; border:1px solid #854d0e; top:-3px; right:-3px; }
     .question-nav-item:focus-visible,.question-flag:focus-visible,.question-nav-toggle:focus-visible { outline:3px solid #fbbf24; outline-offset:2px; }
     .question-action-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:12px; }
-    .question-flag { display:inline-flex; align-items:center; justify-content:center; flex:0 0 42px; width:42px; min-height:42px; height:42px; margin:0; padding:0; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#64748b; font-size:23px; line-height:1; cursor:pointer; }
+    .question-flag { display:inline-flex; align-items:center; justify-content:center; flex:0 0 42px; width:42px; min-height:42px; height:42px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:#64748b; font-size:23px; line-height:1; cursor:pointer; }
     .question-flag.active { background:#fef3c7; border-color:#f59e0b; color:#92400e; }
     .question-action-row .feedback { margin-left:0; }
     @media (max-width: 768px) { input, select, textarea { font-size:16px !important; } }
@@ -438,7 +447,7 @@
     function clearEditedQuestionFeedback(target) {
       if (!target || !target.matches("input")) return;
       const qId = target.type === "radio" ? target.name : target.id;
-      if (!/^q_\\d+_\\d+_\\d+$/.test(qId || "")) return;
+      if (!/^q_\d+_\d+_\d+$/.test(qId || "")) return;
       const feedback = document.getElementById("feed_" + qId);
       if (feedback) feedback.textContent = "";
       const [, bIdx, tIdx, qIdx] = qId.split("_").map(Number);
@@ -510,7 +519,7 @@
           {
                     type: "text",
                     a: "1",
-                    q: "Вычислите \\(\\tan\\left(\\frac{5\\pi}{4}\\right)\\)."
+                    q: "Вычислите \\(\\operatorname{tg}\\left(\\frac{5\\pi}{4}\\right)\\)."
           },
           {
                     type: "text",
@@ -570,7 +579,7 @@
           {
                     type: "text",
                     a: "4",
-                    q: "Найдите наибольшее целое x, удовлетворяющее неравенству √(2x + 1) ≤ 3."
+                    q: "Найдите наибольшее целое \\(x\\), удовлетворяющее неравенству \\(\\sqrt{2x+1}\\le 3\\)."
           }
 ]
         },
@@ -604,7 +613,7 @@
           {
                     type: "text",
                     a: "-2",
-                    q: "График функции y = 3^(x + 1) − 2 получен преобразованием графика показательной функции. Найдите горизонтальную асимптоту."
+                    q: "График функции \\(y=3^{x+1}-2\\) получен преобразованием графика показательной функции. Найдите горизонтальную асимптоту."
           }
 ]
         },
@@ -633,7 +642,7 @@
           {
                     type: "text",
                     a: "2",
-                    q: "Вычислите определённый интеграл ∫ от 0 до 1 (3x² + 2x) dx."
+                    q: "Вычислите определённый интеграл \\(\\int_{0}^{1}(3x^2+2x)\\,dx\\)."
           }
 ]
         }
@@ -1136,7 +1145,7 @@
       if (!answered) unansweredQuestions.push(qId);
     })));
     if (unansweredQuestions.length > 0 && !skipUnansweredConfirm) {
-      const message = `Остались незаполненные задания: ${unansweredQuestions.length}.\\n\\nЗавершить тест и посмотреть результаты без них?`;
+      const message = `Остались незаполненные задания: ${unansweredQuestions.length}.\n\nЗавершить тест и посмотреть результаты без них?`;
       if (!window.confirm(message)) return;
     }
 
@@ -1308,7 +1317,7 @@
 
     let detailPagesCards = [];
     let currentPageCards = [];
-    const MAX_PAGE_CONTENT_HEIGHT = 900;
+    const MAX_PAGE_CONTENT_HEIGHT = 860;
 
     for (let i = 0; i < pdfCardsArray.length; i++) {
       let testCards = [...currentPageCards, pdfCardsArray[i]];
