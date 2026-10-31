@@ -1126,7 +1126,7 @@
       const response = await fetch('/api/send-report', { method: 'POST', body: formData });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.success) throw new Error(result.message || 'Не удалось отправить письмо.');
-      status.textContent = result.emailSent ? 'Почтовый сервис принял письмо с PDF. Проверьте входящие, «Спам» и «Промоакции».' : (result.emailError ? 'Не удалось отправить PDF: ' + result.emailError : 'Почтовый сервис не подтвердил отправку PDF.');
+      status.textContent = (result.emailSent ? 'Почтовый сервис принял письмо с PDF. Проверьте входящие, «Спам» и «Промоакции».' : (result.emailError ? 'Не удалось отправить PDF: ' + result.emailError : 'Почтовый сервис не подтвердил отправку PDF.')) + (result.emailId ? ' Идентификатор отправки: ' + result.emailId + '.' : '');
       status.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Отправить ещё раз</button>';
     } catch (error) {
       status.textContent = error.message || 'Ошибка отправки.';
@@ -1431,9 +1431,9 @@
           const emailStatus = document.getElementById('report-email-status');
           if (studentData.email) {
             const accepted = reportResult.emailSent || reportResult.emailPreviouslyAccepted;
-            emailStatus.textContent = accepted
+            emailStatus.textContent = (accepted
               ? 'Почтовый сервис принял письмо с PDF для ' + studentData.email + '. Если письма нет, проверьте «Спам» и «Промоакции».'
-              : 'Отчёт сформирован, но письмо не отправлено. ' + (reportResult.emailError || 'Причина пока не определена.');
+              : 'Отчёт сформирован, но письмо не отправлено. ' + (reportResult.emailError || 'Причина пока не определена.')) + (reportResult.emailId ? ' Идентификатор отправки: ' + reportResult.emailId + '.' : '');
             emailStatus.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">' + (accepted ? 'Не получили? Отправить ещё раз' : 'Повторить отправку') + '</button>';
           } else emailStatus.textContent = 'Отчёт сформирован. Email не был указан, поэтому письмо не отправлялось.';
         } else {
