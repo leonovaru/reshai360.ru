@@ -83,6 +83,7 @@ export async function onRequestPost({ request, env }) {
     let promoCode = null;
     let emailSent = false;
     let emailError = null;
+    let emailId = null;
     let feedbackPrefillToken = null;
     {
         tokenData.isCompleted = true;
@@ -156,7 +157,7 @@ export async function onRequestPost({ request, env }) {
         tgFormData.append("chat_id", env.TG_CHAT_ID);
         tgFormData.append(
           "caption",
-          `🎯 Пройдена диагностика!\nУченик: ${name || "Не указано"}\nEmail: ${email || "Не указан"}\nРезультат: ${scoreNumber} из ${totalNumber} (${percent}%)${promoCode ? `\n🎁 Промокод на следующую диагностику: ${promoCode} (скидка 10%)` : ""}`
+          `🎯 Пройдена диагностика!\nДиагностика: ${tokenData.productTitle || tokenData.productKey || "Не указана"}\nСтоимость: ${Number(tokenData.displayAmount ?? tokenData.listPrice ?? 0).toLocaleString("ru-RU")} ₽\nУченик: ${name || "Не указано"}\nEmail: ${email || "Не указан"}\nРезультат: ${scoreNumber} из ${totalNumber} (${percent}%)\nВведённый промокод: ${tokenData.promoCode || "не вводили"}\nСкидка по заказу: ${tokenData.promoCode ? `${Number(tokenData.discountPercent || 0)}% (${Number(tokenData.discountAmount || 0).toLocaleString("ru-RU")} ₽)` : "0 ₽"}${promoCode ? `\nПромокод 10%: ${promoCode}` : ""}
         );
         tgFormData.append("document", pdfFile, `Отчет_${safeName}.pdf`);
 
@@ -251,8 +252,11 @@ export async function onRequestPost({ request, env }) {
           emailError = (await emailResponse.text()).slice(0, 700);
           console.error("Resend API error:", emailError);
         } else {
+          const resendResult = await emailResponse.json().catch(() => ({}));
+          emailId = resendResult.id || null;
           emailSent = true;
           tokenData.reportEmailSentAt = new Date().toISOString();
+          if (emailId) tokenData.reportEmailId = emailId;
           await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
         }
       } catch (resendErr) {
@@ -261,7 +265,7 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    return Response.json({ success: true, promoCode, emailSent, emailPreviouslyAccepted: Boolean(tokenData.reportEmailSentAt && !emailSent && !forceEmail), emailError, pdfBytes: Number(pdfFile.size || 0) });
+    return Response.json({ success: true, promoCode, emailSent, emailId, emailPreviouslyAccepted: Boolean(tokenData.reportEmailSentAt && !emailSent && !forceEmail), emailError, pdfBytes: Number(pdfFile.size || 0) });
   } catch (err) {
     console.error("Send report global error:", err);
 
