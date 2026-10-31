@@ -125,6 +125,7 @@ export async function onRequestPost(context) {
       studentName,
       email,
       productKey,
+      productTitle: product.title,
       promoCode: promoCode || null,
       referralCode,
       consentRecord,
@@ -132,6 +133,8 @@ export async function onRequestPost(context) {
       isUsed: false,
       expectedPaymentAmount,
       paymentTestMode: testMode,
+      listPrice: product.displayPrice,
+      discountAmount,
       discountPercent,
       displayAmount: discountedDisplayPrice
     }), { expirationTtl: 86400 });
