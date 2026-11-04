@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Диагностический тест по математике | 7 класс — базовый уровень</title>
   
   
@@ -80,7 +80,7 @@
     #pdf-export-container { position: fixed; top: 0; left: 0; z-index: -9999; opacity: 0; pointer-events: none; width: 794px !important; }
     #result-pdf .pdf-page { font-family: Arial, sans-serif !important; }
     #result-pdf .pdf-page * { font-family: Arial, sans-serif; }
-    .rect-diagram { position:relative; display:block; width:220px; height:82px; margin:8px 0 5px; }
+    .question-data-table { border-collapse:collapse; margin:12px 0 4px; min-width:260px; font-size:14px; background:#fff; }\n    .question-data-table th,.question-data-table td { border:1px solid #cbd5e1; padding:7px 12px; text-align:left; }\n    .question-data-table th { background:#eff6ff; color:#1b365d; }\n    .symmetry-figure { margin:10px 0 4px; }\n    .symmetry-figure svg { display:block; max-width:100%; height:auto; }\n    .rect-diagram { position:relative; display:block; width:220px; height:82px; margin:8px 0 5px; }
     .rect-shape { position:absolute; left:32px; top:24px; width:160px; height:42px; box-sizing:border-box; border:2px solid #15803d; background:#dcfce7; }
     .rect-side { position:absolute; color:#166534; font-size:14px; font-weight:600; }
     .rect-side-top { left:108px; top:3px; }
@@ -191,7 +191,7 @@
       <ul>
         <li>Решайте задания самостоятельно и внимательно проверяйте свои ответы.</li>
         <li>Если сомневаетесь в задании и хотите вернуться к нему позже, поставьте флажок рядом с кнопкой «Проверить».</li>
-        <li>Если в ответе получается десятичная дробь, используйте запятую (например, <strong>2,5</strong>).</li>
+        <li>Вводите только числовой ответ, без единиц измерения. Для десятичной дроби используйте запятую (например, <strong>2,5</strong>), для обыкновенной — запись через косую черту (например, <strong>3/4</strong>).</li>
         <li>Чтобы ввести отрицательное число, нажмите на кнопку <strong>«±»</strong> рядом с полем ввода.</li>
         <li>Все ваши проверенные ответы и прогресс сохраняются.</li>
         <li><strong>Важно:</strong> не закрывайте и не покидайте страницу во время прохождения теста.</li>
@@ -539,7 +539,7 @@
                     },
                     {
                         "type": "text",
-                        "q": "Количество делителей числа 12",
+                        "q": "Сколько натуральных делителей имеет число 12?",
                         "a": "6"
                     }
                 ]
@@ -549,27 +549,37 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "\\(\\frac{1}{3}+\\frac{1}{6}\\). Вычислите значение выражения и запишите ответ десятичной дробью.",
+                        "q": "\\(\\frac{1}{3}+\\frac{1}{6}\\). Вычислите значение выражения. Запишите ответ десятичной дробью (например, 0,5).",
                         "a": "0.5"
                     },
                     {
                         "type": "text",
-                        "q": "\\(\\frac{3}{4}-\\frac{1}{4}\\). Вычислите значение выражения и запишите ответ десятичной дробью.",
+                        "q": "\\(\\frac{3}{4}-\\frac{1}{4}\\). Вычислите значение выражения. Запишите ответ десятичной дробью.",
                         "a": "0.5"
+                    },
+                    {
+                        "type": "text",
+                        "q": "\\(\\frac{2}{3}\\cdot\\frac{3}{4}\\). Вычислите произведение. Запишите ответ обыкновенной дробью.",
+                        "a": "1/2"
+                    },
+                    {
+                        "type": "text",
+                        "q": "\\(\\frac{3}{5}:\\frac{2}{5}\\). Выполните деление. Запишите ответ обыкновенной дробью.",
+                        "a": "3/2"
                     }
                 ]
             },
             {
-                "theme": "5. Сокращение дробей",
+                "theme": "5. Обыкновенные дроби: сокращение и смешанные числа",
                 "questions": [
                     {
                         "type": "text",
-                        "q": "Сократите 18/24: знаменатель",
+                        "q": "Сократите дробь \\(\\frac{18}{24}\\). Запишите знаменатель полученной несократимой дроби.",
                         "a": "4"
                     },
                     {
                         "type": "text",
-                        "q": "17/5: целая часть смешанного числа",
+                        "q": "Выделите целую часть из дроби \\(\\frac{17}{5}\\). Запишите только целую часть.",
                         "a": "3"
                     }
                 ]
@@ -579,12 +589,22 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "3.7 + 2.85",
+                        "q": "Вычислите: 3,7 + 2,85",
                         "a": "6.55"
                     },
                     {
                         "type": "text",
-                        "q": "4.8 : 0.6",
+                        "q": "Вычислите: 5,6 − 2,35",
+                        "a": "3.25"
+                    },
+                    {
+                        "type": "text",
+                        "q": "Вычислите: 1,2 · 0,4",
+                        "a": "0.48"
+                    },
+                    {
+                        "type": "text",
+                        "q": "Вычислите: 4,8 : 0,6",
                         "a": "8"
                     }
                 ]
@@ -644,12 +664,12 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "Сократите 12 : 18: второй член",
+                        "q": "Сократите отношение 12 : 18. Запишите второе число полученного отношения.",
                         "a": "3"
                     },
                     {
                         "type": "text",
-                        "q": "Отношение мальчиков к девочкам 2 : 3, всего 25 детей. Сколько мальчиков?",
+                        "q": "Отношение количества мальчиков к количеству девочек равно 2 : 3. Всего в группе 25 детей. Сколько в группе мальчиков?",
                         "a": "10"
                     }
                 ]
@@ -664,7 +684,7 @@
                     },
                     {
                         "type": "text",
-                        "q": "Масштаб 1 : 100000. Сколько км соответствуют 2 см?",
+                        "q": "На карте расстояние между двумя точками равно 2 см. Масштаб карты — 1 : 100 000. Каково расстояние между точками на местности в километрах?",
                         "a": "2"
                     }
                 ]
@@ -674,17 +694,17 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "20% от 150",
+                        "q": "Найдите 20% от числа 150.",
                         "a": "30"
                     },
                     {
                         "type": "text",
-                        "q": "Цена 800 ₽ снижена на 10%. Новая цена",
+                        "q": "Цена товара — 800 ₽. Её снизили на 10%. Какова новая цена в рублях?",
                         "a": "720"
                     },
                     {
                         "type": "text",
-                        "q": "После увеличения на 20% получили 72. Исходное число",
+                        "q": "Число увеличили на 20% и получили 72. Найдите исходное число.",
                         "a": "60"
                     }
                 ]
@@ -694,12 +714,12 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "Путь за 3 ч со скоростью 12 км/ч",
+                        "q": "Велосипедист ехал 3 часа со скоростью 12 км/ч. Сколько километров он проехал? Запишите только число.",
                         "a": "36"
                     },
                     {
                         "type": "text",
-                        "q": "За 4 ч велосипедист проехал 52 км. Скорость",
+                        "q": "Велосипедист за 4 часа проехал 52 км. Какова его скорость в км/ч? Запишите только число.",
                         "a": "13"
                     }
                 ]
@@ -709,12 +729,12 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "3 м 45 см. Сколько сантиметров?",
+                        "q": "Длина ленты — 3 м 45 см. Сколько это сантиметров? Запишите только число.",
                         "a": "345"
                     },
                     {
                         "type": "text",
-                        "q": "2.5 кг. Сколько граммов?",
+                        "q": "Масса пакета — 2,5 кг. Сколько это граммов? Запишите только число.",
                         "a": "2500"
                     }
                 ]
@@ -729,12 +749,12 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "Среднее чисел 4, 7 и 10",
+                        "q": "Найдите среднее арифметическое чисел 4, 7 и 10.",
                         "a": "7"
                     },
                     {
                         "type": "text",
-                        "q": "Среднее чисел 6 и 14",
+                        "q": "Найдите среднее арифметическое чисел 6 и 14.",
                         "a": "10"
                     }
                 ]
@@ -759,28 +779,28 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "3a + 5 при a = 4",
+                        "q": "Найдите значение выражения 3a + 5, если a = 4.",
                         "a": "17"
                     },
                     {
                         "type": "text",
-                        "q": "7x − 2x. Коэффициент при x",
-                        "a": "5"
+                        "q": "Найдите значение выражения 2x − 3, если x = 6.",
+                        "a": "9"
                     }
                 ]
             },
             {
-                "theme": "18. Упрощение выражений",
+                "theme": "18. Вычисление буквенных выражений",
                 "questions": [
                     {
                         "type": "text",
-                        "q": "4x + 3x. Коэффициент при x",
-                        "a": "7"
+                        "q": "Найдите значение выражения 2a + 3, если a = 5.",
+                        "a": "13"
                     },
                     {
                         "type": "text",
-                        "q": "2a + 5 + 3a. Свободный член",
-                        "a": "5"
+                        "q": "Найдите значение выражения 4b − 2, если b = 3.",
+                        "a": "10"
                     }
                 ]
             },
@@ -804,12 +824,12 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "К числу прибавили 8 и получили 23. Число",
+                        "q": "К некоторому числу прибавили 8 и получили 23. Какое это было число?",
                         "a": "15"
                     },
                     {
                         "type": "text",
-                        "q": "Периметр прямоугольника 34 см, сторона 10 см. Другая сторона",
+                        "q": "Одна сторона прямоугольника равна 10 см, а его периметр — 34 см. Найдите длину второй стороны в сантиметрах.",
                         "a": "7"
                     }
                 ]
@@ -824,12 +844,12 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "Какое число на 4 единицы правее −2?",
+                        "q": "Какое число находится на 4 единицы правее числа −2 на координатной прямой?",
                         "a": "2"
                     },
                     {
                         "type": "text",
-                        "q": "Абсцисса точки A(−4; 7)",
+                        "q": "Точка A имеет координаты (−4; 7). Какова её первая координата?",
                         "a": "-4"
                     }
                 ]
@@ -838,14 +858,24 @@
                 "theme": "22. Виды углов",
                 "questions": [
                     {
-                        "type": "text",
-                        "a": "1",
-                        "q": "Угол 35° — острый, прямой или тупой? Введите 1 для острого, 2 для прямого, 3 для тупого."
+                        "type": "radio",
+                        "q": "Угол равен 35°. Выберите его вид.",
+                        "a": "0",
+                        "options": [
+                            "Острый",
+                            "Прямой",
+                            "Тупой"
+                        ]
                     },
                     {
-                        "type": "text",
-                        "a": "3",
-                        "q": "Угол 120° — острый, прямой или тупой? Введите 1 для острого, 2 для прямого, 3 для тупого."
+                        "type": "radio",
+                        "q": "Угол равен 120°. Выберите его вид.",
+                        "a": "2",
+                        "options": [
+                            "Острый",
+                            "Прямой",
+                            "Тупой"
+                        ]
                     }
                 ]
             },
@@ -853,14 +883,18 @@
                 "theme": "23. Треугольники и их стороны",
                 "questions": [
                     {
-                        "type": "text",
-                        "a": "3",
-                        "q": "Сколько сторон у треугольника?"
+                        "type": "radio",
+                        "q": "Две стороны треугольника равны 5 см и 7 см. Может ли третья сторона быть равна 2 см?",
+                        "a": "1",
+                        "options": [
+                            "Да",
+                            "Нет"
+                        ]
                     },
                     {
                         "type": "text",
-                        "a": "12",
-                        "q": "У треугольника стороны 3 см, 4 см и 5 см. Найдите периметр."
+                        "q": "Стороны треугольника равны 3 см, 4 см и 5 см. Найдите его периметр в сантиметрах.",
+                        "a": "12"
                     }
                 ]
             },
@@ -869,18 +903,13 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "Периметр квадрата со стороной 6 см",
+                        "q": "Найдите периметр квадрата со стороной 6 см. Ответ запишите в сантиметрах.",
                         "a": "24"
                     },
                     {
                         "type": "text",
-                        "q": "Периметр прямоугольника со сторонами 8 и 5 см",
+                        "q": "Найдите периметр прямоугольника со сторонами 8 см и 5 см. Ответ запишите в сантиметрах.",
                         "a": "26"
-                    },
-                    {
-                        "type": "text",
-                        "q": "Найдите площадь прямоугольника со сторонами 9 см и 4 см. Ответ укажите в см².<div class='rect-diagram' role='img' aria-label='Прямоугольник со сторонами 9 и 4 сантиметра'><span class='rect-side rect-side-top'>9 см</span><span class='rect-side rect-side-left'>4 см</span><div class='rect-shape'></div></div>",
-                        "a": "36"
                     }
                 ]
             },
@@ -889,12 +918,22 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "Площадь прямоугольника 8 см на 5 см",
+                        "q": "Найдите площадь прямоугольника со сторонами 9 см и 4 см. Ответ укажите в см².<div class='rect-diagram' role='img' aria-label='Прямоугольник со сторонами 9 и 4 сантиметра'><span class='rect-side rect-side-top'>9 см</span><span class='rect-side rect-side-left'>4 см</span><div class='rect-shape'></div></div>",
+                        "a": "36"
+                    },
+                    {
+                        "type": "text",
+                        "q": "Найдите площадь прямоугольника со сторонами 8 см и 5 см. Ответ укажите в см².",
                         "a": "40"
                     },
                     {
                         "type": "text",
-                        "q": "Площадь квадрата со стороной 7 см",
+                        "q": "Площадь прямоугольника равна 72 см², а одна сторона — 9 см. Найдите длину второй стороны в сантиметрах.",
+                        "a": "8"
+                    },
+                    {
+                        "type": "text",
+                        "q": "Найдите площадь квадрата со стороной 7 см. Ответ укажите в см².",
                         "a": "49"
                     }
                 ]
@@ -904,12 +943,12 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "Диаметр окружности 10 см. Радиус",
+                        "q": "Диаметр окружности равен 10 см. Найдите радиус круга в сантиметрах.",
                         "a": "5"
                     },
                     {
                         "type": "text",
-                        "q": "Радиус круга 4 см. Диаметр",
+                        "q": "Радиус круга равен 4 см. Найдите диаметр окружности в сантиметрах.",
                         "a": "8"
                     }
                 ]
@@ -919,12 +958,12 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "Коробка размером 2 × 3 × 4 см. Объём",
+                        "q": "Прямоугольная коробка имеет длину 2 см, ширину 3 см и высоту 4 см. Найдите её объём в см³.",
                         "a": "24"
                     },
                     {
                         "type": "text",
-                        "q": "Куб с ребром 3 см. Объём",
+                        "q": "Ребро куба равно 3 см. Найдите его объём в см³.",
                         "a": "27"
                     }
                 ]
@@ -932,19 +971,19 @@
         ]
     },
     {
-        "block": "Блок 5. Данные и вероятность",
+        "block": "Блок 5. Работа с данными и логические задачи",
         "themes": [
             {
                 "theme": "28. Симметрия",
                 "questions": [
                     {
                         "type": "text",
-                        "q": "Сколько осей симметрии у квадрата",
+                        "q": "Сколько осей симметрии у квадрата?<div class='symmetry-figure' role='img' aria-label='Квадрат с осями симметрии'><svg viewBox='0 0 180 130' width='180' height='130' xmlns='http://www.w3.org/2000/svg'><rect x='45' y='15' width='90' height='90' fill='#eff6ff' stroke='#2563eb' stroke-width='2'/><path d='M90 5 V115 M35 60 H145 M43 13 L137 107 M137 13 L43 107' stroke='#dc2626' stroke-width='1.5' stroke-dasharray='5 4'/></svg></div>",
                         "a": "4"
                     },
                     {
                         "type": "text",
-                        "q": "Сколько осей симметрии у прямоугольника, не являющегося квадратом",
+                        "q": "Сколько осей симметрии у прямоугольника, который не является квадратом?<div class='symmetry-figure' role='img' aria-label='Прямоугольник с осями симметрии'><svg viewBox='0 0 180 130' width='180' height='130' xmlns='http://www.w3.org/2000/svg'><rect x='25' y='30' width='130' height='70' fill='#eff6ff' stroke='#2563eb' stroke-width='2'/><path d='M90 18 V112 M15 65 H165' stroke='#dc2626' stroke-width='1.5' stroke-dasharray='5 4'/></svg></div>",
                         "a": "2"
                     }
                 ]
@@ -953,49 +992,19 @@
                 "theme": "29. Таблицы и данные",
                 "questions": [
                     {
+                        "type": "radio",
+                        "q": "В таблице показано, сколько книг продали за три дня. В какой день продали больше всего книг?<table class='question-data-table'><tr><th>День</th><th>Продано книг</th></tr><tr><td>Понедельник</td><td>12</td></tr><tr><td>Вторник</td><td>8</td></tr><tr><td>Среда</td><td>15</td></tr></table>",
+                        "a": "2",
+                        "options": [
+                            "Понедельник",
+                            "Вторник",
+                            "Среда"
+                        ]
+                    },
+                    {
                         "type": "text",
-                        "q": "Продажи за 3 дня: 4, 6 и 8 книг. Всего книг",
+                        "q": "За три дня продали 4, 6 и 8 книг. Сколько всего книг продали?",
                         "a": "18"
-                    },
-                    {
-                        "type": "text",
-                        "q": "В группе 12 девочек и 10 мальчиков. Всего детей",
-                        "a": "22"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "block": "Блок 6. Данные и вероятность",
-        "themes": [
-            {
-                "theme": "30. Медиана и размах",
-                "questions": [
-                    {
-                        "type": "text",
-                        "q": "Медиана чисел 2, 5, 8",
-                        "a": "5"
-                    },
-                    {
-                        "type": "text",
-                        "q": "Размах чисел 3, 7, 10",
-                        "a": "7"
-                    }
-                ]
-            },
-            {
-                "theme": "31. Вероятность",
-                "questions": [
-                    {
-                        "type": "text",
-                        "q": "В коробке 3 красных и 2 синих шара. Всего шаров",
-                        "a": "5"
-                    },
-                    {
-                        "type": "text",
-                        "q": "На кубике числа от 1 до 6. Количество исходов",
-                        "a": "6"
                     }
                 ]
             }
@@ -1038,7 +1047,7 @@
             html += `</div>`;
           } else {
             html += `<div class="input-row">`;
-            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Введите ответ" oninput="this.value = this.value.replace(/[^0-9,.\\-\\+\\*\\/]/g, ''); updateMinusBtnState('${qId}');">`;
+            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Число или дробь" oninput="this.value = this.value.replace(/[^0-9,.\\-\\/]/g, ''); updateMinusBtnState('${qId}');">`;
             html += `<button type="button" class="btn-minus-toggle" id="btn_toggle_${qId}" onpointerdown="event.preventDefault(); document.getElementById('${qId}').focus({preventScroll:true})" onclick="toggleMinus('${qId}')" title="Изменить знак (+/−)">±</button>`;
             html += `</div>`;
           }
@@ -1081,20 +1090,13 @@
       const inputEl = document.getElementById(qId);
       userAns = inputEl ? inputEl.value.trim().replace(/\s+/g, "").replace(/,/g, ".") : "";
       formattedUserAns = (userAns !== "") ? userAns.replace(/\./g, ",") : "Не введено";
-      qDef.correctText = qDef.a;
+      qDef.correctText = String(qDef.a).replace(/\./g, ",");
     }
 
     if (!silent && userAns !== "") {
       qDef.checkCount = (qDef.checkCount || 0) + 1;
       if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
       qDef.attemptsHistory.push(formattedUserAns);
-    } else {
-      if (userAns !== "") {
-        if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
-        if (qDef.attemptsHistory.length === 0 || qDef.attemptsHistory[qDef.attemptsHistory.length - 1] !== formattedUserAns) {
-          qDef.attemptsHistory.push(formattedUserAns);
-        }
-      }
     }
 
     qDef.userText = formattedUserAns;
@@ -1357,14 +1359,14 @@
             topicsToRepeatSet.add(cleanThemeName);
           }
 
-          let attemptsList = qDef.attemptsHistory && qDef.attemptsHistory.length > 0 ? qDef.attemptsHistory.join(" ➔ ") : (isSkipped ? "Нет попыток" : qDef.userText);
+          let attemptsList = qDef.attemptsHistory && qDef.attemptsHistory.length > 0 ? qDef.attemptsHistory.join(" ➔ ") : (isSkipped ? "Ответ не введён" : "Ответ введён, но не проверялся");
           const checkCountVal = qDef.checkCount || 0;
 
           const cardHtml = `
             <div class="pdf-card ${statusClass}">
               <div class="pdf-q">${qIndex}. ${formatQuestionContent(qDef.q)}</div>
               <div class="pdf-card-footer"><div class="pdf-ans">
-                <b>Попыток ввода:</b> ${checkCountVal} | <b>Ответ:</b> ${attemptsList}<br>
+                <b>Нажатий «Проверить»:</b> ${checkCountVal} | <b>Ответ:</b> ${attemptsList}<br>
                 <b>Правильный ответ:</b> ${qDef.correctText}
               </div><span class="badge ${badgeClass}">${badgeStatus}</span></div>
             </div>
