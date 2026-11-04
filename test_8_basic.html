@@ -486,6 +486,43 @@
     return "Вы уверены, что хотите покинуть страницу?";
   };
 
+
+  // Единый форматтер математических фрагментов в тексте заданий и отчёта.
+  // Уже размеченные MathJax-формулы не трогаем.
+  function formatMathText(value) {
+    if (value === null || value === undefined) return "";
+    const parts = String(value).split(/(\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|\$[^$]+\$)/g);
+    return parts.map((part, index) => {
+      if (index % 2 === 1) return part;
+      let text = part;
+      const tex = expression => "\\\\(" + expression + "\\\\)";
+      const clean = expression => expression.trim().replace(/[−–]/g, "-").replace(/·/g, "\\\\cdot ").replace(/×/g, "\\\\times ");
+
+      text = text.replace(/([xy]\\s*[+−-]\\s*[xy]\\s*=\\s*-?\\d+)\\s*,\\s*([xy]\\s*[+−-]\\s*[xy]\\s*=\\s*-?\\d+)/gi,
+        (_, first, second) => tex("\\\\begin{cases}" + clean(first) + "\\\\\\\\" + clean(second) + "\\\\end{cases}"));
+
+      const operand = "(?:\\\\([^()]{1,36}\\\\)|[A-Za-z][A-Za-z0-9]*(?:[²³]|\\\\^\\\\d+)?|\\\\d+(?:[.,]\\\\d+)?)";
+      const fractionPattern = new RegExp("(" + operand + ")\\\\s*\\\\/\\\\s*(" + operand + ")", "g");
+      text = text.replace(fractionPattern, (_, numerator, denominator) =>
+        tex("\\\\frac{" + clean(numerator).replace(/[()]/g, "") + "}{" + clean(denominator).replace(/[()]/g, "") + "}"));
+
+      text = text.replace(/√\\s*\\(([^()]+)\\)/g, (_, expression) => tex("\\\\sqrt{" + clean(expression) + "}"));
+      text = text.replace(/√\\s*(\\d+(?:[.,]\\d+)?)/g, (_, number) => tex("\\\\sqrt{" + number + "}"));
+
+      const term = "(?:[xy](?:[²³]|\\\\^\\\\d+)?|\\\\d*[xy](?:[²³]|\\\\^\\\\d+)?|\\\\d+)";
+      const algebra = term + "(?:\\\\s*[+−-]\\\\s*" + term + "){1,5}(?:\\\\s*(?:=|<|>|≤|≥)\\\\s*" + term + "(?:\\\\s*[+−-]\\\\s*" + term + ")*)?";
+      text = text.replace(new RegExp("(?<![A-Za-zА-Яа-я])(" + algebra + ")", "gi"), match =>
+        tex(clean(match).replace(/([xy])([²³])/gi, (_, variable, power) => variable + "^{" + (power === "²" ? "2" : "3") + "}")));
+
+      text = text.replace(/(?<![\\w])\\d+(?:[.,]\\d+)?(?:\\s*(?:[+−-]|·|×|:|\\*)\\s*\\d+(?:[.,]\\d+)?){1,6}(?![\\w])/g,
+        match => tex(clean(match).replace(/:/g, "\\\\div ")));
+
+      text = text.replace(/(?<![A-Za-zА-Яа-я])([xy])([²³])(?![A-Za-zА-Яа-я])/gi,
+        (_, variable, power) => tex(variable + "^{" + (power === "²" ? "2" : "3") + "}"));
+      return text;
+    }).join("");
+  }
+
   async function safeTypeset(targetElement) {
     if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
       try {
@@ -1085,7 +1122,7 @@
               [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
             }
             shuffledOptions.forEach(({ opt, originalIndex }) => {
-              html += `<label class="option-label"><input type="radio" name="${qId}" value="${originalIndex}"> <span>${opt}</span></label>`;
+              html += `<label class="option-label"><input type="radio" name="${qId}" value="${originalIndex}"> <span>${formatMathText(opt)}</span></label>`;
             });
             html += `</div>`;
           } else {
@@ -1479,10 +1516,10 @@
 
           const cardHtml = `
             <div class="pdf-card ${statusClass}">
-              <div class="pdf-q">${qIndex}. ${qDef.q}</div>
+              <div class="pdf-q">${qIndex}. ${formatMathText(qDef.q)}</div>
               <div class="pdf-card-footer"><div class="pdf-ans">
                 <b>Попыток ввода:</b> ${checkCountVal} | <b>Ответ:</b> ${attemptsList}<br>
-                <b>Правильный ответ:</b> ${qDef.correctText}
+                <b>Правильный ответ:</b> ${formatMathText(qDef.correctText)}
               </div><span class="badge ${badgeClass}">${badgeStatus}</span></div>
             </div>
           `;
