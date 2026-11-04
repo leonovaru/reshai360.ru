@@ -499,9 +499,9 @@
     const protectedParts = [];
     const hold = value => {
       const key = "\uE100" + protectedParts.length + "\uE101";
-      const withFractions = value.replace(/^(\\\\\()([\\s\\S]*)(\\\\\))$/, (_, open, body, close) => {
-        const stacked = body.replace(/(\\([^()]*\\)|[A-Za-z0-9]+)\\s*\\/\\s*(\\([^()]*\\)|[A-Za-z0-9]+)/g, "\\\\frac{$1}{$2}");
-        return open + stacked + close;
+      const withFractions = value.replace(/\\\(([\s\S]*?)\\\)/g, (_, body) => {
+        const stacked = body.replace(/(\([^()]*\)|[A-Za-z0-9]+)\s*\/\s*(\([^()]*\)|[A-Za-z0-9]+)/g, "\\frac{$1}{$2}");
+        return "\\(" + stacked + "\\)";
       });
       const normalized = withFractions.startsWith("\\(") && !withFractions.startsWith("\\(\\displaystyle")
         ? withFractions.replace(/^\\\(/, "\\(\\displaystyle ")
