@@ -987,7 +987,7 @@
             html += `</div>`;
           } else {
             html += `<div class="input-row">`;
-            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Введите ответ" oninput="this.value = this.value.replace(/[^0-9,.\\-\\+\\*\\/]/g, ''); updateMinusBtnState('${qId}');">`;
+            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Введите ответ" oninput="this.value = this.value.replace(/[^0-9,.\\-\\+\\*\\/]/g, ''); updateMinusBtnState('${qId}'); saveQuizProgress();">`;
             html += `<button type="button" class="btn-minus-toggle" id="btn_toggle_${qId}" onpointerdown="event.preventDefault(); document.getElementById('${qId}').focus({preventScroll:true})" onclick="toggleMinus('${qId}')" title="Изменить знак (+/−)">±</button>`;
             html += `</div>`;
           }
@@ -1308,7 +1308,9 @@
       if (!answered) unansweredQuestions.push(qId);
     })));
     if (unansweredQuestions.length > 0 && !skipUnansweredConfirm) {
-      const message = `Остались незаполненные задания: ${unansweredQuestions.length}.\n\nЗавершить тест и посмотреть результаты без них?`;
+      const message = `Остались незаполненные задания: ${unansweredQuestions.length}.
+
+Завершить тест и посмотреть результаты без них?`;
       if (!window.confirm(message)) return;
     }
 
