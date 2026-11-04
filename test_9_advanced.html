@@ -488,6 +488,7 @@
 
 
 
+
   // Единый форматтер математических фрагментов в тексте заданий и отчёта.
   // Уже размеченные MathJax-формулы не трогаем.
   function formatMathText(value) {
@@ -496,8 +497,15 @@
     return parts.map((part, index) => {
       if (index % 2 === 1) return part;
       let text = part;
-      const tex = expression => "\\(" + expression + "\\)";
-      const clean = expression => expression.trim().replace(/[−–]/g, "-").replace(/·/g, "\\cdot ").replace(/×/g, "\\times ");
+      const formulas = [];
+      const tex = expression => {
+        const token = "\uE000" + formulas.length + "\uE001";
+        formulas.push("\\(" + expression + "\\)");
+        return token;
+      };
+      const clean = expression => expression.trim().replace(/[−–]/g, "-")
+        .replace(/·/g, "\\cdot ").replace(/×/g, "\\times ")
+        .replace(/([xy])([²³])/gi, (_, variable, power) => variable + "^{" + (power === "²" ? "2" : "3") + "}");
 
       text = text.replace(/([xy]\s*[+−-]\s*[xy]\s*=\s*-?\d+)\s*,\s*([xy]\s*[+−-]\s*[xy]\s*=\s*-?\d+)/gi,
         (_, first, second) => tex("\\begin{cases}" + clean(first) + "\\\\" + clean(second) + "\\end{cases}"));
@@ -512,14 +520,17 @@
 
       const term = "(?:[xy](?:[²³]|\\^\\d+)?|\\d*[xy](?:[²³]|\\^\\d+)?|\\d+)";
       const algebra = term + "(?:\\s*[+−-]\\s*" + term + "){1,5}(?:\\s*(?:=|<|>|≤|≥)\\s*" + term + "(?:\\s*[+−-]\\s*" + term + ")*)?";
-      text = text.replace(new RegExp("(?<![A-Za-zА-Яа-я])(" + algebra + ")", "gi"), match =>
-        tex(clean(match).replace(/([xy])([²³])/gi, (_, variable, power) => variable + "^{" + (power === "²" ? "2" : "3") + "}")));
+      text = text.replace(new RegExp("(?<![A-Za-zА-Яа-я])(" + algebra + ")", "gi"), match => tex(clean(match)));
 
       text = text.replace(/(?<![\w])\d+(?:[.,]\d+)?(?:\s*(?:[+−-]|·|×|:|\*)\s*\d+(?:[.,]\d+)?){1,6}(?![\w])/g,
         match => tex(clean(match).replace(/:/g, "\\div ")));
 
       text = text.replace(/(?<![A-Za-zА-Яа-я])([xy])([²³])(?![A-Za-zА-Яа-я])/gi,
         (_, variable, power) => tex(variable + "^{" + (power === "²" ? "2" : "3") + "}"));
+
+      formulas.forEach((formula, formulaIndex) => {
+        text = text.replace("\uE000" + formulaIndex + "\uE001", formula);
+      });
       return text;
     }).join("");
   }
