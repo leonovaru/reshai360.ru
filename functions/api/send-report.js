@@ -157,7 +157,7 @@ export async function onRequestPost({ request, env }) {
         tgFormData.append("chat_id", env.TG_CHAT_ID);
         tgFormData.append(
           "caption",
-          `🎯 Пройдена диагностика!\nДиагностика: ${tokenData.productTitle || tokenData.productKey || "Не указана"}\nСтоимость: ${Number(tokenData.displayAmount ?? tokenData.listPrice ?? 0).toLocaleString("ru-RU")} ₽\nУченик: ${name || "Не указано"}\nEmail: ${email || "Не указан"}\nРезультат: ${scoreNumber} из ${totalNumber} (${percent}%)\nВведённый промокод: ${tokenData.promoCode || "не вводили"}\nСкидка по заказу: ${tokenData.promoCode ? `${Number(tokenData.discountPercent || 0)}% (${Number(tokenData.discountAmount || 0).toLocaleString("ru-RU")} ₽)` : "0 ₽"}${promoCode ? `\nПромокод 10%: ${promoCode}` : ""}
+          `🎯 Пройдена диагностика!\nДиагностика: ${tokenData.productTitle || tokenData.productKey || "Не указана"}\nСтоимость: ${Number(tokenData.displayAmount ?? tokenData.listPrice ?? 0).toLocaleString("ru-RU")} ₽\nУченик: ${name || "Не указано"}\nEmail: ${email || "Не указан"}\nРезультат: ${scoreNumber} из ${totalNumber} (${percent}%)\nВведённый промокод: ${tokenData.promoCode || "не вводили"}\nСкидка по заказу: ${tokenData.promoCode ? `${Number(tokenData.discountPercent || 0)}% (${Number(tokenData.discountAmount || 0).toLocaleString("ru-RU")} ₽)` : "0 ₽"}${promoCode ? `\nПромокод 10%: ${promoCode}` : ""}`
         );
         tgFormData.append("document", pdfFile, `Отчет_${safeName}.pdf`);
 
