@@ -516,6 +516,8 @@
   function formatMathText(value) {
     if (value === null || value === undefined) return "";
     let source = String(value);
+    const protectedHtml = [];
+    source = source.replace(/<[^>]+>/g, tag => { const key = "\\uE200" + protectedHtml.length + "\\uE201"; protectedHtml.push(tag); return key; });
     const protectedParts = [];
     const hold = value => {
       const key = "\uE100" + protectedParts.length + "\uE101";
@@ -556,6 +558,7 @@
     source = source.replace(/√\s*(\d+(?:[.,]\d+)?)/g, (_, number) =>
       "\\(\\displaystyle \\sqrt{" + number + "}\\)");
 
+    protectedHtml.forEach((tag, index) => { source = source.replace("\\uE200" + index + "\\uE201", tag); });
     protectedParts.forEach((part, index) => {
       source = source.replace("\uE100" + index + "\uE101", part);
     });
@@ -651,7 +654,7 @@
           {
                     type: "text",
                     a: "3",
-                    q: "Решите уравнение \\(\\sqrt{x + 6}\\) = x."
+                    q: "Решите уравнение \\(\\sqrt{x + 6} = x\\)."
           },
           {
                     type: "text",
@@ -685,7 +688,7 @@
           {
                     type: "text",
                     a: "-5",
-                    q: "Для функции f(x) = (x − 1)/(x + 2) найдите f⁻¹(2)."
+                    q: "Для функции \\(f(x) = \\frac{x - 1}{x + 2}\\) найдите \\(f^{-1}(2)\\)."
           },
           {
                     type: "text",
@@ -714,7 +717,7 @@
           {
                     type: "text",
                     a: "6",
-                    q: "Найдите F(2), если F′(x) = 4x³ − 6x и F(1) = 0."
+                    q: "Найдите \\(F(2)\\), если \\(F'(x) = 4x^3 - 6x\\) и \\(F(1) = 0\\)."
           },
           {
                     type: "text",
@@ -821,7 +824,7 @@
           {
                     type: "text",
                     a: "4",
-                    q: "Даны векторы a = (2; −1; 1) и b = (3; 0; −2). Найдите их скалярное произведение."
+                    q: "Даны векторы \\(a = (2; -1; 1)\\) и \\(b = (3; 0; -2)\\). Найдите их скалярное произведение."
           },
           {
                     type: "text",
