@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover>
   <title>Диагностический тест по математике | 10 класс — базовый уровень</title>
   
-  <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш номер счетчика) -->
+  <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш номер счетчика) --">
   <script type="text/javascript" >
      (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
      m[i].l=1*new Date();
@@ -78,10 +78,15 @@
     #result-wrapper { max-width: 900px; margin: 20px auto; display: none; padding: 0 15px; box-sizing: border-box; }
     .screen-section-title { color: var(--primary-dark); border-bottom: 2px solid var(--primary-blue); padding-bottom: 8px; font-size: 1.25em; margin: 30px 0 15px 0; }
     #pdf-export-container { position: fixed; top: 0; left: 0; z-index: -9999; opacity: 0; pointer-events: none; width: 794px !important; }
+    #result-pdf { width: 794px !important; }
+    #result-pdf .pdf-page { font-family: Arial, sans-serif !important; }
+    #result-pdf .pdf-page * { font-family: Arial, sans-serif; }
+    #result-pdf .pdf-page mjx-container { max-width: 100% !important; }
+    #result-pdf .pdf-page mjx-container svg { max-width: none !important; overflow: visible !important; }
     .pdf-page { width: 794px !important; height: 1122px !important; min-height: 1122px !important; max-height: 1122px !important; background: #ffffff !important; padding: 25px 40px !important; box-sizing: border-box !important; margin: 0 auto !important; position: relative !important; overflow: hidden !important; font-size: 15px !important; }
     .pdf-first-page-content { transform-origin: top left; }
     .pdf-card { box-sizing: border-box; break-inside: avoid; page-break-inside: avoid; overflow-wrap: anywhere; }
-    .pdf-q, .pdf-ans { overflow-wrap: anywhere; }
+    .pdf-q, .pdf-ans { overflow-wrap: anywhere; min-width: 0; }
     #result-screen .pdf-page { width: 100% !important; max-width: 794px; height: auto !important; min-height: auto !important; padding: 20px !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
     .pdf-header-title { font-size: 1.35em; font-weight: 800; color: #1b2a4a; margin: 0 0 12px 0; }
     .pdf-score-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; gap: 15px; flex-wrap: wrap; }
@@ -1283,15 +1288,48 @@
   async function buildPerfectPdfBlob() {
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
     const { jsPDF } = window.jspdf;
     const pdfContainer = document.getElementById("result-pdf");
     const pages = pdfContainer.querySelectorAll(".pdf-page");
-    
     const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
 
     for (let i = 0; i < pages.length; i++) {
       if (i > 0) pdf.addPage();
-      const canvas = await html2canvas(pages[i], { scale: 2, useCORS: true, logging: false, backgroundColor: "#ffffff", windowWidth: 1024, windowHeight: 1200, scrollX: 0, scrollY: 0, onclone: clonedDocument => { const clonedPages = clonedDocument.querySelectorAll("#result-pdf .pdf-page"); const clonedPage = clonedPages[i]; if (clonedPage) { clonedPage.style.width = "794px"; clonedPage.style.height = "1122px"; clonedPage.style.minHeight = "1122px"; clonedPage.style.maxHeight = "1122px"; clonedPage.style.maxWidth = "none"; clonedPage.style.overflow = "hidden"; } } });
+      const canvas = await html2canvas(pages[i], {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: 1024,
+        windowHeight: 1200,
+        scrollX: 0,
+        scrollY: 0,
+        onclone: clonedDocument => {
+          const clonedPages = clonedDocument.querySelectorAll("#result-pdf .pdf-page");
+          const clonedPage = clonedPages[i];
+          if (clonedPage) {
+            clonedPage.style.width = "794px";
+            clonedPage.style.height = "1122px";
+            clonedPage.style.minHeight = "1122px";
+            clonedPage.style.maxHeight = "1122px";
+            clonedPage.style.maxWidth = "none";
+            clonedPage.style.overflow = "hidden";
+            clonedPage.style.boxSizing = "border-box";
+            clonedPage.style.background = "#ffffff";
+            clonedPage.style.opacity = "1";
+            clonedPage.style.visibility = "visible";
+            clonedPage.querySelectorAll("mjx-container").forEach(node => {
+              node.style.maxWidth = "100%";
+              node.style.overflow = "visible";
+            });
+            clonedPage.querySelectorAll("mjx-container svg").forEach(svg => {
+              svg.style.maxWidth = "none";
+              svg.style.overflow = "visible";
+            });
+          }
+        }
+      });
       const imgData = canvas.toDataURL("image/jpeg", 0.95);
       pdf.addImage(imgData, "JPEG", 0, 0, 210, 297);
     }
