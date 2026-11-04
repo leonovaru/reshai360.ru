@@ -50,7 +50,7 @@ export async function onRequestPost({ request, env }) {
     }
 
     // Используем контактные данные из серверной записи заказа.
-    const email = String(tokenData.email || submittedEmail).trim();
+    const email = String((forceEmail && submittedEmail ? submittedEmail : (tokenData.email || submittedEmail))).trim();
     const name = String(tokenData.studentName || submittedName).trim();
 
     if (!pdfFile || typeof pdfFile.arrayBuffer !== "function") {
@@ -256,6 +256,7 @@ export async function onRequestPost({ request, env }) {
           emailId = resendResult.id || null;
           emailSent = true;
           tokenData.reportEmailSentAt = new Date().toISOString();
+          tokenData.email = email;
           if (emailId) tokenData.reportEmailId = emailId;
           await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
         }
@@ -265,7 +266,7 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    return Response.json({ success: true, promoCode, emailSent, emailId, emailPreviouslyAccepted: Boolean(tokenData.reportEmailSentAt && !emailSent && !forceEmail), emailError, pdfBytes: Number(pdfFile.size || 0) });
+    return Response.json({ success: true, promoCode, emailSent, emailId, feedbackUrl: feedbackPrefillToken ? `https://reshai360.ru/?feedback_token=${feedbackPrefillToken}#feedback` : null, emailPreviouslyAccepted: Boolean(tokenData.reportEmailSentAt && !emailSent && !forceEmail), emailError, pdfBytes: Number(pdfFile.size || 0) });
   } catch (err) {
     console.error("Send report global error:", err);
 
