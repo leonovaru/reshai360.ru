@@ -509,6 +509,7 @@
   };
 
 
+
   // Единый форматтер математических фрагментов в тексте заданий и отчёта.
   // Уже размеченные MathJax-формулы не трогаем.
   function formatMathText(value) {
@@ -517,27 +518,27 @@
     return parts.map((part, index) => {
       if (index % 2 === 1) return part;
       let text = part;
-      const tex = expression => "\\\\(" + expression + "\\\\)";
-      const clean = expression => expression.trim().replace(/[−–]/g, "-").replace(/·/g, "\\\\cdot ").replace(/×/g, "\\\\times ");
+      const tex = expression => "\\(" + expression + "\\)";
+      const clean = expression => expression.trim().replace(/[−–]/g, "-").replace(/·/g, "\\cdot ").replace(/×/g, "\\times ");
 
-      text = text.replace(/([xy]\\s*[+−-]\\s*[xy]\\s*=\\s*-?\\d+)\\s*,\\s*([xy]\\s*[+−-]\\s*[xy]\\s*=\\s*-?\\d+)/gi,
-        (_, first, second) => tex("\\\\begin{cases}" + clean(first) + "\\\\\\\\" + clean(second) + "\\\\end{cases}"));
+      text = text.replace(/([xy]\s*[+−-]\s*[xy]\s*=\s*-?\d+)\s*,\s*([xy]\s*[+−-]\s*[xy]\s*=\s*-?\d+)/gi,
+        (_, first, second) => tex("\\begin{cases}" + clean(first) + "\\\\" + clean(second) + "\\end{cases}"));
 
-      const operand = "(?:\\\\([^()]{1,36}\\\\)|[A-Za-z][A-Za-z0-9]*(?:[²³]|\\\\^\\\\d+)?|\\\\d+(?:[.,]\\\\d+)?)";
-      const fractionPattern = new RegExp("(" + operand + ")\\\\s*\\\\/\\\\s*(" + operand + ")", "g");
+      const operand = "(?:\\([^()]{1,36}\\)|[A-Za-z][A-Za-z0-9]*(?:[²³]|\\^\\d+)?|\\d+(?:[.,]\\d+)?)";
+      const fractionPattern = new RegExp("(" + operand + ")\\s*\\/\\s*(" + operand + ")", "g");
       text = text.replace(fractionPattern, (_, numerator, denominator) =>
-        tex("\\\\frac{" + clean(numerator).replace(/[()]/g, "") + "}{" + clean(denominator).replace(/[()]/g, "") + "}"));
+        tex("\\frac{" + clean(numerator).replace(/[()]/g, "") + "}{" + clean(denominator).replace(/[()]/g, "") + "}"));
 
-      text = text.replace(/√\\s*\\(([^()]+)\\)/g, (_, expression) => tex("\\\\sqrt{" + clean(expression) + "}"));
-      text = text.replace(/√\\s*(\\d+(?:[.,]\\d+)?)/g, (_, number) => tex("\\\\sqrt{" + number + "}"));
+      text = text.replace(/√\s*\(([^()]+)\)/g, (_, expression) => tex("\\sqrt{" + clean(expression) + "}"));
+      text = text.replace(/√\s*(\d+(?:[.,]\d+)?)/g, (_, number) => tex("\\sqrt{" + number + "}"));
 
-      const term = "(?:[xy](?:[²³]|\\\\^\\\\d+)?|\\\\d*[xy](?:[²³]|\\\\^\\\\d+)?|\\\\d+)";
-      const algebra = term + "(?:\\\\s*[+−-]\\\\s*" + term + "){1,5}(?:\\\\s*(?:=|<|>|≤|≥)\\\\s*" + term + "(?:\\\\s*[+−-]\\\\s*" + term + ")*)?";
+      const term = "(?:[xy](?:[²³]|\\^\\d+)?|\\d*[xy](?:[²³]|\\^\\d+)?|\\d+)";
+      const algebra = term + "(?:\\s*[+−-]\\s*" + term + "){1,5}(?:\\s*(?:=|<|>|≤|≥)\\s*" + term + "(?:\\s*[+−-]\\s*" + term + ")*)?";
       text = text.replace(new RegExp("(?<![A-Za-zА-Яа-я])(" + algebra + ")", "gi"), match =>
         tex(clean(match).replace(/([xy])([²³])/gi, (_, variable, power) => variable + "^{" + (power === "²" ? "2" : "3") + "}")));
 
-      text = text.replace(/(?<![\\w])\\d+(?:[.,]\\d+)?(?:\\s*(?:[+−-]|·|×|:|\\*)\\s*\\d+(?:[.,]\\d+)?){1,6}(?![\\w])/g,
-        match => tex(clean(match).replace(/:/g, "\\\\div ")));
+      text = text.replace(/(?<![\w])\d+(?:[.,]\d+)?(?:\s*(?:[+−-]|·|×|:|\*)\s*\d+(?:[.,]\d+)?){1,6}(?![\w])/g,
+        match => tex(clean(match).replace(/:/g, "\\div ")));
 
       text = text.replace(/(?<![A-Za-zА-Яа-я])([xy])([²³])(?![A-Za-zА-Яа-я])/gi,
         (_, variable, power) => tex(variable + "^{" + (power === "²" ? "2" : "3") + "}"));
