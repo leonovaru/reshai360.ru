@@ -1007,6 +1007,36 @@
                         "a": "18"
                     }
                 ]
+            },
+            {
+                "theme": "30. Анализ данных",
+                "questions": [
+                    {
+                        "type": "text",
+                        "q": "За пять дней ученик прочитал 4, 6, 3, 8 и 5 страниц. Сколько всего страниц он прочитал?",
+                        "a": "26"
+                    },
+                    {
+                        "type": "text",
+                        "q": "В понедельник ученик прочитал 7 страниц, во вторник — 9, в среду — 5. На сколько страниц во вторник прочитано больше, чем в среду?",
+                        "a": "4"
+                    }
+                ]
+            },
+            {
+                "theme": "31. Логические задачи",
+                "questions": [
+                    {
+                        "type": "text",
+                        "q": "В коробке лежат 3 красных и 2 синих шара. Сколько шаров нужно достать, не заглядывая в коробку, чтобы гарантированно получить хотя бы один красный шар?",
+                        "a": "3"
+                    },
+                    {
+                        "type": "text",
+                        "q": "В ряду записаны числа 2, 5, 8, 11, ... Какое число должно стоять на пятом месте?",
+                        "a": "14"
+                    }
+                ]
             }
         ]
     }
@@ -1122,7 +1152,7 @@
     const userNumeric = parseNumericAnswer(userAns);
     const expectedNumeric = parseNumericAnswer(expectedAnswer);
     const isRight = (qDef.type === "radio")
-      ? (parseInt(userAns, 10) === qDef.a)
+      ? (parseInt(userAns, 10) === Number(qDef.a))
       : (userAns !== "" && Number.isFinite(userNumeric) && Number.isFinite(expectedNumeric)
           ? Math.abs(userNumeric - expectedNumeric) < 1e-9
           : userAns === expectedAnswer);
@@ -1320,15 +1350,6 @@
 
         theme.questions.forEach((qDef, qIdx) => {
           checkSingle(bIdx, tIdx, qIdx, true);
-          if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано" && !(qDef.checkCount > 0)) {
-            qDef.checkCount = 1;
-          }
-          if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано") {
-            if (!qDef.attemptsHistory || qDef.attemptsHistory.length === 0) {
-              qDef.attemptsHistory = [qDef.userText];
-            }
-          }
-
           if (qDef.isCorrect) themeCorrect++;
 
           const isSkipped = (qDef.userText === "Не введено" || qDef.userText === "Не выбрано");
