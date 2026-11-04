@@ -1093,9 +1093,7 @@
     }
 ];
   function formatQuestionContent(value) {
-    return String(value).replace(/(^|[^\w\\}])(-?\d+)\s*\/\s*(\d+)(?![\w])/g, function(match, prefix, numerator, denominator) {
-      return prefix + "\\(\\frac{" + numerator + "}{" + denominator + "}\\)";
-    });
+    return formatMathText(value);
   }
 
   async function renderQuiz() {
