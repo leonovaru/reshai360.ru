@@ -529,6 +529,18 @@
       text = text.replace(/(?<![A-Za-zА-Яа-я])([xy])([²³])(?![A-Za-zА-Яа-я])/gi,
         (_, variable, power) => tex(variable + "^{" + (power === "²" ? "2" : "3") + "}"));
 
+
+      // Расширенная поддержка: числовые степени, любые латинские переменные,
+      // скобки и выражения с неявным умножением (например, 3a, 2(x+1)).
+      const atom = "(?:\\([^()]*\\)|[A-Za-z]|\\d+(?:[.,]\\d+)?)";
+      const exponent = "(?:\\s*(?:\\^\\{?\\d+\\}?|[⁰¹²³⁴⁵⁶⁷⁸⁹]))?";
+      const expressionAtom = "(?:[+−-]\\s*)?" + atom + exponent;
+      const expressionChain = expressionAtom + "(?:(?:\\s*[+−:·×*/=<>≤≥]\\s*|\\s*)(?:" + atom + exponent + ")){1,12}";
+      text = text.replace(new RegExp("(?<![A-Za-zА-Яа-я0-9])(" + expressionChain + ")(?![A-Za-zА-Яа-я0-9])", "g"),
+        match => tex(clean(match)));
+      text = text.replace(new RegExp("(?<![A-Za-zА-Яа-я0-9])(" + atom + ")\\s*([⁰¹²³⁴⁵⁶⁷⁸⁹])(?![A-Za-zА-Яа-я0-9])", "g"),
+        (_, base, powerChar) => tex(clean(base) + "^{" + "⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(powerChar) + "}"));
+
       formulas.forEach((formula, formulaIndex) => {
         text = text.replace("\uE000" + formulaIndex + "\uE001", formula);
       });
