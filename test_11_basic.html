@@ -519,7 +519,10 @@
     const protectedParts = [];
     const hold = value => {
       const key = "\uE100" + protectedParts.length + "\uE101";
-      protectedParts.push(value);
+      const normalized = value.startsWith("\\(") && !value.startsWith("\\(\\displaystyle")
+        ? value.replace(/^\\\(/, "\\(\\displaystyle ")
+        : value;
+      protectedParts.push(normalized);
       return key;
     };
     source = source.replace(/(\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|\$[^$]+\$)/g, hold);
