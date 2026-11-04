@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover>
   <title>Диагностический тест по математике | 7 класс — базовый уровень</title>
   
-  <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш номер счетчика) -->
+  
   <script type="text/javascript" >
      (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
      m[i].l=1*new Date();
@@ -78,6 +78,13 @@
     #result-wrapper { max-width: 900px; margin: 20px auto; display: none; padding: 0 15px; box-sizing: border-box; }
     .screen-section-title { color: var(--primary-dark); border-bottom: 2px solid var(--primary-blue); padding-bottom: 8px; font-size: 1.25em; margin: 30px 0 15px 0; }
     #pdf-export-container { position: fixed; top: 0; left: 0; z-index: -9999; opacity: 0; pointer-events: none; width: 794px !important; }
+    #result-pdf .pdf-page { font-family: Arial, sans-serif !important; }
+    #result-pdf .pdf-page * { font-family: Arial, sans-serif; }
+    .rect-diagram { position:relative; display:block; width:220px; height:82px; margin:8px 0 5px; }
+    .rect-shape { position:absolute; left:32px; top:24px; width:160px; height:42px; box-sizing:border-box; border:2px solid #15803d; background:#dcfce7; }
+    .rect-side { position:absolute; color:#166534; font-size:14px; font-weight:600; }
+    .rect-side-top { left:108px; top:3px; }
+    .rect-side-left { left:0; top:38px; }
     .pdf-page { width: 794px !important; height: 1122px !important; min-height: 1122px !important; max-height: 1122px !important; background: #ffffff !important; padding: 25px 40px !important; box-sizing: border-box !important; margin: 0 auto !important; position: relative !important; overflow: hidden !important; font-size: 15px !important; }
     .pdf-first-page-content { transform-origin: top left; }
     .pdf-card { box-sizing: border-box; break-inside: avoid; page-break-inside: avoid; overflow-wrap: anywhere; }
@@ -108,12 +115,12 @@
     .pdf-topics-box li { margin-bottom: 3px; break-inside: avoid; }
     .pdf-topics-box { font-size: 0.68em; line-height: 1.22; }
     .detail-section-title { margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); border-bottom: 2px solid #2563eb; padding-bottom: 5px; font-size: 1.05em; }
-    .pdf-card { background: #ffffff; border-left: 4px solid #cbd5e1; border-radius: 5px; padding: 10px 14px; margin-bottom: 10px; position: relative; }
+    .pdf-card { background: #ffffff; border-left: 4px solid #cbd5e1; border-radius: 5px; padding: 8px 12px; margin-bottom: 7px; position: relative; font-family: Arial, sans-serif; }
     .pdf-card.correct { border-left-color: #16a34a; background: #f0fdf4; }
     .pdf-card.incorrect { border-left-color: #eab308; background: #fefce8; }
     .pdf-card.skipped { border-left-color: #dc2626; background: #fef2f2; }
-    .pdf-q { font-weight: 600; margin-bottom: 4px; color: #1e293b; font-size: 0.9em; line-height: 1.35; }
-    .pdf-ans { font-size: 0.85em; color: #475569; line-height: 1.4; padding-right: 95px; }
+    .pdf-q { font-weight: 600; margin-bottom: 3px; color: #1e293b; font-size: 0.84em; line-height: 1.28; font-family: Arial, sans-serif; }
+    .pdf-ans { font-size: 0.77em; color: #475569; line-height: 1.25; padding-right: 95px; font-family: Arial, sans-serif; }
     .badge { position: absolute; bottom: 10px; right: 12px; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; white-space: nowrap; }
     .badge-ok { background: #dcfce7; color: #15803d; }
     .badge-err { background: #fef9c3; color: #a16207; }
@@ -124,7 +131,7 @@
     .result-actions { display:flex; justify-content:center; align-items:stretch; flex-wrap:wrap; gap:10px; margin:24px auto 18px; width:100%; }
     .result-actions > button { flex:1 1 190px; min-width:0; }
     .result-action-secondary { padding:13px 16px; border:1px solid #c7d2fe; border-radius:10px; background:#eef2ff; color:#312e81; font-weight:700; cursor:pointer; }
-    #result-screen #promo-code-result { box-sizing:border-box; width:100%; max-width:794px; }
+    #result-screen #promo-code-result { box-sizing:border-box; width:100%; max-width:650px; }
     @media (max-width: 640px) {
       #result-screen { padding:14px 10px !important; font-size:14px !important; }
       #result-screen .pdf-page { width:100% !important; max-width:100% !important; padding:14px !important; box-sizing:border-box !important; overflow-wrap:anywhere; }
@@ -168,7 +175,7 @@
     .question-nav-toggle { min-height:32px; }
   
   
-    .pdf-card-footer { display:flex !important; align-items:flex-end !important; gap:12px; width:100%; }
+    .pdf-card-footer { display:flex !important; align-items:center !important; gap:10px; width:100%; }
     .pdf-card .pdf-ans { flex:1 1 auto !important; min-width:0 !important; padding-right:0 !important; }
     .pdf-card .badge { position:static !important; display:inline-flex !important; align-items:center; flex:0 0 auto; align-self:flex-end; margin:0 0 0 auto !important; white-space:nowrap; }
 
@@ -541,12 +548,12 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "1/3 + 1/6, десятичный ответ",
+                        "q": "\\(\\frac{1}{3}+\\frac{1}{6}\\). Вычислите значение выражения и запишите ответ десятичной дробью.",
                         "a": "0.5"
                     },
                     {
                         "type": "text",
-                        "q": "3/4 − 1/4, десятичный ответ",
+                        "q": "\\(\\frac{3}{4}-\\frac{1}{4}\\). Вычислите значение выражения и запишите ответ десятичной дробью.",
                         "a": "0.5"
                     }
                 ]
@@ -651,7 +658,7 @@
                 "questions": [
                     {
                         "type": "text",
-                        "q": "x/6 = 4/3. Найдите x",
+                        "q": "\\(\\frac{x}{6}=\\frac{4}{3}\\). Найдите значение x.",
                         "a": "8"
                     },
                     {
@@ -871,7 +878,7 @@
                     },
                     {
                         "type": "text",
-                        "q": "<div>Найдите площадь прямоугольника.<br><svg viewBox='0 0 220 80' role='img' aria-label='Прямоугольник 9 на 4 см' style='max-width:220px;width:100%;height:auto'><rect x='30' y='18' width='160' height='42' fill='#dcfce7' stroke='#15803d' stroke-width='2'/><text x='100' y='14' font-size='12' fill='#166534'>9 см</text><text x='2' y='43' font-size='12' fill='#166534'>4 см</text></svg></div>",
+                        "q": "Найдите площадь прямоугольника со сторонами 9 см и 4 см. Ответ укажите в см².<div class='rect-diagram' role='img' aria-label='Прямоугольник со сторонами 9 и 4 сантиметра'><span class='rect-side rect-side-top'>9 см</span><span class='rect-side rect-side-left'>4 см</span><div class='rect-shape'></div></div>",
                         "a": "36"
                     }
                 ]
@@ -994,6 +1001,12 @@
         ]
     }
 ];
+  function formatQuestionContent(value) {
+    return String(value).replace(/(^|[^\w\\}])(-?\d+)\s*\/\s*(\d+)(?![\w])/g, function(match, prefix, numerator, denominator) {
+      return prefix + "\\(\\frac{" + numerator + "}{" + denominator + "}\\)";
+    });
+  }
+
   async function renderQuiz() {
     questionNavigation = [];
     let html = "";
@@ -1009,7 +1022,7 @@
           const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
           questionNavigation.push({ id: qId, number: qIndex, qDef });
           html += `<div class="card" id="card_${qId}">`;
-          html += `<div class="question-title">${qIndex}. ${qDef.q}</div>`;
+          html += `<div class="question-title">${qIndex}. ${formatQuestionContent(qDef.q)}</div>`;
 
           if (qDef.type === "radio") {
             html += `<div class="options" id="opt_${qId}">`;
@@ -1348,7 +1361,7 @@
 
           const cardHtml = `
             <div class="pdf-card ${statusClass}">
-              <div class="pdf-q">${qIndex}. ${qDef.q}</div>
+              <div class="pdf-q">${qIndex}. ${formatQuestionContent(qDef.q)}</div>
               <div class="pdf-card-footer"><div class="pdf-ans">
                 <b>Попыток ввода:</b> ${checkCountVal} | <b>Ответ:</b> ${attemptsList}<br>
                 <b>Правильный ответ:</b> ${qDef.correctText}
@@ -1451,7 +1464,7 @@
 
     let detailPagesCards = [];
     let currentPageCards = [];
-    const MAX_PAGE_CONTENT_HEIGHT = 960;
+    const MAX_PAGE_CONTENT_HEIGHT = 1000;
 
     for (let i = 0; i < pdfCardsArray.length; i++) {
       let testCards = [...currentPageCards, pdfCardsArray[i]];
