@@ -500,7 +500,7 @@
       const formulas = [];
       const tex = expression => {
         const token = "\uE000" + formulas.length + "\uE001";
-        formulas.push("\\(" + expression + "\\)");
+        formulas.push("\\(\\displaystyle " + expression + "\\)");
         return token;
       };
       const clean = expression => expression.trim().replace(/[−–]/g, "-")
