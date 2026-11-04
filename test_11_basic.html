@@ -516,6 +516,8 @@
   function formatMathText(value) {
     if (value === null || value === undefined) return "";
     let source = String(value);
+    const protectedHtml = [];
+    source = source.replace(/<[^>]+>/g, tag => { const key = "\\uE200" + protectedHtml.length + "\\uE201"; protectedHtml.push(tag); return key; });
     const protectedParts = [];
     const hold = value => {
       const key = "\uE100" + protectedParts.length + "\uE101";
@@ -556,6 +558,7 @@
     source = source.replace(/√\s*(\d+(?:[.,]\d+)?)/g, (_, number) =>
       "\\(\\displaystyle \\sqrt{" + number + "}\\)");
 
+    protectedHtml.forEach((tag, index) => { source = source.replace("\\uE200" + index + "\\uE201", tag); });
     protectedParts.forEach((part, index) => {
       source = source.replace("\uE100" + index + "\uE101", part);
     });
@@ -651,7 +654,7 @@
           {
                     type: "text",
                     a: "3",
-                    q: "Решите уравнение \\(\\sqrt{x + 1}\\) = x − 1."
+                    q: "Решите уравнение \\(\\sqrt{x + 1} = x - 1\\)."
           },
           {
                     type: "text",
@@ -685,12 +688,12 @@
           {
                     type: "text",
                     a: "4",
-                    q: "Функция f(x) = 2x − 3. Найдите значение обратной функции f⁻¹(5)."
+                    q: "Функция \\(f(x) = 2x - 3\\). Найдите значение обратной функции \\(f^{-1}(5)\\)."
           },
           {
                     type: "text",
                     a: "3",
-                    q: "Найдите горизонтальную асимптоту графика функции y = 2ˣ + 3. Укажите значение асимптоты."
+                    q: "Найдите горизонтальную асимптоту графика функции \\(y = 2^x + 3\\). Укажите значение асимптоты."
           }
 ]
         },
@@ -714,7 +717,7 @@
           {
                     type: "text",
                     a: "4",
-                    q: "Известно, что F′(x) = 3x² − 4x и F(0) = 5. Найдите F(1)."
+                    q: "Известно, что \\(F'(x) = 3x^2 - 4x\\) и \\(F(0) = 5\\). Найдите \\(F(1)\\)."
           },
           {
                     type: "text",
@@ -808,7 +811,7 @@
           {
                     type: "text",
                     a: "0",
-                    q: "Даны векторы a = (1; 2; −2) и b = (2; 0; 1) в пространстве. Найдите их скалярное произведение."
+                    q: "Даны векторы \\(a = (1; 2; -2)\\) и \\(b = (2; 0; 1)\\) в пространстве. Найдите их скалярное произведение."
           }
 ]
         },
