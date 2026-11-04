@@ -494,58 +494,48 @@
   // Уже размеченные MathJax-формулы не трогаем.
   function formatMathText(value) {
     if (value === null || value === undefined) return "";
-    const parts = String(value).split(/(\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|\$[^$]+\$)/g);
-    return parts.map((part, index) => {
-      if (index % 2 === 1) return part;
-      let text = part;
-      const formulas = [];
-      const tex = expression => {
-        const token = "\uE000" + formulas.length + "\uE001";
-        formulas.push("\\(\\displaystyle " + expression + "\\)");
-        return token;
-      };
-      const clean = expression => expression.trim().replace(/[−–]/g, "-")
-        .replace(/·/g, "\\cdot ").replace(/×/g, "\\times ")
-        .replace(/([xy])([²³])/gi, (_, variable, power) => variable + "^{" + (power === "²" ? "2" : "3") + "}");
+    let source = String(value);
+    const protectedParts = [];
+    const hold = value => {
+      const key = "\uE100" + protectedParts.length + "\uE101";
+      protectedParts.push(value);
+      return key;
+    };
+    source = source.replace(/(\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|\$[^$]+\$)/g, hold);
 
-      text = text.replace(/([xy]\s*[+−-]\s*[xy]\s*=\s*-?\d+)\s*,\s*([xy]\s*[+−-]\s*[xy]\s*=\s*-?\d+)/gi,
-        (_, first, second) => tex("\\begin{cases}" + clean(first) + "\\\\" + clean(second) + "\\end{cases}"));
+    const clean = value => String(value).trim()
+      .replace(/[−–]/g, "-")
+      .replace(/·/g, "\\cdot ")
+      .replace(/×/g, "\\times ")
+      .replace(/÷|:/g, "\\div ")
+      .replace(/([⁰¹²³⁴⁵⁶⁷⁸⁹])/g, digit => "^{" + "⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit) + "}");
 
-      const operand = "(?:\\([^()]{1,36}\\)|[A-Za-z][A-Za-z0-9]*(?:[²³]|\\^\\d+)?|\\d+(?:[.,]\\d+)?)";
-      const fractionPattern = new RegExp("(" + operand + ")\\s*\\/\\s*(" + operand + ")", "g");
-      text = text.replace(fractionPattern, (_, numerator, denominator) =>
-        tex("\\frac{" + clean(numerator).replace(/[()]/g, "") + "}{" + clean(denominator).replace(/[()]/g, "") + "}"));
+    const atom = "(?:\\d*[A-Za-z](?:[A-Za-z0-9]*)?|\\d+\\([^()]*\\)|\\([^()]*\\)|[A-Za-z](?:[A-Za-z0-9]*)?|\\d+(?:[.,]\\d+)?)";
+    const power = "(?:\\s*(?:\\^\\{?\\d+\\}?|[⁰¹²³⁴⁵⁶⁷⁸⁹]))?";
+    const term = "(?:[+−-]\\s*)?" + atom + power;
+    const chain = term + "(?:(?:\\s*[+−:·×*/=<>≤≥]\\s*|\\s+)(?:" + atom + power + ")){1,12}";
+    const expressionPattern = new RegExp("(?<![A-Za-zА-Яа-я0-9])(" + chain + ")(?![A-Za-zА-Яа-я0-9])", "g");
 
-      text = text.replace(/√\s*\(([^()]+)\)/g, (_, expression) => tex("\\sqrt{" + clean(expression) + "}"));
-      text = text.replace(/√\s*(\d+(?:[.,]\d+)?)/g, (_, number) => tex("\\sqrt{" + number + "}"));
+    source = source.replace(expressionPattern, match => {
+      let expression = clean(match);
+      expression = expression.replace(/([A-Za-z0-9]+)\s*\/\s*([A-Za-z0-9]+)/g, "\\frac{$1}{$2}");
+      return "\\(\\displaystyle " + expression + "\\)";
+    });
 
-      const term = "(?:[xy](?:[²³]|\\^\\d+)?|\\d*[xy](?:[²³]|\\^\\d+)?|\\d+)";
-      const algebra = term + "(?:\\s*[+−-]\\s*" + term + "){1,5}(?:\\s*(?:=|<|>|≤|≥)\\s*" + term + "(?:\\s*[+−-]\\s*" + term + ")*)?";
-      text = text.replace(new RegExp("(?<![A-Za-zА-Яа-я])(" + algebra + ")", "gi"), match => tex(clean(match)));
+    source = source.replace(/(?<![A-Za-zА-Яа-я0-9])([A-Za-z0-9]+)\s*\/\s*([A-Za-z0-9]+)(?![A-Za-zА-Яа-я0-9])/g,
+      (_, numerator, denominator) => "\\(\\displaystyle \\frac{" + clean(numerator) + "}{" + clean(denominator) + "}\\)");
 
-      text = text.replace(/(?<![\w])\d+(?:[.,]\d+)?(?:\s*(?:[+−-]|·|×|:|\*)\s*\d+(?:[.,]\d+)?){1,6}(?![\w])/g,
-        match => tex(clean(match).replace(/:/g, "\\div ")));
+    source = source.replace(/(?<![A-Za-zА-Яа-я0-9])([A-Za-z0-9]+)([⁰¹²³⁴⁵⁶⁷⁸⁹])(?![A-Za-zА-Яа-я0-9])/g, (_, base, digit) => "\\(\\displaystyle " + clean(base) + "^{" + "⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit) + "}\\)");
 
-      text = text.replace(/(?<![A-Za-zА-Яа-я])([xy])([²³])(?![A-Za-zА-Яа-я])/gi,
-        (_, variable, power) => tex(variable + "^{" + (power === "²" ? "2" : "3") + "}"));
+    source = source.replace(/√\s*\(([^()]+)\)/g, (_, expression) =>
+      "\\(\\displaystyle \\sqrt{" + clean(expression) + "}\\)");
+    source = source.replace(/√\s*(\d+(?:[.,]\d+)?)/g, (_, number) =>
+      "\\(\\displaystyle \\sqrt{" + number + "}\\)");
 
-
-      // Расширенная поддержка: числовые степени, любые латинские переменные,
-      // скобки и выражения с неявным умножением (например, 3a, 2(x+1)).
-      const atom = "(?:\\([^()]*\\)|[A-Za-z]|\\d+(?:[.,]\\d+)?)";
-      const exponent = "(?:\\s*(?:\\^\\{?\\d+\\}?|[⁰¹²³⁴⁵⁶⁷⁸⁹]))?";
-      const expressionAtom = "(?:[+−-]\\s*)?" + atom + exponent;
-      const expressionChain = expressionAtom + "(?:(?:\\s*[+−:·×*/=<>≤≥]\\s*|\\s*)(?:" + atom + exponent + ")){1,12}";
-      text = text.replace(new RegExp("(?<![A-Za-zА-Яа-я0-9])(" + expressionChain + ")(?![A-Za-zА-Яа-я0-9])", "g"),
-        match => tex(clean(match)));
-      text = text.replace(new RegExp("(?<![A-Za-zА-Яа-я0-9])(" + atom + ")\\s*([⁰¹²³⁴⁵⁶⁷⁸⁹])(?![A-Za-zА-Яа-я0-9])", "g"),
-        (_, base, powerChar) => tex(clean(base) + "^{" + "⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(powerChar) + "}"));
-
-      formulas.forEach((formula, formulaIndex) => {
-        text = text.replace("\uE000" + formulaIndex + "\uE001", formula);
-      });
-      return text;
-    }).join("");
+    protectedParts.forEach((part, index) => {
+      source = source.replace("\uE100" + index + "\uE101", part);
+    });
+    return source;
   }
 
   async function safeTypeset(targetElement) {
