@@ -549,14 +549,26 @@
   function bindQuestionProgressEvents() {
     const container = document.getElementById("quiz-container");
     if (!container) return;
+    function clearEditedQuestionFeedback(target) {
+      if (!target || !target.matches("input")) return;
+      const qId = target.type === "radio" ? target.name : target.id;
+      if (!/^q_\d+_\d+_\d+$/.test(qId || "")) return;
+      const feedback = document.getElementById("feed_" + qId);
+      if (feedback) feedback.textContent = "";
+      const [, bIdx, tIdx, qIdx] = qId.split("_").map(Number);
+      const question = quizData[bIdx]?.themes[tIdx]?.questions[qIdx];
+      if (question) question.isCorrect = null;
+    }
     container.addEventListener("input", event => {
       if (event.target.matches("input")) {
+        clearEditedQuestionFeedback(event.target);
         saveQuizProgress();
         updateQuestionNavigator();
       }
     });
     container.addEventListener("change", event => {
       if (event.target.matches("input")) {
+        clearEditedQuestionFeedback(event.target);
         saveQuizProgress();
         updateQuestionNavigator();
       }
