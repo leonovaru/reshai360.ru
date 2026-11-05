@@ -172,12 +172,12 @@ export async function onRequestPost({ request, env }) {
           '📊 ДИАГНОСТИКА ЗАВЕРШЕНА — РЕШАЙ360',
           'Имя: ' + (name || 'Не указано'),
           'Email: ' + (email || 'Не указан'),
-          'Ссылка на диагностику: ' + testUrl,
+          'Открыть диагностику или итоговые результаты: ' + testUrl,
           'Результат: ' + scoreNumber + ' из ' + totalNumber + ' (' + percent + '%)',
           'Новый промокод: ' + (promoCode || 'не выдан'),
           'Скидка: ' + (issuedPromo ? Number(issuedPromo.discountPercent || 10) + '%' : '—'),
           'Действует до: ' + expiresText
-        ].join('\\n'));
+        ].join('\n'));
         tgFormData.append("document", pdfFile, `Отчёт_${safeName}.pdf`);
         const tgResponse = await fetch(
           'https://api.telegram.org/bot' + env.TELEGRAM_RESULTS_BOT_TOKEN + '/sendDocument',
