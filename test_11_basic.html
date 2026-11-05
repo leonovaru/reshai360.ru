@@ -114,9 +114,9 @@
     .pdf-topics-box.repeat h4 { margin: 0 0 4px 0; color: #a16207; font-size: 0.95em; }
     .pdf-topics-box.study { flex: 2 1 0; background: #fef2f2; border: 1px solid #fca5a5; color: #7f1d1d; }
     .pdf-topics-box.study h4 { margin: 0 0 4px 0; color: #b91c1c; font-size: 0.95em; }
-    .pdf-topics-box ol { margin: 0; padding-left: 18px; column-count: 1; column-gap: 0; }
+    .pdf-topics-box ol { margin: 0; padding-left: 18px; column-count: 2; column-gap: 18px; }
     .pdf-topics-box li { margin-bottom: 3px; break-inside: avoid; }
-    .pdf-topics-box { font-size: 0.68em; line-height: 1.22; }
+    .pdf-topics-box { font-size: 0.78em; line-height: 1.3; }
     .detail-section-title { margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); border-bottom: 2px solid #2563eb; padding-bottom: 5px; font-size: 1.05em; }
     .pdf-card { background: #ffffff; border-left: 4px solid #cbd5e1; border-radius: 5px; padding: 10px 14px; margin-bottom: 10px; position: relative; }
     .pdf-card.correct { border-left-color: #16a34a; background: #f0fdf4; }
@@ -421,7 +421,8 @@
         const stat = saved.stats && saved.stats[item.id];
         if (stat) {
           item.qDef.checkCount = Number(stat.checkCount) || 0;
-          item.qDef.attemptsHistory = Array.isArray(stat.attemptsHistory) ? stat.attemptsHistory : [];
+          item.qDef.attemptsHistory = Array.isArray(stat.attemptsHistory) ? stat.attemptsHistory.filter((answer, index, history) => index === 0 || answer !== history[index - 1]) : [];
+          item.qDef.checkCount = Math.min(item.qDef.checkCount, item.qDef.attemptsHistory.length);
           if (typeof stat.isCorrect === "boolean") {
             item.qDef.isCorrect = stat.isCorrect;
             const feedEl = document.getElementById(`feed_${item.id}`);
@@ -1009,15 +1010,11 @@
     }
 
     if (!silent && userAns !== "") {
-      qDef.checkCount = (qDef.checkCount || 0) + 1;
       if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
-      qDef.attemptsHistory.push(formattedUserAns);
-    } else {
-      if (userAns !== "") {
-        if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
-        if (qDef.attemptsHistory.length === 0 || qDef.attemptsHistory[qDef.attemptsHistory.length - 1] !== formattedUserAns) {
-          qDef.attemptsHistory.push(formattedUserAns);
-        }
+      const lastAttempt = qDef.attemptsHistory[qDef.attemptsHistory.length - 1];
+      if (lastAttempt !== formattedUserAns) {
+        qDef.checkCount = (qDef.checkCount || 0) + 1;
+        qDef.attemptsHistory.push(formattedUserAns);
       }
     }
 
@@ -1477,7 +1474,7 @@
 
     let detailPagesCards = [];
     let currentPageCards = [];
-    const MAX_PAGE_CONTENT_HEIGHT = 960;
+    const MAX_PAGE_CONTENT_HEIGHT = 1000;
 
     for (let i = 0; i < pdfCardsArray.length; i++) {
       let testCards = [...currentPageCards, pdfCardsArray[i]];
