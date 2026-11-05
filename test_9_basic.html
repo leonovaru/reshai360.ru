@@ -234,6 +234,8 @@
   let studentData = { fullName: "Ученик", email: "" };
   let currentToken = "";
   let generatedPdfBlob = null;
+  let isCompletedView = false;
+  let existingPromoCode = "";
 
   // Проверка токена при загрузке страницы (защита от пересылки и повторного прохождения)
   window.addEventListener('DOMContentLoaded', async () => {
@@ -275,6 +277,8 @@
         studentData.fullName = result.data.studentName || localStorage.getItem('studentName') || "Ученик";
         studentData.email = result.data.email || localStorage.getItem('studentEmail') || "";
         wasCompleted = result.data.isCompleted === true;
+        isCompletedView = wasCompleted;
+        existingPromoCode = String(result.data.promoCodeIssued || "");
         completedSnapshot = result.data.answersSnapshot || null;
         serverCompletedSnapshot = completedSnapshot;
       }
@@ -1272,6 +1276,12 @@
         scrollX: 0,
         scrollY: 0,
         onclone: clonedDocument => {
+          const exportContainer = clonedDocument.getElementById("pdf-export-container");
+          if (exportContainer) {
+            exportContainer.style.opacity = "1";
+            exportContainer.style.visibility = "visible";
+            exportContainer.style.zIndex = "auto";
+          }
           const clonedPages = clonedDocument.querySelectorAll("#result-pdf .pdf-page");
           const clonedPage = clonedPages[i];
           if (clonedPage) {
@@ -1613,6 +1623,13 @@
     const promoCard = document.getElementById("promo-code-result");
     const resultActions = document.querySelector("#result-screen .result-actions");
     if (promoCard && resultActions) resultActions.insertAdjacentElement("afterend", promoCard);
+    if (existingPromoCode) {
+      const promoValue = document.getElementById("promo-code-result-value");
+      const promoNote = document.getElementById("promo-code-result-note");
+      if (promoValue) promoValue.textContent = existingPromoCode;
+      if (promoNote) promoNote.textContent = "Ваш промокод сохранён. Его можно использовать при следующем заказе.";
+      if (promoCard) promoCard.style.display = "block";
+    }
     startPdfCountdown();
 
     let measureContainer = document.createElement('div');
@@ -1684,8 +1701,8 @@
         ym(113852589, 'reachGoal', 'test_completed');
       }
 
-      // Отправляем PDF на сервер (в Telegram и на Email)
-      if (currentToken) {
+      // Повторный просмотр завершённой диагностики не должен повторно отправлять тот же отчёт.
+      if (currentToken && !isCompletedView) {
         const formData = new FormData();
         formData.append('token', currentToken);
         if (studentData.email) formData.append('email', studentData.email);
