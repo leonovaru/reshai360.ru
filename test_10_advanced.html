@@ -144,10 +144,15 @@
     .question-nav-legend { display:flex; gap:14px; flex-wrap:wrap; color:#475569; font-size:12px; font-weight:500; }
     .question-nav-legend span { display:inline-flex; align-items:center; gap:5px; }
     .question-nav-legend i { width:10px; height:10px; border-radius:3px; display:inline-block; background:#2563eb; }
-    .question-nav-legend .legend-empty { background:#ef4444; }
+    .question-nav-legend .legend-empty { background:#cbd5e1; }
+     .question-nav-legend .legend-correct { background:#16a34a; }
+     .question-nav-legend .legend-incorrect { background:#dc2626; }
     .question-nav-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr)); gap:7px; margin-top:12px; }
-    .question-nav-item { position:relative; min-height:38px; border:1px solid #2563eb; border-radius:8px; background:#2563eb; color:#fff; font-weight:700; cursor:pointer; }
-    .question-nav-item.unanswered { border-color:#ef4444; background:#ef4444; }
+    .question-nav-item { position:relative; min-height:38px; border:1px solid #cbd5e1; border-radius:8px; background:#e2e8f0; color:#334155; font-weight:700; cursor:pointer; }
+     .question-nav-item.unanswered,.question-nav-item.answered { border-color:#cbd5e1; background:#e2e8f0; color:#334155; }
+     .question-nav-item.correct { border-color:#16a34a; background:#16a34a; color:#fff; }
+     .question-nav-item.incorrect { border-color:#dc2626; background:#dc2626; color:#fff; }
+    
     .question-nav-item.marked::after { content:""; position:absolute; width:8px; height:8px; border-radius:50%; background:#facc15; border:1px solid #854d0e; top:-3px; right:-3px; }
     .question-nav-item:focus-visible,.question-flag:focus-visible,.question-nav-toggle:focus-visible { outline:3px solid #fbbf24; outline-offset:2px; }
     .question-action-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:12px; }
@@ -191,14 +196,15 @@
         <li>Если в ответе получается десятичная дробь, используйте запятую (например, <strong>2,5</strong>).</li>
         <li>Чтобы ввести отрицательное число, нажмите на кнопку <strong>«±»</strong> рядом с полем ввода.</li>
         <li>Все ваши проверенные ответы и прогресс сохраняются.</li>
-        <li><strong>Важно:</strong> не закрывайте и не покидайте страницу во время прохождения теста.</li>
+        <li>Ответы и прогресс автоматически сохраняются в этом браузере на этом устройстве. После обновления страницы можно продолжить с сохранённого места. Не очищайте данные сайта и не используйте режим инкогнито.</li>
+        <li><strong>Важно:</strong> ссылка на диагностику действует 24 часа с момента оплаты. Завершите прохождение до истечения этого срока.</li>
       </ul>
     </div>
     <div id="question-navigator" class="question-navigator" aria-label="Навигация по заданиям">
       <button type="button" id="question-nav-toggle" class="question-nav-toggle" onclick="toggleQuestionNavigator()" aria-expanded="false">
         <span>Задания: <span id="question-nav-count">0</span></span><span aria-hidden="true">⌄</span>
       </button>
-      <div class="question-nav-legend"><span><i></i> Есть ответ</span><span><i class="legend-empty"></i> Нет ответа</span><span>● Отмечено для возврата</span></div>
+      <div class="question-nav-legend"><span><i class="legend-empty"></i> Нет ответа</span><span><i class="legend-correct"></i> Верно</span><span><i class="legend-incorrect"></i> Неверно</span><span>● Отмечено для возврата</span></div>
       <div id="question-nav-grid" class="question-nav-grid"></div>
     </div>
     <div id="quiz-container"></div>
@@ -416,7 +422,8 @@
       const answered = !!getQuestionAnswer(item.id, item.qDef);
       if (answered) answeredCount++;
       const marked = markedQuestions.has(item.id);
-      return '<button type="button" class="question-nav-item ' + (answered ? 'answered' : 'unanswered') + (marked ? ' marked' : '') +
+      const statusClass = !answered ? "unanswered" : (item.qDef.isCorrect === true ? "correct" : (item.qDef.isCorrect === false ? "incorrect" : "answered"));
+       return '<button type="button" class="question-nav-item ' + statusClass + (marked ? ' marked' : '') +
         '" data-question-id="' + item.id + '" aria-label="Задание ' + item.number + (answered ? ', есть ответ' : ', нет ответа') + (marked ? ', вернуться позже' : '') + '">' + item.number + '</button>';
     }).join("");
     if (count) count.textContent = answeredCount + " из " + questionNavigation.length + " с ответом";
@@ -1303,15 +1310,16 @@
     }
 
     qDef.userText = formattedUserAns;
-    if (!silent) { saveQuizProgress(); updateQuestionNavigator(); }
+    if (!silent) saveQuizProgress();
 
     if (userAns === "") {
       if (!silent) {
         const feedEl = document.getElementById(`feed_${qId}`);
         if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Ответ не введен!</span>";
       }
-      qDef.isCorrect = false;
-      return;
+      qDef.isCorrect = undefined;
+       updateQuestionNavigator();
+       return;
     }
 
     const expectedAnswer = qDef.type === "text" ? String(qDef.a).trim().replace(/\s+/g, "").replace(/,/g, ".") : qDef.a;
@@ -1354,6 +1362,7 @@
         if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Неверно ❌</span>";
       }
     }
+    updateQuestionNavigator();
   }
 
   function fitPdfFirstPageContent() {
