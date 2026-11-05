@@ -224,11 +224,11 @@
     <div style="font-size:12px; color:#4338ca; font-weight:800; text-transform:uppercase; letter-spacing:.7px; margin-bottom:8px;">🎁 Подарок за прохождение</div>
     <p style="margin:0 0 9px; font-size:13px; line-height:1.45;">Промокод даёт <strong>скидку 10%</strong> на следующую диагностику. Используйте его сами или поделитесь с другом. Код одноразовый и действует 45 дней.</p>
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin:10px 0; padding:10px 12px; background:#fff; border:1px dashed #818cf8; border-radius:10px;"><strong id="promo-code-result-value" style="font-size:18px; letter-spacing:2px; color:#312e81;"></strong><button type="button" onclick="copyPromoCode()" style="padding:8px 12px; border-radius:8px; background:#4338ca; color:white; font-weight:700; border:0; cursor:pointer;">Скопировать</button></div>
-    <p style="margin:0; font-size:13px; line-height:1.6; color:#4338ca;">Оставьте отзыв, пожелание или идею — скидка по промокоду увеличится до <strong>15%</strong>. <a id="feedback-form-link" href="#" target="_blank" rel="noopener noreferrer" style="color:#4338ca; text-decoration:underline; font-weight:700;">Открыть форму обратной связи</a>.</p>
+    <p style="margin:0; font-size:13px; line-height:1.6; color:#4338ca;">Оставьте отзыв, пожелание или идею — скидка по промокоду увеличится до <strong>15%</strong>. <a id="feedback-form-link" href="https://reshai360.ru/index.html#feedback" target="_blank" rel="noopener noreferrer" style="color:#4338ca; text-decoration:underline; font-weight:700;">Открыть форму обратной связи</a>.</p>
     <p id="promo-code-result-note" style="margin:10px 0 0; font-size:.9em;"></p>
-    <div id="report-email-status" style="margin:14px 0 0; padding:12px; background:#fff; border-radius:10px; font-size:.92em;" aria-live="polite"></div>
     <div style="margin-top:12px; padding:12px; background:#fff; border-radius:10px;">
-      <label for="corrected-report-email" style="display:block; margin-bottom:7px; font-size:13px; line-height:1.5;">Если почта была указана некорректно, укажите актуальный адрес:</label>
+      <div id="report-email-status" style="margin:0 0 10px; padding:0; background:transparent; border-radius:0; font-size:.92em;" aria-live="polite"></div>
+      <label for="corrected-report-email" style="display:block; margin-bottom:7px; font-size:13px; line-height:1.5;">Если письмо не пришло, отправьте его ещё раз или укажите другой адрес:</label>
       <div style="display:flex; flex-wrap:wrap; gap:8px;">
         <input id="corrected-report-email" type="email" autocomplete="email" placeholder="example@mail.ru" style="flex:1 1 210px; min-width:0; padding:11px 12px; border:1px solid #cbd5e1; border-radius:8px; font:inherit; box-sizing:border-box;">
         <button id="resend-report-email" type="button" onclick="sendReportToUpdatedEmail()" style="padding:10px 14px; border:0; border-radius:8px; background:#4338ca; color:#fff; font-weight:700; cursor:pointer;">Отправить письмо на почту</button>
@@ -1554,7 +1554,7 @@
         throw new Error(result.emailError || result.message || "Не удалось отправить письмо на указанный адрес.");
       }
       studentData.email = email;
-      status.textContent = "Письмо с PDF-отчётом отправлено на вашу почту: " + email + ".";
+      status.textContent = "Почтовый сервис принял письмо с PDF на " + email + ". Если письма нет во входящих, проверьте «Спам» и «Промоакции» — ниже можно отправить его ещё раз.";
       if (result.feedbackUrl) {
         const feedbackLink = document.getElementById("feedback-form-link");
         if (feedbackLink) feedbackLink.href = result.feedbackUrl;
@@ -1748,12 +1748,15 @@
     const promoCard = document.getElementById("promo-code-result");
     const resultActions = document.querySelector("#result-screen .result-actions");
     if (promoCard && resultActions) resultActions.insertAdjacentElement("afterend", promoCard);
+    if (promoCard) promoCard.style.display = "block";
     if (existingPromoCode) {
       const promoValue = document.getElementById("promo-code-result-value");
       const promoNote = document.getElementById("promo-code-result-note");
       if (promoValue) promoValue.textContent = existingPromoCode;
       if (promoNote) promoNote.textContent = "Ваш промокод сохранён. Его можно использовать при следующем заказе.";
-      if (promoCard) promoCard.style.display = "block";
+    } else {
+      const promoNote = document.getElementById("promo-code-result-note");
+      if (promoNote) promoNote.textContent = "Промокод формируется и появится здесь после обработки отчёта.";
     }
     startPdfCountdown();
 
@@ -1829,7 +1832,7 @@
           if (studentData.email) {
             const accepted = reportResult.emailSent || reportResult.emailPreviouslyAccepted;
             emailStatus.textContent = accepted
-              ? 'Письмо с PDF-отчётом отправлено на вашу почту: ' + studentData.email + '.'
+              ? 'Почтовый сервис принял письмо с PDF на ' + studentData.email + '. Если письма нет во входящих, проверьте «Спам» и «Промоакции» — ниже можно отправить его ещё раз.'
               : 'Не удалось отправить письмо на ' + studentData.email + '. Проверьте адрес или укажите актуальный ниже.';
             const emailInput = document.getElementById('corrected-report-email');
             if (emailInput) emailInput.value = studentData.email || '';
