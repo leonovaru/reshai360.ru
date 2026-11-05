@@ -1,3 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Решай360.ру — Полный аудит знаний по математике</title>
+    <link rel="icon" type="image/png" href="/logo.png?v=20261105">
+    <link rel="apple-touch-icon" href="/logo.png?v=20261105">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Официальный виджет оплаты ЮKassa -->
+    <script src="https://yookassa.ru/checkout-widget/v1/checkout-widget.js"></script>
+    <!-- PDF.js CDN для просмотра PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Внешний файл данных и конфигурации -->
+    <script src="config.js?v=20261029-9"></script>
+
+    <!-- Партнёрская атрибуция: сохраняется в этом браузере без срока истечения. -->
+    <script>
+      (function () {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var referral = (params.get('ref') || '').trim().toLowerCase();
+          if (/^[a-z0-9_-]{3,32}$/.test(referral)) {
+            localStorage.setItem('r360_partner_ref', referral);
+            localStorage.setItem('r360_partner_ref_saved_at', new Date().toISOString());
+            var visitorId = localStorage.getItem('r360_partner_visitor');
+            if (!visitorId && window.crypto && typeof window.crypto.randomUUID === 'function') {
+              visitorId = window.crypto.randomUUID();
+              localStorage.setItem('r360_partner_visitor', visitorId);
+            }
+            if (visitorId) {
+              fetch('/api/partner-click', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ referralCode: referral, visitorId: visitorId })
+              }).catch(function () {});
+            }
+          }
+        } catch (_) {}
+      })();
+      function getSavedPartnerReferral() {
+        try { return localStorage.getItem('r360_partner_ref') || ''; } catch (_) { return ''; }
+      }
+    </script>
+
+    <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш реальный номер счетчика) -->
+    <script type="text/javascript" >
+       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+       m[i].l=1*new Date();
+       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+       ym(113852589, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/113852589" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+
+    <style>
+        .brand-gradient { background: linear-gradient(100deg, #818cf8 0%, #c084fc 28%, #67e8f9 55%, #a5b4fc 78%, #818cf8 100%); background-size: 240% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: brand-gradient-shift 6s ease-in-out infinite; }
+        @keyframes brand-gradient-shift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @media (prefers-reduced-motion: reduce) { .brand-gradient { animation: none; } }
+        body {
+            background-color: #090d16;
+            color: #f1f5f9;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .phone-mockup {
+            box-shadow: 0 0 50px rgba(99, 102, 241, 0.2);
+        }
+        @media (max-width: 1023px) { body { padding-bottom: 5.5rem; } }
+        #program-panel { scrollbar-width: thin; scrollbar-color: #475569 transparent; }
+        @keyframes feedback-bulb-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .feedback-bulb { animation: feedback-bulb-float 3s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .feedback-bulb { animation: none; } }
+    
+        @keyframes programReadyPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(129, 140, 248, 0.12); border-color: rgba(129, 140, 248, 0.45); }
+            50% { box-shadow: 0 0 0 5px rgba(129, 140, 248, 0.12); border-color: rgba(165, 180, 252, 0.95); }
+        }
+        #mobile-program-accordion.program-ready-highlight {
+            border-color: rgba(165, 180, 252, 0.9);
+            background: rgba(49, 46, 129, 0.28);
+            animation: programReadyPulse 1.8s ease-in-out 3;
+        }
+        #mobile-program-toggle-top { min-height: 44px; }
+        #mobile-program-toggle-label { text-decoration: underline; text-decoration-color: rgba(165, 180, 252, 0.65); text-underline-offset: 4px; }
+    @media (max-width: 768px) { input, select, textarea { font-size: 16px !important; } }
+  </style>
+</head>
+<body class="font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col justify-between pt-20">
+
+    <!-- ВЕРХНЯЯ ПЛАШКА О БЛАГОТВОРИТЕЛЬНОСТИ -->
+    <div class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white text-xs sm:text-sm font-bold py-1.5 px-4 text-center flex items-center justify-center space-x-2 shadow-md">
+        <span>🐾</span>
+        <span>1 диагностика = 1 сытый пёсик в приюте</span>
+        <span>🐾</span>
+    </div>
+
+    <!-- ЛИПКАЯ ПЛАШКА СВЕРХУ ПРИ СКРОЛЛЕ -->
+    <div id="sticky-bar" class="fixed top-7 left-0 right-0 z-40 bg-[#090d16]/95 backdrop-blur-md border-b border-indigo-500/30 py-2.5 px-4 shadow-2xl transition-all duration-300">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <a href="#" class="flex items-center" aria-label="Решай360 — на главную">
+                <span class="brand-gradient text-xl sm:text-2xl font-black tracking-tight">РЕШАЙ360</span>
+            </a>
+            
+            <nav class="hidden lg:flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm font-semibold">
+                <a href="#select-program" class="text-slate-300 hover:text-white transition px-2 py-1">Диагностика</a>
+                <a href="#charity" class="text-amber-400 hover:text-amber-300 transition px-2 py-1 flex items-center space-x-1">
+                    <span>🐾</span>
+                    <span>Приют</span>
+                </a>
+            </nav>
+        </div>
+    </div>
+
     <!-- ЭКРАН 1: ПРОБЛЕМА И ОБЕЩАНИЕ -->
     <section class="py-16 lg:py-24 min-h-[calc(100vh-5rem)] flex flex-col justify-center relative overflow-hidden">
         <div class="max-w-4xl mx-auto px-4 w-full text-center space-y-6">
