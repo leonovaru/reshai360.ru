@@ -150,30 +150,47 @@ export async function onRequestPost({ request, env }) {
         await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
     }
 
-    // Повторный запрос отчёта не должен повторно отправлять уже доставленный файл.
-    if (env.TG_BOT_TOKEN && env.TG_CHAT_ID && !tokenData.telegramSentAt) {
+    // Отдельный бот результатов получает PDF и ссылку на сохранённую диагностику.
+    if (env.TELEGRAM_RESULTS_BOT_TOKEN && env.TG_CHAT_ID && !tokenData.resultsTelegramSentAt) {
       try {
+        const testFiles = {
+          '7': 'test_7_basic.html', '7_basic': 'test_7_basic.html', '7_advanced': 'test_7_advanced.html',
+          '8': 'test_8_basic.html', '8_basic': 'test_8_basic.html', '8_advanced': 'test_8_advanced.html',
+          '9': 'test_9_basic.html', '9_basic': 'test_9_basic.html', '9_advanced': 'test_9_advanced.html',
+          '10': 'test_10_basic.html', '10_basic': 'test_10_basic.html', '10_advanced': 'test_10_advanced.html',
+          '11': 'test_11_basic.html', '11_basic': 'test_11_basic.html', '11_advanced': 'test_11_advanced.html'
+        };
+        const testUrl = 'https://reshai360.ru/' + (testFiles[tokenData.productKey] || 'index.html') + '?token=' + encodeURIComponent(token);
+        const promoRaw = promoCode ? await env.TEST_TOKENS.get("promo:" + promoCode) : null;
+        const issuedPromo = promoRaw ? JSON.parse(promoRaw) : null;
+        const expiresText = issuedPromo?.expiresAt
+          ? new Date(issuedPromo.expiresAt).toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" })
+          : "не указан";
         const tgFormData = new FormData();
         tgFormData.append("chat_id", env.TG_CHAT_ID);
-        tgFormData.append(
-          "caption",
-          `🎯 Пройдена диагностика!\nДиагностика: ${tokenData.productTitle || tokenData.productKey || "Не указана"}\nСтоимость: ${Number(tokenData.displayAmount ?? tokenData.listPrice ?? 0).toLocaleString("ru-RU")} ₽\nУченик: ${name || "Не указано"}\nEmail: ${email || "Не указан"}\nРезультат: ${scoreNumber} из ${totalNumber} (${percent}%)\nВведённый промокод: ${tokenData.promoCode || "не вводили"}\nСкидка по заказу: ${tokenData.promoCode ? `${Number(tokenData.discountPercent || 0)}% (${Number(tokenData.discountAmount || 0).toLocaleString("ru-RU")} ₽)` : "0 ₽"}${promoCode ? `\nПромокод 10%: ${promoCode}` : ""}`
-        );
-        tgFormData.append("document", pdfFile, `Отчет_${safeName}.pdf`);
-
+        tgFormData.append("caption", [
+          '📊 ДИАГНОСТИКА ЗАВЕРШЕНА — РЕШАЙ360',
+          'Имя: ' + (name || 'Не указано'),
+          'Email: ' + (email || 'Не указан'),
+          'Ссылка на диагностику: ' + testUrl,
+          'Результат: ' + scoreNumber + ' из ' + totalNumber + ' (' + percent + '%)',
+          'Новый промокод: ' + (promoCode || 'не выдан'),
+          'Скидка: ' + (issuedPromo ? Number(issuedPromo.discountPercent || 10) + '%' : '—'),
+          'Действует до: ' + expiresText
+        ].join('\\n'));
+        tgFormData.append("document", pdfFile, `Отчёт_${safeName}.pdf`);
         const tgResponse = await fetch(
-          `https://api.telegram.org/bot${env.TG_BOT_TOKEN}/sendDocument`,
+          'https://api.telegram.org/bot' + env.TELEGRAM_RESULTS_BOT_TOKEN + '/sendDocument',
           { method: "POST", body: tgFormData }
         );
-
         if (!tgResponse.ok) {
-          console.error("Telegram API error:", await tgResponse.text());
+          console.error("Telegram results notification error:", await tgResponse.text());
         } else {
-          tokenData.telegramSentAt = new Date().toISOString();
+          tokenData.resultsTelegramSentAt = new Date().toISOString();
           await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
         }
       } catch (tgErr) {
-        console.error("Telegram send error:", tgErr);
+        console.error("Telegram results notification error:", tgErr);
       }
     }
 
