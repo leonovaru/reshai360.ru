@@ -42,7 +42,16 @@ export async function onRequestPost({ request, env }) {
     const previousSnapshot = previousRaw ? JSON.parse(previousRaw) : null;
     const previousSavedAt = Number(previousSnapshot && previousSnapshot.savedAt) || 0;
     if (snapshot.savedAt >= previousSavedAt) {
-      await env.TEST_TOKENS.put(progressKey, JSON.stringify(snapshot), { expirationTtl: 86400 });
+      // Объединяем ответы по заданиям: если два устройства одновременно отвечают
+      // на разные вопросы, сохранение с одного устройства не стирает ответы другого.
+      const mergedSnapshot = previousSnapshot ? {
+        version: 1,
+        answers: { ...(previousSnapshot.answers || {}), ...snapshot.answers },
+        marked: snapshot.marked,
+        stats: { ...(previousSnapshot.stats || {}), ...snapshot.stats },
+        savedAt: snapshot.savedAt
+      } : snapshot;
+      await env.TEST_TOKENS.put(progressKey, JSON.stringify(mergedSnapshot), { expirationTtl: 86400 });
     }
 
     return Response.json({ success: true });
