@@ -363,7 +363,8 @@
         if (answer) answers[item.id] = answer;
         stats[item.id] = {
           checkCount: item.qDef.checkCount || 0,
-          attemptsHistory: item.qDef.attemptsHistory || []
+          attemptsHistory: item.qDef.attemptsHistory || [],
+          isCorrect: typeof item.qDef.isCorrect === "boolean" ? item.qDef.isCorrect : null
         };
       });
       localStorage.setItem(progressStorageKey, JSON.stringify({
@@ -406,6 +407,7 @@
         if (stat) {
           item.qDef.checkCount = Number(stat.checkCount) || 0;
           item.qDef.attemptsHistory = Array.isArray(stat.attemptsHistory) ? stat.attemptsHistory : [];
+          if (typeof stat.isCorrect === "boolean") item.qDef.isCorrect = stat.isCorrect;
         }
       });
     } catch (error) {
@@ -1233,7 +1235,7 @@
     }
 
     qDef.userText = formattedUserAns;
-    if (!silent) saveQuizProgress();
+    
 
     if (userAns === "") {
       if (!silent) {
@@ -1241,6 +1243,7 @@
         if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Ответ не введен!</span>";
       }
       qDef.isCorrect = undefined;
+       if (!silent) saveQuizProgress();
        updateQuestionNavigator();
        return;
     }
@@ -1285,6 +1288,7 @@
         if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Неверно ❌</span>";
       }
     }
+    if (!silent) saveQuizProgress();
     updateQuestionNavigator();
   }
 
