@@ -372,6 +372,7 @@
       );
       if (hasRestoredProgress) saveQuizProgress(true);
     }
+    if (!wasCompleted) startProgressSync();
     if (wasCompleted) await checkAll(true);
   });
 
@@ -416,6 +417,9 @@
   let serverCompletedSnapshot = null;
   let serverProgressSnapshot = null;
   let serverProgressSaveTimer = null;
+  let progressSyncTimer = null;
+  let lastAppliedServerSavedAt = 0;
+  let progressSyncInFlight = false;
 
   function getQuestionAnswer(qId, qDef) {
     if (qDef.type === "radio") {
@@ -533,6 +537,63 @@
     }
   }
 
+
+  async function syncProgressFromServer() {
+    if (!currentToken || !progressStorageKey || isCompletedView || progressSyncInFlight || document.visibilityState === "hidden") return;
+    progressSyncInFlight = true;
+    try {
+      const response = await fetch("/api/get-progress?token=" + encodeURIComponent(currentToken), {
+        method: "GET",
+        cache: "no-store",
+        headers: { "Accept": "application/json" }
+      });
+      if (!response.ok) return;
+      const result = await response.json();
+      const remote = result && result.success ? result.snapshot : null;
+      if (!remote || remote.version !== 1) return;
+
+      const remoteSavedAt = Number(remote.savedAt) || 0;
+      if (remoteSavedAt <= lastAppliedServerSavedAt) return;
+
+      let localSaved = null;
+      try {
+        const raw = localStorage.getItem(progressStorageKey);
+        if (raw) localSaved = JSON.parse(raw);
+      } catch (_) {}
+
+      const localSavedAt = Number(localSaved && localSaved.savedAt) || 0;
+      if (remoteSavedAt > localSavedAt) {
+        // Применяем только более свежий серверный снимок, не затирая локальные изменения.
+        serverProgressSnapshot = remote;
+        localStorage.setItem(progressStorageKey, JSON.stringify(remote));
+        restoreQuizProgress();
+        questionNavigation.forEach(item => {
+          const button = document.getElementById("flag_" + item.id);
+          const active = markedQuestions.has(item.id);
+          if (button) {
+            button.classList.toggle("active", active);
+            button.setAttribute("aria-pressed", String(active));
+            button.setAttribute("aria-label", active ? "Задание отмечено для возврата" : "Отметить задание, чтобы вернуться позже");
+            button.title = active ? "Отмечено для возврата" : "Вернуться к заданию позже";
+          }
+        });
+        updateQuestionNavigator();
+      }
+      lastAppliedServerSavedAt = Math.max(lastAppliedServerSavedAt, remoteSavedAt);
+    } catch (error) {
+      console.warn("Не удалось получить обновления прогресса:", error);
+    } finally {
+      progressSyncInFlight = false;
+    }
+  }
+
+  function startProgressSync() {
+    if (isCompletedView || progressSyncTimer) return;
+    lastAppliedServerSavedAt = Math.max(lastAppliedServerSavedAt, Number(serverProgressSnapshot && serverProgressSnapshot.savedAt) || 0);
+    syncProgressFromServer();
+    progressSyncTimer = setInterval(syncProgressFromServer, 2500);
+  }
+
   function updateQuestionNavigator() {
     const grid = document.getElementById("question-nav-grid");
     const count = document.getElementById("question-nav-count");
@@ -624,10 +685,8 @@
   });
   window.addEventListener("pagehide", () => saveQuizProgress(true));
 
-  window.onbeforeunload = function() {
-    saveQuizProgress(true);
-    return "Вы уверены, что хотите покинуть страницу?";
-  };
+  // Подтверждение выхода отключено: прогресс сохраняется автоматически.
+  window.onbeforeunload = null;
 
 
 
