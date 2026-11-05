@@ -548,12 +548,23 @@
   }
 
   async function safeTypeset(targetElement) {
-    if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
-      try {
+    if (!window.MathJax) return;
+    try {
+      if (MathJax.startup && MathJax.startup.promise) await MathJax.startup.promise;
+      if (typeof MathJax.typesetPromise === 'function') {
         await MathJax.typesetPromise(targetElement ? [targetElement] : []);
-      } catch (err) {
-        console.error("MathJax error:", err);
       }
+    } catch (err) {
+      console.error("MathJax error:", err);
+    }
+  }
+
+  function clearMathTypeset(targetElement) {
+    if (!targetElement || !window.MathJax || typeof MathJax.typesetClear !== 'function') return;
+    try {
+      MathJax.typesetClear([targetElement]);
+    } catch (err) {
+      console.warn("MathJax cleanup error:", err);
     }
   }
 
@@ -1256,8 +1267,8 @@
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
-        windowWidth: 1024,
-        windowHeight: 1200,
+        windowWidth: 794,
+        windowHeight: 1122,
         scrollX: 0,
         scrollY: 0,
         onclone: clonedDocument => {
@@ -1595,6 +1606,7 @@
       ${screenCardsHtml}
     `;
 
+    clearMathTypeset(document.getElementById("result-screen"));
     document.getElementById("result-screen").innerHTML = screenResultHtml;
     const promoCard = document.getElementById("promo-code-result");
     const resultActions = document.querySelector("#result-screen .result-actions");
@@ -1611,6 +1623,7 @@
 
     for (let i = 0; i < pdfCardsArray.length; i++) {
       let testCards = [...currentPageCards, pdfCardsArray[i]];
+      clearMathTypeset(measureContainer);
       measureContainer.innerHTML = `<h3 class="detail-section-title">Результаты выполнения заданий</h3>` + testCards.join('');
       await safeTypeset(measureContainer);
       let currentHeight = measureContainer.offsetHeight;
@@ -1644,6 +1657,7 @@
       `;
     });
 
+    clearMathTypeset(document.getElementById("result-pdf"));
     document.getElementById("result-pdf").innerHTML = pagesHtml;
     document.getElementById("main-container").style.display = "none";
     document.getElementById("result-wrapper").style.display = "block";
