@@ -147,11 +147,13 @@
     .question-nav-legend .legend-empty { background:#cbd5e1; }
      .question-nav-legend .legend-correct { background:#16a34a; }
      .question-nav-legend .legend-incorrect { background:#dc2626; }
+     .question-nav-legend .legend-pending { background:#475569; }
     .question-nav-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr)); gap:7px; margin-top:12px; }
     .question-nav-item { position:relative; min-height:38px; border:1px solid #cbd5e1; border-radius:8px; background:#e2e8f0; color:#334155; font-weight:700; cursor:pointer; }
      .question-nav-item.unanswered,.question-nav-item.answered { border-color:#cbd5e1; background:#e2e8f0; color:#334155; }
      .question-nav-item.correct { border-color:#16a34a; background:#16a34a; color:#fff; }
      .question-nav-item.incorrect { border-color:#dc2626; background:#dc2626; color:#fff; }
+     .question-nav-item.pending { border-color:#475569; background:#475569; color:#fff; }
     
     .question-nav-item.marked::after { content:""; position:absolute; width:8px; height:8px; border-radius:50%; background:#facc15; border:1px solid #854d0e; top:-3px; right:-3px; }
     .question-nav-item:focus-visible,.question-flag:focus-visible,.question-nav-toggle:focus-visible { outline:3px solid #fbbf24; outline-offset:2px; }
@@ -204,7 +206,7 @@
       <button type="button" id="question-nav-toggle" class="question-nav-toggle" onclick="toggleQuestionNavigator()" aria-expanded="false">
         <span>Задания: <span id="question-nav-count">0</span></span><span aria-hidden="true">⌄</span>
       </button>
-      <div class="question-nav-legend"><span><i class="legend-empty"></i> Нет ответа</span><span><i class="legend-correct"></i> Верно</span><span><i class="legend-incorrect"></i> Неверно</span><span>● Отмечено для возврата</span></div>
+      <div class="question-nav-legend"><span><i class="legend-empty"></i> Нет ответа</span><span><i class="legend-pending"></i> Ответ не проверен</span><span><i class="legend-correct"></i> Верно</span><span><i class="legend-incorrect"></i> Неверно</span><span>● Отмечено для возврата</span></div>
       <div id="question-nav-grid" class="question-nav-grid"></div>
     </div>
     <div id="quiz-container"></div>
@@ -442,7 +444,7 @@
       const answered = !!getQuestionAnswer(item.id, item.qDef);
       if (answered) answeredCount++;
       const marked = markedQuestions.has(item.id);
-      const statusClass = !answered ? "unanswered" : (item.qDef.isCorrect === true ? "correct" : (item.qDef.isCorrect === false ? "incorrect" : "answered"));
+      const statusClass = !answered ? "unanswered" : (item.qDef.isCorrect === true ? "correct" : (item.qDef.isCorrect === false ? "incorrect" : "pending"));
        return '<button type="button" class="question-nav-item ' + statusClass + (marked ? ' marked' : '') +
         '" data-question-id="' + item.id + '" aria-label="Задание ' + item.number + (answered ? ', есть ответ' : ', нет ответа') + (marked ? ', вернуться позже' : '') + '">' + item.number + '</button>';
     }).join("");
