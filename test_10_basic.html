@@ -1355,7 +1355,7 @@
     const availableHeight = page.clientHeight - 70;
     const naturalHeight = content.scrollHeight;
     if (naturalHeight > availableHeight) {
-      const scale = Math.max(0.72, availableHeight / naturalHeight);
+      const scale = Math.min(1, availableHeight / naturalHeight);
       content.style.transform = "scale(" + scale + ")";
       content.style.width = (100 / scale) + "%";
     }
@@ -1739,7 +1739,7 @@
     startPdfCountdown();
 
     let measureContainer = document.createElement('div');
-    measureContainer.style.cssText = 'position: fixed; top: 0; left: -9999px; width: 714px; visibility: hidden; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;';
+    measureContainer.style.cssText = 'position: fixed; top: 0; left: -9999px; width: 714px; padding-bottom: 1px; box-sizing: border-box; visibility: hidden; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;';
     document.body.appendChild(measureContainer);
 
     let detailPagesCards = [];
@@ -1751,7 +1751,7 @@
       clearMathTypeset(measureContainer);
       measureContainer.innerHTML = `<h3 class="detail-section-title">Результаты выполнения заданий</h3>` + testCards.join('');
       await safeTypeset(measureContainer);
-      let currentHeight = measureContainer.offsetHeight;
+      let currentHeight = Math.max(measureContainer.offsetHeight, measureContainer.scrollHeight);
 
       if (currentHeight > MAX_PAGE_CONTENT_HEIGHT && currentPageCards.length > 0) {
         detailPagesCards.push(currentPageCards);
