@@ -239,6 +239,12 @@
         scrollX: 0,
         scrollY: 0,
         onclone: clonedDocument => {
+          const exportContainer = clonedDocument.getElementById("pdf-export-container");
+          if (exportContainer) {
+            exportContainer.style.opacity = "1";
+            exportContainer.style.visibility = "visible";
+            exportContainer.style.zIndex = "auto";
+          }
           const clonedPages = clonedDocument.querySelectorAll("#result-pdf .pdf-page");
           const clonedPage = clonedPages[i];
           if (!clonedPage) return;
