@@ -245,6 +245,61 @@
   let studentData = { fullName: "Ученик", email: "" };
   let currentToken = "";
   let generatedPdfBlob = null;
+
+  // Готовый PDF хранится в IndexedDB этого браузера до окончания 24-часового доступа.
+  function openDiagnosticPdfCache() {
+    return new Promise(resolve => {
+      if (!window.indexedDB) return resolve(null);
+      let request;
+      try { request = window.indexedDB.open("reshai360-pdf-cache", 1); }
+      catch (_) { return resolve(null); }
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains("reports")) db.createObjectStore("reports", { keyPath: "token" });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => resolve(null);
+      request.onblocked = () => resolve(null);
+    });
+  }
+
+  async function getCachedDiagnosticPdf(token) {
+    if (!token) return null;
+    const db = await openDiagnosticPdfCache();
+    if (!db) return null;
+    return new Promise(resolve => {
+      let transaction;
+      try { transaction = db.transaction("reports", "readonly"); }
+      catch (_) { db.close(); return resolve(null); }
+      const request = transaction.objectStore("reports").get(token);
+      request.onsuccess = () => {
+        const entry = request.result;
+        if (entry && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
+        if (entry) {
+          try { db.transaction("reports", "readwrite").objectStore("reports").delete(token); } catch (_) {}
+        }
+        resolve(null);
+      };
+      request.onerror = () => resolve(null);
+      transaction.oncomplete = () => db.close();
+      transaction.onerror = () => db.close();
+    });
+  }
+
+  async function saveCachedDiagnosticPdf(token, blob) {
+    if (!token || !blob) return false;
+    const db = await openDiagnosticPdfCache();
+    if (!db) return false;
+    return new Promise(resolve => {
+      let transaction;
+      try { transaction = db.transaction("reports", "readwrite"); }
+      catch (_) { db.close(); return resolve(false); }
+      transaction.objectStore("reports").put({ token, blob, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+      transaction.oncomplete = () => { db.close(); resolve(true); };
+      transaction.onerror = () => { db.close(); resolve(false); };
+      transaction.onabort = () => { db.close(); resolve(false); };
+    });
+  }
   let isCompletedView = false;
   let existingPromoCode = "";
 
@@ -1678,7 +1733,7 @@
               <div class="pdf-q">${qIndex}. ${formatMathText(qDef.q)}</div>
               <div class="pdf-card-footer"><div class="pdf-ans">
                 <b>Итоговый ответ:</b> ${escapeHtml(finalAnswer)}<br>
-                <b>Проверок ответа:</b> ${checkCountVal}${checkCountVal ? " | <b>История:</b> " + escapeHtml(attemptsList) : ""}<br>
+                <b>Введенных ответов:</b> ${checkCountVal}${checkCountVal ? " | <b>Ответы:</b> " + escapeHtml(attemptsList) : ""}<br>
                 <b>Правильный ответ:</b> ${formatMathText(qDef.correctText)}
               </div><span class="badge ${badgeClass}">${badgeStatus}</span></div>
             </div>
@@ -1841,7 +1896,9 @@
 
     const downloadBtn = document.getElementById("downloadPdfBtn");
     try {
-      generatedPdfBlob = await buildPerfectPdfBlob();
+      const cachedPdfBlob = await getCachedDiagnosticPdf(currentToken);
+      generatedPdfBlob = cachedPdfBlob || await buildPerfectPdfBlob();
+      if (!cachedPdfBlob && currentToken) await saveCachedDiagnosticPdf(currentToken, generatedPdfBlob);
       if (pdfCountdownTimer) { clearInterval(pdfCountdownTimer); pdfCountdownTimer = null; }
       if (downloadBtn) { downloadBtn.disabled = false; downloadBtn.innerText = "📄 Скачать PDF-отчёт"; }
 
