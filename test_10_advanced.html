@@ -416,7 +416,7 @@
     return input && input.value.trim() ? { type: "text", value: input.value } : null;
   }
 
-  function saveQuizProgress() {
+  function saveQuizProgress(immediate = false) {
     if (!progressStorageKey || !questionNavigation.length) return;
     try {
       const answers = {};
@@ -438,22 +438,29 @@
         savedAt: Date.now()
       };
       localStorage.setItem(progressStorageKey, JSON.stringify(snapshot));
-      // Сохраняем прогресс на сервере для продолжения диагностики по ссылке в другом браузере.
-      clearTimeout(serverProgressSaveTimer);
-      serverProgressSaveTimer = setTimeout(() => {
+
+      const saveToServer = () => {
         fetch('/api/save-progress', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: currentToken, snapshot })
+          body: JSON.stringify({ token: currentToken, snapshot }),
+          keepalive: true
         }).then(response => {
           if (!response.ok) console.warn('Не удалось синхронизировать прогресс с сервером.');
         }).catch(error => console.warn('Ошибка сохранения прогресса на сервере:', error));
-      }, 500);
+      };
+
+      clearTimeout(serverProgressSaveTimer);
+      if (immediate) {
+        // При уходе со страницы отправляем снимок сразу: обычный таймер может не успеть выполниться.
+        saveToServer();
+      } else {
+        serverProgressSaveTimer = setTimeout(saveToServer, 500);
+      }
     } catch (error) {
       console.warn("Не удалось сохранить прогресс диагностики:", error);
     }
   }
-
   function restoreQuizProgress() {
     if (!progressStorageKey) return;
     try {
@@ -603,12 +610,12 @@
   }
 
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") saveQuizProgress();
+    if (document.visibilityState === "hidden") saveQuizProgress(true);
   });
-  window.addEventListener("pagehide", saveQuizProgress);
+  window.addEventListener("pagehide", () => saveQuizProgress(true));
 
   window.onbeforeunload = function() {
-    saveQuizProgress();
+    saveQuizProgress(true);
     return "Вы уверены, что хотите покинуть страницу?";
   };
 
