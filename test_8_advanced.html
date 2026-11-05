@@ -1505,10 +1505,11 @@
             }
           }
 
-          if (qDef.isCorrect) themeCorrect++;
-
           const isSkipped = (qDef.userText === "Не введено" || qDef.userText === "Не выбрано");
-          const isGuessedByBruteForce = (qDef.type === 'radio' && qDef.checkCount > 1);
+          const distinctRadioAnswers = new Set((qDef.attemptsHistory || []).map(answer => String(answer)));
+          const isGuessedByBruteForce = (qDef.type === 'radio' && distinctRadioAnswers.size > 1);
+
+          if (qDef.isCorrect && !isGuessedByBruteForce) themeCorrect++;
 
           let statusClass = "incorrect";
           let badgeStatus = "Ошибка ⚠️";
