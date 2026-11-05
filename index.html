@@ -14,7 +14,7 @@
     <!-- PDF.js CDN для просмотра PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Внешний файл данных и конфигурации -->
-    <script src="config.js?v=20261029-9"></script>
+    <script src="config.js?v=20261105-mobile1"></script>
 
     <!-- Партнёрская атрибуция: сохраняется в этом браузере без срока истечения. -->
     <script>
@@ -147,8 +147,8 @@
                     <div class="phone-mockup relative mx-auto w-[200px] sm:w-[230px] h-[400px] sm:h-[460px] rounded-[32px] p-2 bg-slate-900 border-4 border-slate-800 shadow-2xl overflow-hidden">
                         <div class="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-3.5 bg-slate-950 rounded-full z-20 flex items-center justify-center"><div class="w-6 h-1 bg-slate-800 rounded-full"></div></div>
                         <div class="relative w-full h-full rounded-[26px] overflow-hidden bg-slate-950 flex items-center justify-center">
-                            <video id="demo-video" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen" class="w-full h-full object-cover pointer-events-none select-none" aria-label="Беззвучный зацикленный пример прохождения диагностики с телефона">
-                                <source id="video-source" src="/demo_mobile.mp4?v=20261030" type="video/mp4">
+                            <video id="demo-video" autoplay muted loop playsinline webkit-playsinline preload="none" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen" class="w-full h-full object-cover pointer-events-none select-none" aria-label="Беззвучный зацикленный пример прохождения диагностики с телефона">
+                                <source id="video-source" data-src="/demo_mobile.mp4?v=20261105-mobile1" type="video/mp4">
                             </video>
                             <p id="video-fallback" class="hidden absolute inset-x-3 bottom-3 rounded-lg bg-slate-950/90 p-2 text-center text-xs text-white">Видео временно недоступно.</p>
                         </div>
@@ -256,7 +256,7 @@
             <div class="glass-panel rounded-3xl p-6 sm:p-9 border border-slate-800">
                 <div class="grid md:grid-cols-[280px_minmax(0,1fr)] gap-7 md:gap-9 items-start">
                     <div class="w-full max-w-[280px] mx-auto md:mx-0">
-                        <img src="/marina-leonova.jpg" alt="Марина Леонова" class="w-full aspect-[3/4] object-cover rounded-2xl border border-slate-700">
+                        <img src="/marina-leonova.jpg?v=20261105-mobile1" alt="Марина Леонова" loading="eager" fetchpriority="high" decoding="async" class="w-full aspect-[3/4] object-cover rounded-2xl border border-slate-700">
                         <div class="mt-4 space-y-1">
                             <h2 class="text-2xl sm:text-3xl font-black brand-gradient">Марина Леонова</h2>
                             <p class="text-sm sm:text-base text-slate-400 leading-relaxed">Создатель Решай360</p>
@@ -603,20 +603,36 @@
 
         function initVideo() {
             const video = document.getElementById('demo-video');
+            const videoSource = document.getElementById('video-source');
             const fallback = document.getElementById('video-fallback');
-            if (!video) return;
+            if (!video || !videoSource) return;
+
             video.muted = true;
             video.defaultMuted = true;
             video.loop = true;
+            video.playsInline = true;
             video.controls = false;
             video.removeAttribute('controls');
             video.addEventListener('contextmenu', event => event.preventDefault());
             video.addEventListener('error', () => {
                 if (fallback) fallback.classList.remove('hidden');
             });
-            video.play().catch(() => {
-                // Автовоспроизведение может блокироваться настройками браузера.
-            });
+
+            const startPlayback = () => {
+                video.play().catch(() => {
+                    // На мобильных устройствах браузер может ждать первого действия пользователя.
+                });
+            };
+            video.addEventListener('canplay', startPlayback, { once: true });
+            document.addEventListener('touchstart', startPlayback, { once: true, passive: true });
+            document.addEventListener('click', startPlayback, { once: true });
+
+            const source = videoSource.dataset.src;
+            if (source) {
+                videoSource.src = source;
+                video.load();
+                startPlayback();
+            }
         }
 
         function toggleProgramBlocks() {
