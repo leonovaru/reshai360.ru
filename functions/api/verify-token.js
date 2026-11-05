@@ -1,3 +1,5 @@
+import { sendPaymentTelegramNotification } from "../_lib/telegram-payment.js";
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   try {
@@ -59,6 +61,21 @@ export async function onRequestPost(context) {
 
     if (tokenData.isPaid !== true) {
       return Response.json({ valid: false, message: 'Платёж ещё подтверждается.' }, { status: 402 });
+    }
+
+    // Если оплату подтвердили резервной проверкой или webhook ещё не успел отправить уведомление,
+    // повторяем отправку здесь. Маркер в KV защищает от повторных сообщений.
+    if (!tokenData.paymentTelegramSentAt) {
+      const telegramResult = await sendPaymentTelegramNotification({
+        env,
+        token,
+        tokenData,
+        amount: tokenData.expectedPaymentAmount
+      });
+      // Отсутствие Telegram-конфигурации не должно блокировать доступ к уже оплаченному тесту.
+      if (!telegramResult.sent && telegramResult.configured) {
+        console.error("Payment was verified, but Telegram notification is pending a retry.");
+      }
     }
 
     // Синхронизируем одноразовый промокод и при прямой проверке оплаты,
