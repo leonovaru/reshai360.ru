@@ -17,9 +17,10 @@ export async function onRequestPost(context) {
 
     // Черновик прогресса хранится отдельно от заказа, чтобы автосохранение
     // не продлевало срок действия оплаченной ссылки.
+    let progressSnapshot = null;
     const progressRaw = await env.TEST_TOKENS.get("progress:" + token);
     if (progressRaw) {
-      try { tokenData.progressSnapshot = JSON.parse(progressRaw); } catch (_) {}
+      try { progressSnapshot = JSON.parse(progressRaw); } catch (_) {}
     }
 
     // Если webhook ещё не успел обработать событие, проверяем платёж напрямую
@@ -109,7 +110,7 @@ export async function onRequestPost(context) {
       tokenData.isUsed = true;
       await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
     }
-    return Response.json({ valid: true, data: tokenData, completed: tokenData.isCompleted === true });
+    return Response.json({ valid: true, data: { ...tokenData, progressSnapshot }, completed: tokenData.isCompleted === true });
   } catch (err) {
     console.error('Verify token error:', err);
     return Response.json({ valid: false, message: 'Ошибка проверки оплаты.' }, { status: 500 });
