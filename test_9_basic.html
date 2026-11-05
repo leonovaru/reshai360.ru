@@ -363,6 +363,16 @@
       try { localStorage.setItem(progressStorageKey, JSON.stringify({ version: 1, ...completedSnapshot, savedAt: Date.now() })); } catch (_) {}
     }
     await renderQuiz();
+    // После восстановления локального черновика сразу отправляем его на сервер,
+    // чтобы уже введённые ответы стали доступны на другом устройстве.
+    if (!wasCompleted) {
+      const hasRestoredProgress = markedQuestions.size > 0 || questionNavigation.some(item =>
+        getQuestionAnswer(item.id, item.qDef) ||
+        item.qDef.checkCount > 0 ||
+        (item.qDef.attemptsHistory && item.qDef.attemptsHistory.length > 0)
+      );
+      if (hasRestoredProgress) saveQuizProgress(true);
+    }
     if (wasCompleted) await checkAll(true);
   });
 
