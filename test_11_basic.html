@@ -1236,9 +1236,7 @@
       if (!answered) unansweredQuestions.push(qId);
     })));
     if (unansweredQuestions.length > 0 && !skipUnansweredConfirm) {
-      const message = `Остались незаполненные задания: ${unansweredQuestions.length}.
-
-Завершить тест и посмотреть результаты без них?`;
+      const message = `Остались незаполненные задания: ${unansweredQuestions.length}. Завершить тест и посмотреть результаты без них?`;
       if (!window.confirm(message)) return;
     }
 
