@@ -437,7 +437,7 @@
       const stats = {};
       questionNavigation.forEach(item => {
         const answer = getQuestionAnswer(item.id, item.qDef);
-        answers[item.id] = answer;
+        if (answer) answers[item.id] = answer;
         stats[item.id] = {
           checkCount: item.qDef.checkCount || 0,
           attemptsHistory: item.qDef.attemptsHistory || [],
