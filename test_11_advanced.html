@@ -416,7 +416,25 @@
         if (stat) {
           item.qDef.checkCount = Number(stat.checkCount) || 0;
           item.qDef.attemptsHistory = Array.isArray(stat.attemptsHistory) ? stat.attemptsHistory : [];
-          if (typeof stat.isCorrect === "boolean") item.qDef.isCorrect = stat.isCorrect;
+          if (typeof stat.isCorrect === "boolean") {
+            item.qDef.isCorrect = stat.isCorrect;
+            const feedEl = document.getElementById(`feed_${item.id}`);
+            const btnEl = document.getElementById(`btn_${item.id}`);
+            if (stat.isCorrect) {
+              if (feedEl) feedEl.innerHTML = "<span style='color: #16a34a'>Верно! ✅</span>";
+              if (item.qDef.type === "radio") {
+                Array.from(document.getElementsByName(item.id)).forEach(el => el.disabled = true);
+              } else {
+                const inputEl = document.getElementById(item.id);
+                if (inputEl) inputEl.disabled = true;
+                const toggleBtn = document.getElementById(`btn_toggle_${item.id}`);
+                if (toggleBtn) toggleBtn.disabled = true;
+              }
+              if (btnEl) btnEl.style.display = "none";
+            } else if (feedEl) {
+              feedEl.innerHTML = "<span style='color: #dc2626'>Неверно ❌</span>";
+            }
+          }
         }
       });
     } catch (error) {
