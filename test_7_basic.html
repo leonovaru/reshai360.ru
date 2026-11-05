@@ -1467,7 +1467,7 @@
             <div class="pdf-card ${statusClass}">
               <div class="pdf-q">${qIndex}. ${formatQuestionContent(qDef.q)}</div>
               <div class="pdf-card-footer"><div class="pdf-ans">
-                <b>Попыток ввода:</b> ${checkCountVal} | <b>Ответ:</b> ${attemptsList}<br>
+                <b>Попыток ввода:</b> ${checkCountVal} | <b>Ответ:</b> ${escapeHtml(attemptsList)}<br>
                 <b>Правильный ответ:</b> ${formatMathText(qDef.correctText)}
               </div><span class="badge ${badgeClass}">${badgeStatus}</span></div>
             </div>
