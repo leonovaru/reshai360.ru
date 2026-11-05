@@ -347,6 +347,7 @@
         existingPromoCode = String(result.data.promoCodeIssued || "");
         completedSnapshot = result.data.answersSnapshot || null;
         serverCompletedSnapshot = completedSnapshot;
+        serverProgressSnapshot = result.data.progressSnapshot || null;
       }
     } catch (err) {
       console.error("Ошибка проверки токена:", err);
@@ -403,6 +404,8 @@
   let markedQuestions = new Set();
   let progressStorageKey = "";
   let serverCompletedSnapshot = null;
+  let serverProgressSnapshot = null;
+  let serverProgressSaveTimer = null;
 
   function getQuestionAnswer(qId, qDef) {
     if (qDef.type === "radio") {
@@ -427,13 +430,25 @@
           isCorrect: typeof item.qDef.isCorrect === "boolean" ? item.qDef.isCorrect : null
         };
       });
-      localStorage.setItem(progressStorageKey, JSON.stringify({
+      const snapshot = {
         version: 1,
         answers,
         marked: Array.from(markedQuestions),
         stats,
         savedAt: Date.now()
-      }));
+      };
+      localStorage.setItem(progressStorageKey, JSON.stringify(snapshot));
+      // Сохраняем прогресс на сервере для продолжения диагностики по ссылке в другом браузере.
+      clearTimeout(serverProgressSaveTimer);
+      serverProgressSaveTimer = setTimeout(() => {
+        fetch('/api/save-progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: currentToken, snapshot })
+        }).then(response => {
+          if (!response.ok) console.warn('Не удалось синхронизировать прогресс с сервером.');
+        }).catch(error => console.warn('Ошибка сохранения прогресса на сервере:', error));
+      }, 500);
     } catch (error) {
       console.warn("Не удалось сохранить прогресс диагностики:", error);
     }
@@ -442,13 +457,20 @@
   function restoreQuizProgress() {
     if (!progressStorageKey) return;
     try {
-      // Завершённый снимок с сервера используем даже при отключённом localStorage.
+      // Завершённый снимок имеет приоритет; иначе выбираем самый свежий прогресс с сервера или из браузера.
+      let localSaved = null;
+      try {
+        const raw = localStorage.getItem(progressStorageKey);
+        if (raw) localSaved = JSON.parse(raw);
+      } catch (_) {}
       let saved = serverCompletedSnapshot ? { version: 1, ...serverCompletedSnapshot } : null;
       if (!saved) {
-        const raw = localStorage.getItem(progressStorageKey);
-        if (!raw) return;
-        saved = JSON.parse(raw);
+        const serverSaved = serverProgressSnapshot && serverProgressSnapshot.version === 1 ? serverProgressSnapshot : null;
+        saved = serverSaved && (!localSaved || Number(serverSaved.savedAt || 0) >= Number(localSaved.savedAt || 0))
+          ? serverSaved
+          : localSaved;
       }
+      if (!saved) return;
       if (!saved || saved.version !== 1) return;
       markedQuestions = new Set(Array.isArray(saved.marked) ? saved.marked : []);
       questionNavigation.forEach(item => {
