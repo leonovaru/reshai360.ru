@@ -101,15 +101,16 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    // Повышаем только самый поздний из активных промокодов клиента.
+    // Последний активный промокод сохраняем отдельно от права на повторное повышение скидки.
     candidates.sort((a, b) => b.createdAt - a.createdAt);
-    if (candidates.length) {
-      promoCodeToUpgrade = candidates[0].code;
-      promoKey = candidates[0].key;
-      promo = candidates[0].record;
-      if (Number(promo.discountPercent || 10) < 15 && !promo.feedbackUpgrade) {
-        // К этому моменту выбран именно последний активный промокод по email.
-      } else {
+    const latestActivePromo = candidates.length ? candidates[0] : null;
+    const latestActivePromoCode = latestActivePromo ? latestActivePromo.code : null;
+    const latestActivePromoRecord = latestActivePromo ? latestActivePromo.record : null;
+    if (latestActivePromo) {
+      promoCodeToUpgrade = latestActivePromo.code;
+      promoKey = latestActivePromo.key;
+      promo = latestActivePromo.record;
+      if (!(Number(promo.discountPercent || 10) < 15 && !promo.feedbackUpgrade)) {
         promo = null;
         promoKey = null;
         promoCodeToUpgrade = null;
@@ -145,24 +146,33 @@ export async function onRequestPost({ request, env }) {
     await env.TEST_TOKENS.put(feedbackKey, JSON.stringify(feedback), { expirationTtl: 31536000 });
 
     let telegramSent = false;
-    if (env.TG_BOT_TOKEN && env.TG_CHAT_ID) {
+    if (env.TELEGRAM_FEEDBACK_BOT_TOKEN && env.TG_CHAT_ID) {
+      const promoExpiresText = latestActivePromoRecord?.expiresAt
+        ? new Date(latestActivePromoRecord.expiresAt).toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" })
+        : "нет активного промокода";
+      const currentDiscount = latestActivePromoRecord
+        ? Number(latestActivePromoRecord.discountPercent || 10) + "%"
+        : "—";
       const lines = [
-        "💬 Новая обратная связь — Решай360",
-        "Источник: " + source,
+        "💬 НОВАЯ ОБРАТНАЯ СВЯЗЬ — РЕШАЙ360",
         "Имя: " + name,
         "Email: " + email,
-        "Диагностика: " + (tokenData ? (tokenData.productKey || "не указана") : "не привязана"),
+        "Последний активный промокод: " + (latestActivePromoCode || "нет"),
+        "Размер скидки: " + currentDiscount,
+        "Срок действия: " + promoExpiresText,
+        latestActivePromoCode && upgradedNow ? "Скидка повышена после отзыва." : "",
+        "Источник: " + source,
+        "Диагностика: " + (tokenData ? (tokenData.productTitle || tokenData.productKey || "не указана") : "не привязана"),
         "Категория: " + category,
-        (promoCodeToUpgrade || promoCode) ? ("Промокод " + (promoCodeToUpgrade || promoCode) + (promo ? (upgradedNow ? " повышен до 15%" : " — текущая скидка " + (promo.discountPercent || 10) + "%") : "")) : "",
         "",
         "Сообщение:",
         message
       ].filter(Boolean);
       try {
-        const response = await fetch("https://api.telegram.org/bot" + env.TG_BOT_TOKEN + "/sendMessage", {
+        const response = await fetch("https://api.telegram.org/bot" + env.TELEGRAM_FEEDBACK_BOT_TOKEN + "/sendMessage", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: env.TG_CHAT_ID, text: lines.join("\n") })
+          body: JSON.stringify({ chat_id: env.TG_CHAT_ID, text: lines.join("\n"), disable_web_page_preview: true })
         });
         telegramSent = response.ok;
         if (!response.ok) console.error("Telegram feedback error:", await response.text());
