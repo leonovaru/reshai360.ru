@@ -1,190 +1,136 @@
-<!DOCTYPE html>
-<html lang="ru" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Решай360.ру — Полный аудит знаний по математике</title>
-    <link rel="icon" type="image/png" href="/logo.png?v=20261105">
-    <link rel="apple-touch-icon" href="/logo.png?v=20261105">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Официальный виджет оплаты ЮKassa -->
-    <script src="https://yookassa.ru/checkout-widget/v1/checkout-widget.js"></script>
-    <!-- PDF.js CDN для просмотра PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <!-- Внешний файл данных и конфигурации -->
-    <script src="config.js?v=20261029-9"></script>
-
-    <!-- Партнёрская атрибуция: сохраняется в этом браузере без срока истечения. -->
-    <script>
-      (function () {
-        try {
-          var params = new URLSearchParams(window.location.search);
-          var referral = (params.get('ref') || '').trim().toLowerCase();
-          if (/^[a-z0-9_-]{3,32}$/.test(referral)) {
-            localStorage.setItem('r360_partner_ref', referral);
-            localStorage.setItem('r360_partner_ref_saved_at', new Date().toISOString());
-            var visitorId = localStorage.getItem('r360_partner_visitor');
-            if (!visitorId && window.crypto && typeof window.crypto.randomUUID === 'function') {
-              visitorId = window.crypto.randomUUID();
-              localStorage.setItem('r360_partner_visitor', visitorId);
-            }
-            if (visitorId) {
-              fetch('/api/partner-click', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ referralCode: referral, visitorId: visitorId })
-              }).catch(function () {});
-            }
-          }
-        } catch (_) {}
-      })();
-      function getSavedPartnerReferral() {
-        try { return localStorage.getItem('r360_partner_ref') || ''; } catch (_) { return ''; }
-      }
-    </script>
-
-    <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш реальный номер счетчика) -->
-    <script type="text/javascript" >
-       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-       m[i].l=1*new Date();
-       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-       ym(113852589, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/113852589" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-
-    <style>
-        .brand-gradient { background: linear-gradient(100deg, #818cf8 0%, #c084fc 28%, #67e8f9 55%, #a5b4fc 78%, #818cf8 100%); background-size: 240% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: brand-gradient-shift 6s ease-in-out infinite; }
-        @keyframes brand-gradient-shift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        @media (prefers-reduced-motion: reduce) { .brand-gradient { animation: none; } }
-        body {
-            background-color: #090d16;
-            color: #f1f5f9;
-        }
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .phone-mockup {
-            box-shadow: 0 0 50px rgba(99, 102, 241, 0.2);
-        }
-        @media (max-width: 1023px) { body { padding-bottom: 5.5rem; } }
-        #program-panel { scrollbar-width: thin; scrollbar-color: #475569 transparent; }
-        @keyframes feedback-bulb-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        .feedback-bulb { animation: feedback-bulb-float 3s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) { .feedback-bulb { animation: none; } }
-    
-        @keyframes programReadyPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(129, 140, 248, 0.12); border-color: rgba(129, 140, 248, 0.45); }
-            50% { box-shadow: 0 0 0 5px rgba(129, 140, 248, 0.12); border-color: rgba(165, 180, 252, 0.95); }
-        }
-        #mobile-program-accordion.program-ready-highlight {
-            border-color: rgba(165, 180, 252, 0.9);
-            background: rgba(49, 46, 129, 0.28);
-            animation: programReadyPulse 1.8s ease-in-out 3;
-        }
-        #mobile-program-toggle-top { min-height: 44px; }
-        #mobile-program-toggle-label { text-decoration: underline; text-decoration-color: rgba(165, 180, 252, 0.65); text-underline-offset: 4px; }
-    @media (max-width: 768px) { input, select, textarea { font-size: 16px !important; } }
-  </style>
-</head>
-<body class="font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col justify-between pt-20">
-
-    <!-- ВЕРХНЯЯ ПЛАШКА О БЛАГОТВОРИТЕЛЬНОСТИ -->
-    <div class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white text-xs sm:text-sm font-bold py-1.5 px-4 text-center flex items-center justify-center space-x-2 shadow-md">
-        <span>🐾</span>
-        <span>1 диагностика = 1 сытый пёсик в приюте</span>
-        <span>🐾</span>
-    </div>
-
-    <!-- ЛИПКАЯ ПЛАШКА СВЕРХУ ПРИ СКРОЛЛЕ -->
-    <div id="sticky-bar" class="fixed top-7 left-0 right-0 z-40 bg-[#090d16]/95 backdrop-blur-md border-b border-indigo-500/30 py-2.5 px-4 shadow-2xl transition-all duration-300">
-        <div class="max-w-6xl mx-auto flex items-center justify-between">
-            <a href="#" class="flex items-center" aria-label="Решай360 — на главную">
-                <span class="brand-gradient text-xl sm:text-2xl font-black tracking-tight">РЕШАЙ360</span>
-            </a>
-            
-            <nav class="hidden lg:flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm font-semibold">
-                <a href="#select-program" class="text-slate-300 hover:text-white transition px-2 py-1">Диагностика</a>
-                <a href="#charity" class="text-amber-400 hover:text-amber-300 transition px-2 py-1 flex items-center space-x-1">
-                    <span>🐾</span>
-                    <span>Приют</span>
-                </a>
-            </nav>
+    <!-- ЭКРАН 1: ПРОБЛЕМА И ОБЕЩАНИЕ -->
+    <section class="py-16 lg:py-24 min-h-[calc(100vh-5rem)] flex flex-col justify-center relative overflow-hidden">
+        <div class="max-w-4xl mx-auto px-4 w-full text-center space-y-6">
+            <p class="text-xs sm:text-sm font-bold uppercase tracking-[0.22em] text-indigo-300">Независимая диагностика знаний по математике</p>
+            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight">Вы уверены, что занятия с репетитором действительно дают результат?</h1>
+            <p class="text-base sm:text-lg text-slate-300 leading-relaxed max-w-3xl mx-auto">Иногда трудности с новой темой возникают не из-за неё самой, а из-за пробелов, которые остались незамеченными раньше. Например, неусвоенные уравнения или действия с отрицательными числами могут мешать освоить неравенства.</p>
+            <p class="text-lg sm:text-xl font-semibold text-white leading-relaxed max-w-3xl mx-auto">Решай360 помогает увидеть, какие математические знания уже усвоены, а какие темы стоит повторить — ученику, родителям и репетитору.</p>
+            <a href="#select-program" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-7 py-3.5 rounded-xl font-bold text-sm transition shadow-xl shadow-indigo-600/25">Перейти к диагностике <i class="fa-solid fa-arrow-down text-xs ml-2"></i></a>
         </div>
-    </div>
+    </section>
 
-    <!-- ЭКРАН 1: HERO SECTION -->
-    <section class="py-6 lg:py-10 min-h-[calc(100vh-5rem)] flex flex-col justify-center relative overflow-hidden">
-        <div class="max-w-6xl mx-auto px-4 w-full">
-            <div class="grid lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-                
-                <!-- Левый блок: Оффер -->
-                <div class="lg:col-span-7 space-y-4 text-left">
-                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight">
-                        Пробник, контрольная или ВПР показывают балл.<br>
-                        <span class="bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent">Решай360 показывает пробелы.</span>
-                    </h1>
-                    
-                    <p class="text-slate-300 text-sm sm:text-base font-normal leading-relaxed max-w-xl">
-                        Онлайн-диагностика по ключевым темам школьной математики за предыдущие классы. В результате — персональный PDF-отчёт: сильные стороны, пробелы в знаниях и задания с ответами для повторения.
-                    </p>
-
-                    <div class="flex flex-wrap gap-2 pt-1 text-xs font-medium text-slate-300">
-                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
-                            <i class="fa-solid fa-laptop-mobile text-indigo-400"></i>
-                            <span>С любого устройства</span>
-                        </div>
-                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
-                            <i class="fa-solid fa-list-check text-indigo-400"></i>
-                            <span>Программа по темам</span>
-                        </div>
-                        <div class="inline-flex items-center space-x-2 bg-slate-900/80 px-3.5 py-2 rounded-xl border border-slate-800">
-                            <i class="fa-solid fa-file-pdf text-indigo-400"></i>
-                            <span>Отчет в PDF А4</span>
-                        </div>
-                    </div>
-
-                    <!-- Кнопки действий -->
-                    <div class="pt-2 flex flex-wrap items-center gap-3">
-                        <a href="#select-program" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-7 py-3 rounded-xl font-bold text-sm transition shadow-xl shadow-indigo-600/25 space-x-2">
-                            <span>Выбрать класс и диагностику</span>
-                            <i class="fa-solid fa-arrow-down text-xs"></i>
-                        </a>
-                        <a href="#pdf-section" class="inline-flex items-center justify-center text-slate-300 hover:text-white px-2 py-2 text-sm font-semibold underline underline-offset-4 transition space-x-2">
-                            <i class="fa-solid fa-file-pdf text-indigo-400"></i>
-                            <span>Пример PDF-отчёта</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Правый блок: Видео смартфона -->
-                <div class="lg:col-span-5 flex justify-center">
-                    <div class="phone-mockup relative w-[200px] sm:w-[230px] h-[400px] sm:h-[460px] rounded-[32px] p-2 bg-slate-900 border-4 border-slate-800 shadow-2xl overflow-hidden mx-auto">
-                        <div class="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-3.5 bg-slate-950 rounded-full z-20 flex items-center justify-center">
-                            <div class="w-6 h-1 bg-slate-800 rounded-full"></div>
-                        </div>
-                        
+    <!-- ЭКРАН 2: КАК ПРОХОДИТ ДИАГНОСТИКА -->
+    <section id="demo-section" class="py-14 border-t border-slate-800/60">
+        <div class="max-w-6xl mx-auto px-4 space-y-8">
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl sm:text-3xl font-black text-white">Как проходит диагностика</h2>
+                <p class="text-sm sm:text-base text-slate-300">Посмотрите, как устроено прохождение на удобном устройстве.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
+                <div class="space-y-3">
+                    <h3 class="text-center text-base font-bold text-white">Диагностика с телефона</h3>
+                    <div class="phone-mockup relative mx-auto w-[200px] sm:w-[230px] h-[400px] sm:h-[460px] rounded-[32px] p-2 bg-slate-900 border-4 border-slate-800 shadow-2xl overflow-hidden">
+                        <div class="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-3.5 bg-slate-950 rounded-full z-20 flex items-center justify-center"><div class="w-6 h-1 bg-slate-800 rounded-full"></div></div>
                         <div class="relative w-full h-full rounded-[26px] overflow-hidden bg-slate-950 flex items-center justify-center">
-                            <video id="demo-video" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen" class="w-full h-full object-cover pointer-events-none select-none" aria-label="Беззвучный зацикленный пример прохождения диагностики">
+                            <video id="demo-video" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen" class="w-full h-full object-cover pointer-events-none select-none" aria-label="Беззвучный зацикленный пример прохождения диагностики с телефона">
                                 <source id="video-source" src="/demo_mobile.mp4?v=20261030" type="video/mp4">
                             </video>
                             <p id="video-fallback" class="hidden absolute inset-x-3 bottom-3 rounded-lg bg-slate-950/90 p-2 text-center text-xs text-white">Видео временно недоступно.</p>
                         </div>
                     </div>
                 </div>
+                <div class="space-y-3">
+                    <h3 class="text-center text-base font-bold text-white">Диагностика с компьютера</h3>
+                    <div class="min-h-[260px] sm:min-h-[460px] rounded-2xl border border-dashed border-slate-700 bg-slate-900/50 flex flex-col items-center justify-center text-center p-8">
+                        <i class="fa-solid fa-laptop text-4xl text-slate-500 mb-4"></i>
+                        <p class="text-sm font-semibold text-slate-300">Видео скоро появится</p>
+                        <p class="text-xs text-slate-500 mt-2">Здесь будет запись прохождения диагностики на компьютере.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center pt-1"><a href="#select-program" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition">Перейти к диагностике</a></div>
+        </div>
+    </section>
 
+    <!-- ЭКРАН 3: ПРИМЕР ОТЧЁТА И ПРЕИМУЩЕСТВА -->
+    <section id="pdf-section" class="py-12 border-t border-b border-slate-800/60 scroll-mt-20">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+                <div class="lg:col-span-6 flex justify-center">
+                    <div class="w-full max-w-[440px] bg-[#0d1322] border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col items-center">
+                        <div class="w-full mb-3 flex flex-wrap items-center justify-between gap-2">
+                            <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs sm:text-sm font-semibold">📄 Пример персонального PDF-отчёта</span>
+                        </div>
+                        <div id="canvas-wrapper" class="w-full bg-white rounded-2xl overflow-hidden min-h-[460px] flex items-center justify-center relative shadow-lg border border-slate-700/50">
+                            <div id="pdf-loading" class="text-slate-600 text-xs p-6 text-center">Загрузка примера отчёта…</div>
+                            <canvas id="pdf-canvas" class="max-w-full h-auto hidden" oncontextmenu="return false;" ondragstart="return false;"></canvas>
+                        </div>
+                        <div class="w-full mt-4 flex items-center justify-between px-2">
+                            <button id="prev-page" onclick="changePage(-1)" class="px-4 py-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700/60 rounded-xl font-bold text-xs transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-2">
+                                <i class="fa-solid fa-chevron-left text-[10px]"></i><span>Назад</span>
+                            </button>
+                            <span class="text-xs text-slate-300 font-semibold tracking-wide">Страница <span id="page-num" class="font-bold text-white">1</span> из <span id="page-count" class="font-bold text-slate-400">—</span></span>
+                            <button id="next-page" onclick="changePage(1)" class="px-4 py-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700/60 rounded-xl font-bold text-xs transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-2">
+                                <span>Вперёд</span><i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-6 space-y-5">
+                    <div class="space-y-3">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold">Что даёт диагностика</span>
+                        <h2 class="text-2xl sm:text-4xl font-extrabold text-white leading-tight">Не просто результат, а понятный план дальнейшей работы</h2>
+                        <p class="text-slate-300 text-sm leading-relaxed">Персональный PDF-отчёт помогает увидеть, что уже получается хорошо, какие темы требуют внимания и с чего лучше начать повторение.</p>
+                    </div>
+                    <div class="space-y-4 text-sm">
+                        <div class="flex items-start gap-3">
+                            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-300"><i class="fa-solid fa-check text-xs"></i></span>
+                            <div class="text-slate-300 leading-relaxed"><strong class="text-white">Сильные стороны и пробелы по темам.</strong> Видно, какие разделы освоены, а какие стоит повторить.</div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-300"><i class="fa-solid fa-check text-xs"></i></span>
+                            <div class="text-slate-300 leading-relaxed"><strong class="text-white">Конкретные задания для повторения.</strong> В отчёте есть задания и ответы, чтобы закрепить материал.</div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-300"><i class="fa-solid fa-check text-xs"></i></span>
+                            <div class="text-slate-300 leading-relaxed"><strong class="text-white">Удобно обсудить результат со специалистом.</strong> PDF можно показать учителю математики в школе или передать репетитору — он поможет определить приоритетные темы и выстроить дальнейшие занятия.</div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-300"><i class="fa-solid fa-check text-xs"></i></span>
+                            <div class="text-slate-300 leading-relaxed"><strong class="text-white">Отчёт остаётся под рукой.</strong> PDF приходит на email и его можно сохранить или распечатать.</div>
+                        </div>
+                    </div>
+                    <a href="#select-program" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 text-sm font-bold text-white transition">Выбрать класс и диагностику</a>
+                </div>
             </div>
         </div>
     </section>
 
+    <!-- ЭКРАН 4: КАК ВЫБРАТЬ ДИАГНОСТИКУ -->
+    <section id="how-to-choose" class="py-14 border-t border-slate-800/60">
+        <div class="max-w-5xl mx-auto px-4 space-y-8">
+            <div class="text-center space-y-3">
+                <h2 class="text-2xl sm:text-3xl font-black text-white">Как выбрать диагностику</h2>
+                <p class="text-sm sm:text-base text-slate-300 max-w-3xl mx-auto">Выберите класс, в котором сейчас учится ученик. Диагностика проверит темы и навыки, которые необходимо было освоить в предыдущих классах.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="glass-panel rounded-2xl p-5 border border-slate-800 space-y-2"><span class="text-xs font-bold text-indigo-300 uppercase tracking-wide">Шаг 1</span><h3 class="text-lg font-bold text-white">Выберите класс</h3><p class="text-sm text-slate-300 leading-relaxed">Укажите текущий класс ученика. Например, для ученика 7 класса проверяются знания за 1–6 классы.</p></div>
+                <div class="glass-panel rounded-2xl p-5 border border-slate-800 space-y-2"><span class="text-xs font-bold text-indigo-300 uppercase tracking-wide">Шаг 2</span><h3 class="text-lg font-bold text-white">Выберите уровень</h3><p class="text-sm text-slate-300 leading-relaxed"><strong class="text-white">Базовый</strong> — основные знания и навыки, необходимые для освоения школьной математики; проверка фундамента.</p><p class="text-sm text-slate-300 leading-relaxed"><strong class="text-white">Продвинутый</strong> — более сложные задания на применение тех же знаний, многошаговые решения, комплексные задачи и более глубокое понимание.</p></div>
+                <div class="glass-panel rounded-2xl p-5 border border-slate-800 space-y-2"><span class="text-xs font-bold text-indigo-300 uppercase tracking-wide">Шаг 3</span><h3 class="text-lg font-bold text-white">Посмотрите программу</h3><p class="text-sm text-slate-300 leading-relaxed">После выбора класса откроется список тем диагностики. Для обоих уровней программа одинаковая — различается только сложность заданий.</p></div>
+            </div>
+            <div class="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-5 sm:p-6 text-center space-y-3">
+                <p class="text-sm sm:text-base text-slate-200">Укажите имя и адрес электронной почты, на который придёт PDF-отчёт. Если у вас есть промокод, его можно применить перед оплатой. Если промокода нет, вы получите его после прохождения диагностики.</p>
+                <a href="#select-program" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition">Перейти к диагностике</a>
+            </div>
+        </div>
+    </section>
 
+    <!-- ЭКРАН 5: СОЗДАТЕЛЬ ПРОЕКТА -->
+    <section id="creator-section" class="py-14 border-t border-slate-800/60">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="glass-panel rounded-3xl p-6 sm:p-9 border border-slate-800 space-y-4">
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-indigo-300">Создатель Решай360</p>
+                <h2 class="text-2xl sm:text-3xl font-black text-white">Марина Леонова</h2>
+                <p class="text-sm sm:text-base text-slate-300 leading-relaxed">Практикующий репетитор по математике со стажем более 10 лет.</p>
+                <p class="text-sm sm:text-base text-slate-300 leading-relaxed">Я создала Решай360, потому что считаю диагностику знаний необходимой частью качественного обучения. Перед началом занятий важно понять не только то, что ученик умеет решать сейчас, но и на какие знания можно опираться, какие пробелы могут мешать дальнейшему обучению.</p>
+                <p class="text-sm sm:text-base text-slate-300 leading-relaxed">Мне хочется, чтобы такая возможность была не только у моих учеников, но и у всех, кто хочет объективно оценить свои знания по математике.</p>
+                <div class="pt-2"><a href="#select-program" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition">Перейти к диагностике</a></div>
+            </div>
+        </div>
+    </section>
 
-    <!-- ЭКРАН 2: ВЫБОР ДИАГНОСТИКИ И ОПЛАТА -->
+    <!-- ЭКРАН 6: ВЫБОР ДИАГНОСТИКИ И ОПЛАТА — БЛОК СОХРАНЁН БЕЗ ИЗМЕНЕНИЙ -->
     <section id="select-program" class="py-12 border-t border-slate-800/60 scroll-mt-10">
         <div class="max-w-6xl mx-auto px-4">
             <div class="mb-6 text-center">
@@ -305,62 +251,7 @@
         </div>
     </section>
 
-    <!-- ЭКРАН 3: ПРИМЕР ОТЧЁТА И ПРЕИМУЩЕСТВА -->
-    <section id="pdf-section" class="py-12 border-t border-b border-slate-800/60 scroll-mt-20">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-                <div class="lg:col-span-6 flex justify-center">
-                    <div class="w-full max-w-[440px] bg-[#0d1322] border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col items-center">
-                        <div class="w-full mb-3 flex flex-wrap items-center justify-between gap-2">
-                            <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs sm:text-sm font-semibold">📄 Пример персонального PDF-отчёта</span>
-                        </div>
-                        <div id="canvas-wrapper" class="w-full bg-white rounded-2xl overflow-hidden min-h-[460px] flex items-center justify-center relative shadow-lg border border-slate-700/50">
-                            <div id="pdf-loading" class="text-slate-600 text-xs p-6 text-center">Загрузка примера отчёта…</div>
-                            <canvas id="pdf-canvas" class="max-w-full h-auto hidden" oncontextmenu="return false;" ondragstart="return false;"></canvas>
-                        </div>
-                        <div class="w-full mt-4 flex items-center justify-between px-2">
-                            <button id="prev-page" onclick="changePage(-1)" class="px-4 py-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700/60 rounded-xl font-bold text-xs transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-2">
-                                <i class="fa-solid fa-chevron-left text-[10px]"></i><span>Назад</span>
-                            </button>
-                            <span class="text-xs text-slate-300 font-semibold tracking-wide">Страница <span id="page-num" class="font-bold text-white">1</span> из <span id="page-count" class="font-bold text-slate-400">—</span></span>
-                            <button id="next-page" onclick="changePage(1)" class="px-4 py-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700/60 rounded-xl font-bold text-xs transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-2">
-                                <span>Вперёд</span><i class="fa-solid fa-chevron-right text-[10px]"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-6 space-y-5">
-                    <div class="space-y-3">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold">Что даёт диагностика</span>
-                        <h2 class="text-2xl sm:text-4xl font-extrabold text-white leading-tight">Не просто результат, а понятный план дальнейшей работы</h2>
-                        <p class="text-slate-300 text-sm leading-relaxed">Персональный PDF-отчёт помогает увидеть, что уже получается хорошо, какие темы требуют внимания и с чего лучше начать повторение.</p>
-                    </div>
-                    <div class="space-y-4 text-sm">
-                        <div class="flex items-start gap-3">
-                            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-300"><i class="fa-solid fa-check text-xs"></i></span>
-                            <div class="text-slate-300 leading-relaxed"><strong class="text-white">Сильные стороны и пробелы по темам.</strong> Видно, какие разделы освоены, а какие стоит повторить.</div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-300"><i class="fa-solid fa-check text-xs"></i></span>
-                            <div class="text-slate-300 leading-relaxed"><strong class="text-white">Конкретные задания для повторения.</strong> В отчёте есть задания и ответы, чтобы закрепить материал.</div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-300"><i class="fa-solid fa-check text-xs"></i></span>
-                            <div class="text-slate-300 leading-relaxed"><strong class="text-white">Удобно обсудить результат со специалистом.</strong> PDF можно показать учителю математики в школе или передать репетитору — он поможет определить приоритетные темы и выстроить дальнейшие занятия.</div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-300"><i class="fa-solid fa-check text-xs"></i></span>
-                            <div class="text-slate-300 leading-relaxed"><strong class="text-white">Отчёт остаётся под рукой.</strong> PDF приходит на email и его можно сохранить или распечатать.</div>
-                        </div>
-                    </div>
-                    <a href="#select-program" class="inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 text-sm font-bold text-white transition">Выбрать класс и диагностику</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ЭКРАН 4: БЛОК БЛАГОТВОРИТЕЛЬНОСТИ -->
+    <!-- ЭКРАН 7: ПРИЮТ «СОБАЧИЙ МИР» -->
     <section id="charity" class="py-12 border-t border-slate-800/60 bg-gradient-to-b from-[#090d16] via-[#0f172a] to-[#090d16] relative overflow-hidden scroll-mt-20">
         <div class="max-w-3xl mx-auto px-4 relative z-10">
             <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-amber-500/30 bg-slate-900/90 shadow-2xl space-y-6">
@@ -414,47 +305,42 @@
       </div>
     </div>
 
-    <!-- ЭКРАН 5: СЛУЖБА ПОДДЕРЖКИ -->
-    <section id="support" class="py-8 bg-slate-900/40 border-t border-slate-800/60 scroll-mt-20">
-        <div class="max-w-3xl mx-auto px-4 text-center space-y-3">
-            <h3 class="text-xl sm:text-2xl font-bold text-white">Нужна помощь или возникли вопросы?</h3>
-            <p class="text-slate-300 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-                Столкнулись с трудностями при оплате или получении отчета? Напишите нам. Работаем ежедневно с 10:00 до 20:00 МСК.
-            </p>
-            
-            <div class="flex flex-wrap justify-center items-center gap-4 text-xs sm:text-sm font-semibold pt-1">
-                <a href="mailto:support@reshai360.ru" class="text-indigo-400 hover:text-indigo-300 transition flex items-center space-x-1.5">
-                    <i class="fa-solid fa-envelope"></i>
-                    <span>support@reshai360.ru</span>
-                </a>
-                <span class="text-slate-700">•</span>
-                <a href="tel:+789044766535" class="text-indigo-400 hover:text-indigo-300 transition flex items-center space-x-1.5">
-                    <i class="fa-solid fa-phone"></i>
-                    <span>8 (904) 476-65-35</span>
-                </a>
+    <!-- ПОДВАЛ: РЕКВИЗИТЫ И ПОДДЕРЖКА -->
+    <footer class="border-t border-slate-700/80 bg-[#070b13] py-10 sm:py-14">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid md:grid-cols-2 gap-10 lg:gap-16">
+                <div class="space-y-5">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-300 mb-2">РЕШАЙ360</p>
+                        <h2 class="text-xl sm:text-2xl font-bold text-white">Реквизиты и документы</h2>
+                    </div>
+                    <div class="space-y-1 text-sm text-slate-300">
+                        <p class="font-semibold text-white">Леонова Марина Игоревна</p>
+                        <p>ИНН: будет добавлен</p>
+                        <p class="text-xs text-slate-500 pt-2">Независимая диагностика знаний по математике</p>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <a href="/offer.html" target="_blank" rel="noopener noreferrer" class="block text-slate-300 hover:text-white transition">Публичная оферта <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1"></i></a>
+                        <a href="/policy.html" target="_blank" rel="noopener noreferrer" class="block text-slate-300 hover:text-white transition">Политика обработки персональных данных <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1"></i></a>
+                        <a href="/consent.html" target="_blank" rel="noopener noreferrer" class="block text-slate-300 hover:text-white transition">Согласие на обработку персональных данных <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1"></i></a>
+                    </div>
+                </div>
+                <div class="space-y-5 md:border-l md:border-slate-800 md:pl-10 lg:pl-16">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-300 mb-2">Мы на связи</p>
+                        <h2 class="text-xl sm:text-2xl font-bold text-white">Служба поддержки</h2>
+                        <p class="mt-3 text-sm text-slate-400 leading-relaxed">Поможем, если возникли вопросы при оплате, прохождении диагностики или получении отчёта. Работаем ежедневно с 10:00 до 20:00 МСК.</p>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <a href="mailto:support@reshai360.ru" class="flex items-center gap-3 text-slate-200 hover:text-indigo-300 transition"><i class="fa-solid fa-envelope w-5 text-indigo-300"></i>support@reshai360.ru</a>
+                        <a href="https://t.me/leonovaru" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-slate-200 hover:text-indigo-300 transition"><i class="fa-brands fa-telegram w-5 text-indigo-300"></i>Telegram</a>
+                        <a href="https://vk.ru/leonovaru" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-slate-200 hover:text-indigo-300 transition"><i class="fa-brands fa-vk w-5 text-indigo-300"></i>ВКонтакте</a>
+                    </div>
+                </div>
             </div>
-
-            <div class="flex flex-wrap justify-center items-center gap-3 pt-2">
-                <a id="link-support-tg" href="https://t.me/leonovaru" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#229ED9] hover:bg-[#1d8cb0] text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md shadow-[#229ED9]/20">
-                    <i class="fa-brands fa-telegram text-base"></i>
-                    <span>Telegram</span>
-                </a>
-                <a id="link-support-vk" href="https://vk.ru/leonovaru" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 bg-[#0077FF] hover:bg-[#0066cc] text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md shadow-[#0077FF]/20">
-                    <i class="fa-brands fa-vk text-base"></i>
-                    <span>ВКонтакте</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- ФУТЕР -->
-    <footer class="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500">
-        <div class="max-w-6xl mx-auto px-4 space-y-3">
-            <div>© 2026 РЕШАЙ360.РУ. Независимый аудит знаний по математике. Все права защищены.</div>
-            <div class="flex justify-center space-x-4 text-slate-400">
-                <a id="link-footer-policy" href="#" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition">Политика конфиденциальности</a>
-                <span>•</span>
-                <a id="link-footer-offer" href="#" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition">Публичная оферта</a>
+            <div class="mt-10 pt-5 border-t border-slate-800 flex flex-col sm:flex-row justify-between gap-3 text-xs text-slate-500">
+                <span>© 2026 РЕШАЙ360.РУ. Все права защищены.</span>
+                <span>Помогаем увидеть знания и пробелы — чтобы понимать, куда двигаться дальше.</span>
             </div>
         </div>
     </footer>
