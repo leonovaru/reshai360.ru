@@ -727,7 +727,7 @@
       .replace(/[−–]/g, "-")
       .replace(/·/g, "\\cdot ")
       .replace(/×/g, "\\times ")
-      .replace(/÷|:/g, "\\div ")
+      .replace(/÷/g, "\\div ")
       .replace(/([⁰¹²³⁴⁵⁶⁷⁸⁹])/g, digit => "^{" + "⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit) + "}");
 
     const atom = "(?:\\d*[A-Za-z](?:[A-Za-z0-9]*)?|\\d+\\([^()]*\\)|\\([^()]*\\)|[A-Za-z](?:[A-Za-z0-9]*)?|\\d+(?:[.,]\\d+)?)";
