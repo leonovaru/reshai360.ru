@@ -1442,7 +1442,9 @@
         theme.questions.forEach((qDef, qIdx) => {
           checkSingle(bIdx, tIdx, qIdx, true);
           const isSkipped = (qDef.userText === "Не введено" || qDef.userText === "Не выбрано");
-          const distinctRadioAnswers = new Set((qDef.attemptsHistory || []).map(answer => String(answer)));
+          const distinctRadioAnswers = new Set([...(qDef.attemptsHistory || []), qDef.userText]
+            .filter(answer => answer && answer !== "Не выбрано")
+            .map(answer => String(answer)));
           const isGuessedByBruteForce = (qDef.type === 'radio' && distinctRadioAnswers.size > 1);
 
           if (qDef.isCorrect && !isGuessedByBruteForce) themeCorrect++;
@@ -1599,6 +1601,7 @@
       }
     }
     if (currentPageCards.length > 0) detailPagesCards.push(currentPageCards);
+    clearMathTypeset(measureContainer);
     document.body.removeChild(measureContainer);
 
     const totalPages = 1 + detailPagesCards.length;
