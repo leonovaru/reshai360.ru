@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Диагностический тест по математике | 9 класс — продвинутый уровень</title>
   
   <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш номер счетчика) --">
@@ -1433,9 +1433,7 @@
       if (!answered) unansweredQuestions.push(qId);
     })));
     if (unansweredQuestions.length > 0 && !skipUnansweredConfirm) {
-      const message = `Остались незаполненные задания: ${unansweredQuestions.length}.
-
-Завершить тест и посмотреть результаты без них?`;
+      const message = `Остались незаполненные задания: ${unansweredQuestions.length}. Завершить тест и посмотреть результаты без них?`;
       if (!window.confirm(message)) return;
     }
 
