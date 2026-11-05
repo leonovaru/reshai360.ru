@@ -37,10 +37,12 @@ export async function onRequestPost({ request, env }) {
       return Response.json({ success: false, completed: true, message: "Диагностика уже завершена." }, { status: 409 });
     }
 
-    const previousSavedAt = Number(tokenData.progressSnapshot && tokenData.progressSnapshot.savedAt) || 0;
+    const progressKey = "progress:" + token;
+    const previousRaw = await env.TEST_TOKENS.get(progressKey);
+    const previousSnapshot = previousRaw ? JSON.parse(previousRaw) : null;
+    const previousSavedAt = Number(previousSnapshot && previousSnapshot.savedAt) || 0;
     if (snapshot.savedAt >= previousSavedAt) {
-      tokenData.progressSnapshot = snapshot;
-      await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
+      await env.TEST_TOKENS.put(progressKey, JSON.stringify(snapshot), { expirationTtl: 86400 });
     }
 
     return Response.json({ success: true });
