@@ -15,6 +15,13 @@ export async function onRequestPost(context) {
 
     const tokenData = JSON.parse(tokenDataRaw);
 
+    // Черновик прогресса хранится отдельно от заказа, чтобы автосохранение
+    // не продлевало срок действия оплаченной ссылки.
+    const progressRaw = await env.TEST_TOKENS.get("progress:" + token);
+    if (progressRaw) {
+      try { tokenData.progressSnapshot = JSON.parse(progressRaw); } catch (_) {}
+    }
+
     // Если webhook ещё не успел обработать событие, проверяем платёж напрямую
     // через API ЮKassa по сохранённому paymentId.
     if (tokenData.isPaid !== true && tokenData.paymentId && env.YOKASSA_SHOP_ID && env.YOKASSA_SECRET_KEY) {
