@@ -36,6 +36,7 @@
   <!-- Библиотеки генерации PDF из canvas (html2canvas + jsPDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="/assets/report-generator.js?v=2"></script>
 
   <style>
     :root {
@@ -274,7 +275,7 @@
       const request = transaction.objectStore("reports").get(token);
       request.onsuccess = () => {
         const entry = request.result;
-        if (entry && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
+        if (entry && entry.version === 2 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
         if (entry) {
           try { db.transaction("reports", "readwrite").objectStore("reports").delete(token); } catch (_) {}
         }
@@ -294,7 +295,7 @@
       let transaction;
       try { transaction = db.transaction("reports", "readwrite"); }
       catch (_) { db.close(); return resolve(false); }
-      transaction.objectStore("reports").put({ token, blob, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+      transaction.objectStore("reports").put({ token, blob, version: 2, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
       transaction.oncomplete = () => { db.close(); resolve(true); };
       transaction.onerror = () => { db.close(); resolve(false); };
       transaction.onabort = () => { db.close(); resolve(false); };
@@ -1438,78 +1439,6 @@
     updateQuestionNavigator();
   }
 
-  function fitPdfFirstPageContent() {
-    const page = document.querySelector("#result-pdf .pdf-page");
-    const content = page && page.querySelector(".pdf-first-page-content");
-    if (!page || !content) return;
-    content.style.transform = "none";
-    content.style.width = "100%";
-    const availableHeight = page.clientHeight - 70;
-    const naturalHeight = content.scrollHeight;
-    if (naturalHeight > availableHeight) {
-      const scale = Math.min(1, availableHeight / naturalHeight);
-      content.style.transform = "scale(" + scale + ")";
-      content.style.width = (100 / scale) + "%";
-    }
-  }
-
-  async function buildPerfectPdfBlob() {
-    if (document.fonts && document.fonts.ready) await document.fonts.ready;
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-
-    const { jsPDF } = window.jspdf;
-    const pdfContainer = document.getElementById("result-pdf");
-    const pages = pdfContainer.querySelectorAll(".pdf-page");
-    const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
-
-    for (let i = 0; i < pages.length; i++) {
-      if (i > 0) pdf.addPage();
-      const canvas = await html2canvas(pages[i], {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        windowWidth: 794,
-        windowHeight: 1122,
-        scrollX: 0,
-        scrollY: 0,
-        onclone: clonedDocument => {
-          const exportContainer = clonedDocument.getElementById("pdf-export-container");
-          if (exportContainer) {
-            exportContainer.style.opacity = "1";
-            exportContainer.style.visibility = "visible";
-            exportContainer.style.zIndex = "auto";
-          }
-          const clonedPages = clonedDocument.querySelectorAll("#result-pdf .pdf-page");
-          const clonedPage = clonedPages[i];
-          if (clonedPage) {
-            clonedPage.style.width = "794px";
-            clonedPage.style.height = "1122px";
-            clonedPage.style.minHeight = "1122px";
-            clonedPage.style.maxHeight = "1122px";
-            clonedPage.style.maxWidth = "none";
-            clonedPage.style.overflow = "hidden";
-            clonedPage.style.boxSizing = "border-box";
-            clonedPage.style.background = "#ffffff";
-            clonedPage.style.opacity = "1";
-            clonedPage.style.visibility = "visible";
-            clonedPage.querySelectorAll("mjx-container").forEach(node => {
-              node.style.maxWidth = "100%";
-              node.style.overflow = "visible";
-            });
-            clonedPage.querySelectorAll("mjx-container svg").forEach(svg => {
-              svg.style.maxWidth = "none";
-              svg.style.overflow = "visible";
-            });
-          }
-        }
-      });
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-      pdf.addImage(imgData, "JPEG", 0, 0, 210, 297);
-    }
-    return pdf.output("blob");
-  }
-
   function downloadPDF() {
     if (!generatedPdfBlob) return;
     const url = URL.createObjectURL(generatedPdfBlob);
@@ -1660,7 +1589,6 @@
     let totalQuestions = 0;
     let pdfAnalyticsRowsHtml = "";
     let screenCardsHtml = "";
-    let pdfCardsArray = [];
     let topicsToRepeatSet = new Set();
     let topicsToStudySet = new Set();
     let qIndex = 1;
@@ -1733,7 +1661,6 @@
             </div>
           `;
           screenCardsHtml += cardHtml;
-          pdfCardsArray.push(cardHtml);
           qIndex++;
         });
         blockCorrect += themeCorrect;
@@ -1830,53 +1757,7 @@
     }
     startPdfCountdown();
 
-    let measureContainer = document.createElement('div');
-    measureContainer.style.cssText = 'position: fixed; top: 0; left: -9999px; width: 714px; padding-bottom: 1px; box-sizing: border-box; visibility: hidden; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;';
-    document.body.appendChild(measureContainer);
 
-    let detailPagesCards = [];
-    let currentPageCards = [];
-    const MAX_PAGE_CONTENT_HEIGHT = 1000;
-
-    for (let i = 0; i < pdfCardsArray.length; i++) {
-      let testCards = [...currentPageCards, pdfCardsArray[i]];
-      clearMathTypeset(measureContainer);
-      measureContainer.innerHTML = `<h3 class="detail-section-title">Результаты выполнения заданий</h3>` + testCards.join('');
-      await safeTypeset(measureContainer);
-      let currentHeight = Math.max(measureContainer.offsetHeight, measureContainer.scrollHeight);
-
-      if (currentHeight > MAX_PAGE_CONTENT_HEIGHT && currentPageCards.length > 0) {
-        detailPagesCards.push(currentPageCards);
-        currentPageCards = [pdfCardsArray[i]];
-      } else {
-        currentPageCards.push(pdfCardsArray[i]);
-      }
-    }
-    if (currentPageCards.length > 0) detailPagesCards.push(currentPageCards);
-    clearMathTypeset(measureContainer);
-    document.body.removeChild(measureContainer);
-
-    const totalPages = 1 + detailPagesCards.length;
-    let pagesHtml = `<div class="pdf-page">${firstPageHtml}<div class="page-footer">Диагностический отчет | Страница 1 из ${totalPages}</div></div>`;
-
-    let cardGlobalIndex = 0;
-    detailPagesCards.forEach((pageCards, p) => {
-      const pageNum = p + 2;
-      const startQ = cardGlobalIndex + 1;
-      const endQ = cardGlobalIndex + pageCards.length;
-      cardGlobalIndex += pageCards.length;
-
-      pagesHtml += `
-        <div class="pdf-page">
-          <h3 class="detail-section-title">Результаты выполнения заданий (Задания ${startQ}–${endQ})</h3>
-          ${pageCards.join("")}
-          <div class="page-footer">Диагностический отчет | Страница ${pageNum} из ${totalPages}</div>
-        </div>
-      `;
-    });
-
-    clearMathTypeset(document.getElementById("result-pdf"));
-    document.getElementById("result-pdf").innerHTML = pagesHtml;
     document.getElementById("main-container").style.display = "none";
     document.getElementById("result-wrapper").style.display = "block";
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -1890,15 +1771,25 @@
     await new Promise(resolve => setTimeout(resolve, 150));
     await safeTypeset(document.getElementById("result-screen"));
     await new Promise(resolve => setTimeout(resolve, 200));
-    await safeTypeset(document.getElementById("result-pdf"));
-    fitPdfFirstPageContent();
     await new Promise(resolve => setTimeout(resolve, 300));
 
     const downloadBtn = document.getElementById("downloadPdfBtn");
     try {
       const cachedPdfBlob = await getCachedDiagnosticPdf(currentToken);
-      generatedPdfBlob = cachedPdfBlob || await buildPerfectPdfBlob();
-      if (!cachedPdfBlob && currentToken) await saveCachedDiagnosticPdf(currentToken, generatedPdfBlob);
+      if (cachedPdfBlob) {
+        generatedPdfBlob = cachedPdfBlob;
+      } else {
+        let savedReportSnapshot = null;
+        try { savedReportSnapshot = JSON.parse(localStorage.getItem(progressStorageKey) || "null"); } catch (_) {}
+        generatedPdfBlob = await window.Reshai360ReportGenerator.generate({
+          quizData,
+          snapshot: savedReportSnapshot,
+          studentName: studentData.fullName,
+          formatMath: formatMathText,
+          resultContainer: document.getElementById("result-pdf")
+        });
+        if (currentToken) await saveCachedDiagnosticPdf(currentToken, generatedPdfBlob);
+      }
       if (pdfCountdownTimer) { clearInterval(pdfCountdownTimer); pdfCountdownTimer = null; }
       if (downloadBtn) { downloadBtn.disabled = false; downloadBtn.innerText = "📄 Скачать PDF-отчёт"; }
 
