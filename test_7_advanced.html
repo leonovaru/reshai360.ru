@@ -1479,14 +1479,16 @@
             topicsToRepeatSet.add(cleanThemeName);
           }
 
-          let attemptsList = qDef.attemptsHistory && qDef.attemptsHistory.length > 0 ? qDef.attemptsHistory.join(" ➔ ") : (isSkipped ? "Нет попыток" : qDef.userText);
+          const finalAnswer = qDef.userText || (isSkipped ? "Ответ не введён" : "Ответ не проверялся");
+          const attemptsList = qDef.attemptsHistory && qDef.attemptsHistory.length > 0 ? qDef.attemptsHistory.join(" ➔ ") : "Проверок ещё не было";
           const checkCountVal = qDef.checkCount || 0;
 
           const cardHtml = `
             <div class="pdf-card ${statusClass}">
               <div class="pdf-q">${qIndex}. ${formatMathText(qDef.q)}</div>
               <div class="pdf-card-footer"><div class="pdf-ans">
-                <b>Попыток ввода:</b> ${checkCountVal} | <b>Ответ:</b> ${escapeHtml(attemptsList)}<br>
+                <b>Итоговый ответ:</b> ${escapeHtml(finalAnswer)}<br>
+                <b>Проверок ответа:</b> ${checkCountVal}${checkCountVal ? " | <b>История:</b> " + escapeHtml(attemptsList) : ""}<br>
                 <b>Правильный ответ:</b> ${formatMathText(qDef.correctText)}
               </div><span class="badge ${badgeClass}">${badgeStatus}</span></div>
             </div>
