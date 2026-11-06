@@ -120,7 +120,7 @@ export async function onRequestPost(context) {
     createdToken = token;
     if (promoCode) reservedPromoCode = promoCode;
 
-    // Сохраняем заказ в KV-хранилище (срок жизни 24 часа)
+    // Сохраняем заказ в KV-хранилище (срок жизни 7 дней)
     await env.TEST_TOKENS.put(token, JSON.stringify({
       studentName,
       email,
