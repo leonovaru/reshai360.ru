@@ -243,9 +243,15 @@ export async function onRequestPost({ request, env }) {
       } else if (action === "report") {
         const result = await sendReport(env, chatId, state.email);
         if (!result.found) {
-          await notifyHuman(env, chatId, state, result.storageUnavailable
-            ? "PDF найден в истории, но R2-хранилище пока не настроено или файл недоступен."
-            : "Не найден сохранённый PDF-отчёт.", telegramUserId);
+          const unfinishedOrder = await findOpenDiagnostic(env, state.email);
+          if (unfinishedOrder && !result.storageUnavailable) {
+            await sendText(env, chatId, "Чтобы сформировать отчёт, завершите диагностику, нажав на зелёную кнопку внизу страницы. После этого вы сможете скачать отчёт прямо на странице с результатами или посмотреть его в письме на почте.");
+            await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
+          } else {
+            await notifyHuman(env, chatId, state, result.storageUnavailable
+              ? "PDF найден в истории, но R2-хранилище пока не настроено или файл недоступен."
+              : "Диагностика завершена или отчёт ожидался, но сохранённый PDF не найден.", telegramUserId);
+          }
         } else {
           await sendPromoInfo(env, chatId, state.email, result.name);
           await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
