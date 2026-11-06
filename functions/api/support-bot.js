@@ -19,10 +19,7 @@ async function telegram(env, method, payload) {
   return data.result;
 }
 async function sendText(env, chatId, text, extra = {}) {
-  const clientMenu = String(chatId) !== String(env.TG_CHAT_ID || "") ? {
-    reply_markup: { inline_keyboard: [[{ text: "☰ Меню", callback_data: "support:menu" }]] }
-  } : {};
-  return telegram(env, "sendMessage", { chat_id: chatId, text, disable_web_page_preview: true, ...clientMenu, ...extra });
+  return telegram(env, "sendMessage", { chat_id: chatId, text, disable_web_page_preview: true, ...extra });
 }
 async function hashEmail(email) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(email));
@@ -71,6 +68,15 @@ async function addStateBotMessage(env, chatId, text) {
   state.history = state.history.slice(-80);
   await setState(env.TEST_TOKENS, chatId, state);
 }
+async function ensureClientMenu(env, chatId) {
+  await telegram(env, "setMyCommands", {
+    commands: [{ command: "menu", description: "Открыть меню поддержки" }]
+  });
+  await telegram(env, "setChatMenuButton", {
+    chat_id: chatId,
+    menu_button: { type: "commands" }
+  });
+}
 async function askForEmail(env, chatId) {
   const prompt = "Здравствуйте! Это поддержка Решай360. Напишите email, который вы указывали перед оплатой диагностики.";
   await setState(env.TEST_TOKENS, chatId, { step: "email", history: [{ at: new Date().toISOString(), from: "bot", text: prompt }] });
@@ -79,8 +85,8 @@ async function askForEmail(env, chatId) {
 async function showMenu(env, chatId) {
   const state = await getState(env.TEST_TOKENS, chatId);
   await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
-  await addStateBotMessage(env, chatId, "Чем можем помочь?");
-  await sendText(env, chatId, "Чем можем помочь?", { reply_markup: { inline_keyboard: [
+  await addStateBotMessage(env, chatId, "Выберите нужный пункт поддержки:");
+  await sendText(env, chatId, "Выберите нужный пункт поддержки:", { reply_markup: { inline_keyboard: [
     [{ text: "Не открывается диагностика", callback_data: "support:open_test" }],
     [{ text: "Не пришёл PDF-отчёт", callback_data: "support:report" }],
     [{ text: "Какой у меня промокод", callback_data: "support:promo" }],
@@ -96,12 +102,6 @@ async function removeClientButtons(env, callback) {
       reply_markup: { inline_keyboard: [] }
     });
   } catch {}
-}
-async function askMoreHelp(env, chatId, state) {
-  const prompt = "Можем ли ещё чем-нибудь помочь?";
-  await clientText(env, chatId, prompt, state, { reply_markup: { inline_keyboard: [
-    [{ text: "Да", callback_data: "support:help_yes" }, { text: "Нет", callback_data: "support:help_no" }]
-  ] } });
 }
 async function getQueue(kv) {
   try { const q = JSON.parse(await kv.get(QUEUE_KEY) || "[]"); return Array.isArray(q) ? q : []; } catch { return []; }
@@ -151,9 +151,13 @@ async function refreshActiveTicket(env, ticket) {
       return;
     } catch {}
   }
-  const sent = await sendText(env, env.TG_CHAT_ID, text, { reply_markup: ticketKeyboard(ticket.id) });
-  ticket.adminMessageId = sent.message_id;
-  await saveTicket(env.TEST_TOKENS, ticket);
+  try {
+    const sent = await sendText(env, env.TG_CHAT_ID, text, { reply_markup: ticketKeyboard(ticket.id) });
+    ticket.adminMessageId = sent.message_id;
+    await saveTicket(env.TEST_TOKENS, ticket);
+  } catch (error) {
+    console.error("Support bot: failed to notify admin about active ticket:", error);
+  }
 }
 async function activateNext(env) {
   const kv = env.TEST_TOKENS;
@@ -171,6 +175,18 @@ async function activateNext(env) {
   }
   await setQueue(kv, []);
   await kv.delete(ACTIVE_KEY);
+}
+async function notifyQueuedTicket(env, ticket, position) {
+  if (!env.TG_CHAT_ID) {
+    console.error("Support bot: TG_CHAT_ID is not configured; queued ticket notification was not sent.");
+    return;
+  }
+  const text = formatHistory(ticket) + "\n\n📥 Новое обращение добавлено в очередь.\nПозиция в очереди: " + position;
+  try {
+    await sendText(env, env.TG_CHAT_ID, text);
+  } catch (error) {
+    console.error("Support bot: failed to notify admin about queued ticket:", error);
+  }
 }
 async function createTicket(env, chatId, state, userId, reason, firstMessage) {
   const kv = env.TEST_TOKENS;
@@ -194,7 +210,13 @@ async function createTicket(env, chatId, state, userId, reason, firstMessage) {
     : "Ваше обращение принято и добавлено в очередь поддержки. Как только специалист завершит предыдущее обращение, мы передадим ему ваше.";
   addHistory(ticket, "bot", confirmation);
   await saveTicket(kv, ticket);
-  if (nowActive === ticket.id) await refreshActiveTicket(env, ticket);
+  if (nowActive === ticket.id) {
+    await refreshActiveTicket(env, ticket);
+  } else {
+    const updatedQueue = await getQueue(kv);
+    const position = updatedQueue.indexOf(ticket.id) + 1;
+    await notifyQueuedTicket(env, ticket, position || updatedQueue.length);
+  }
   await sendText(env, chatId, confirmation);
   return ticket;
 }
@@ -460,8 +482,7 @@ export async function onRequestPost({ request, env }) {
       } else if (action === "promo") {
         await sendPromoInfo(env, chatId, state.email, state);
         const updatedState = await getState(env.TEST_TOKENS, chatId);
-        await setState(env.TEST_TOKENS, chatId, { ...updatedState, step: "after_promo" });
-        await askMoreHelp(env, chatId, { ...updatedState, step: "after_promo" });
+        await setState(env.TEST_TOKENS, chatId, { ...updatedState, step: "menu" });
       }
       return Response.json({ ok: true });
     }
@@ -469,6 +490,7 @@ export async function onRequestPost({ request, env }) {
     const state = await getState(env.TEST_TOKENS, chatId);
     const text = String(message.text || "").trim();
     if (text === "/start" || text === "/restart" || text === "/menu" || text === "☰ Меню") {
+      await ensureClientMenu(env, chatId);
       if (state.email) await showMenu(env, chatId);
       else await askForEmail(env, chatId);
       return Response.json({ ok: true });
@@ -504,6 +526,7 @@ export async function onRequestPost({ request, env }) {
         await setState(env.TEST_TOKENS, chatId, state);
         await sendText(env, chatId, prompt);
       } else {
+        await ensureClientMenu(env, chatId);
         await setState(env.TEST_TOKENS, chatId, { step: "menu", email, name: String(message.from?.first_name || "").trim(), history: [{ at: new Date().toISOString(), from: "client", text: "Email: " + email }] });
         await showMenu(env, chatId);
       }
