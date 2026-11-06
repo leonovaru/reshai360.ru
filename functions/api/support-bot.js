@@ -114,14 +114,14 @@ function formatHistory(ticket) {
   return lines.join("\n").slice(0, 3900);
 }
 async function refreshActiveTicket(env, ticket) {
-  if (!env.TELEGRAM_SUPPORT_ADMIN_CHAT_ID) return;
+  if (!env.TG_CHAT_ID) return;
   const activeId = await env.TEST_TOKENS.get(ACTIVE_KEY);
   if (activeId !== ticket.id || ticket.status !== "active") return;
   const text = formatHistory(ticket);
   if (ticket.adminMessageId) {
     try {
       await telegram(env, "editMessageText", {
-        chat_id: env.TELEGRAM_SUPPORT_ADMIN_CHAT_ID,
+        chat_id: env.TG_CHAT_ID,
         message_id: ticket.adminMessageId,
         text,
         reply_markup: ticketKeyboard(ticket.id),
@@ -130,7 +130,7 @@ async function refreshActiveTicket(env, ticket) {
       return;
     } catch {}
   }
-  const sent = await sendText(env, env.TELEGRAM_SUPPORT_ADMIN_CHAT_ID, text, { reply_markup: ticketKeyboard(ticket.id) });
+  const sent = await sendText(env, env.TG_CHAT_ID, text, { reply_markup: ticketKeyboard(ticket.id) });
   ticket.adminMessageId = sent.message_id;
   await saveTicket(env.TEST_TOKENS, ticket);
 }
@@ -260,7 +260,7 @@ async function findOrder(env, email, completed) {
   return matches[0] || null;
 }
 async function adminAction(env, callback, chatId) {
-  if (String(chatId) !== String(env.TELEGRAM_SUPPORT_ADMIN_CHAT_ID || "")) return false;
+  if (String(chatId) !== String(env.TG_CHAT_ID || "")) return false;
   const parts = String(callback.data || "").split(":");
   if (parts.length !== 3) return true;
   const action = parts[1], id = parts[2];
@@ -338,7 +338,7 @@ export async function onRequestPost({ request, env }) {
     const callback = update.callback_query;
     const chatId = message?.chat?.id ?? callback?.message?.chat?.id;
     if (!chatId) return Response.json({ ok: true });
-    const isAdmin = String(chatId) === String(env.TELEGRAM_SUPPORT_ADMIN_CHAT_ID || "");
+    const isAdmin = String(chatId) === String(env.TG_CHAT_ID || "");
     if (callback && isAdmin) {
       await adminAction(env, callback, chatId);
       return Response.json({ ok: true });
