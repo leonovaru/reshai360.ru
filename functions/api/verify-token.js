@@ -57,7 +57,7 @@ export async function onRequestPost(context) {
             tokenData.isPaid = true;
             tokenData.paymentId = payment.id;
             tokenData.paidAt = payment.captured_at || payment.created_at || new Date().toISOString();
-            await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
+            await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
           }
         }
       } catch (paymentCheckError) {
@@ -108,7 +108,7 @@ export async function onRequestPost(context) {
     // и покажет результат, не начиная новую диагностику.
     if (!tokenData.isCompleted) {
       tokenData.isUsed = true;
-      await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
+      await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
     }
     return Response.json({ valid: true, data: { ...tokenData, progressSnapshot }, completed: tokenData.isCompleted === true });
   } catch (err) {
