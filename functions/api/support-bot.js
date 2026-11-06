@@ -473,6 +473,18 @@ export async function onRequestPost({ request, env }) {
       else await askForEmail(env, chatId);
       return Response.json({ ok: true });
     }
+    if (state.step === "after_promo") {
+      if (/^(да|yes)$/i.test(text)) {
+        await showMenu(env, chatId);
+      } else if (/^(нет|no)$/i.test(text)) {
+        const reply = "Спасибо за обращение в Решай360! Если понадобится помощь, меню всегда доступно в чате. 😊";
+        await clientText(env, chatId, reply, state);
+        await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
+      } else {
+        await askMoreHelp(env, chatId, state);
+      }
+      return Response.json({ ok: true });
+    }
     if (state.ticketId) {
       const ticket = await getTicket(env.TEST_TOKENS, state.ticketId);
       if (ticket && ticket.status !== "closed") {
@@ -494,16 +506,6 @@ export async function onRequestPost({ request, env }) {
       } else {
         await setState(env.TEST_TOKENS, chatId, { step: "menu", email, name: String(message.from?.first_name || "").trim(), history: [{ at: new Date().toISOString(), from: "client", text: "Email: " + email }] });
         await showMenu(env, chatId);
-      }
-    } else if (state.step === "after_promo") {
-      if (/^(да|yes)$/i.test(text)) {
-        await showMenu(env, chatId);
-      } else if (/^(нет|no)$/i.test(text)) {
-        const reply = "Спасибо за обращение в Решай360! Если понадобится помощь, меню всегда доступно в чате. 😊";
-        await clientText(env, chatId, reply, state);
-        await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
-      } else {
-        await askMoreHelp(env, chatId, state);
       }
     } else if (state.step === "human") {
       state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text }];
