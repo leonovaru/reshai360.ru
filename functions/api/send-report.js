@@ -147,7 +147,7 @@ export async function onRequestPost({ request, env }) {
             await env.TEST_TOKENS.put(emailIndexKey, JSON.stringify(index), { expirationTtl: promoTtl });
           }
         }
-        await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
+        await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
     }
 
     // Отдельный бот результатов получает PDF и ссылку на сохранённую диагностику.
@@ -187,7 +187,7 @@ export async function onRequestPost({ request, env }) {
           console.error("Telegram results notification error:", await tgResponse.text());
         } else {
           tokenData.resultsTelegramSentAt = new Date().toISOString();
-          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
+          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
         }
       } catch (tgErr) {
         console.error("Telegram results notification error:", tgErr);
@@ -275,7 +275,7 @@ export async function onRequestPost({ request, env }) {
           tokenData.reportEmailSentAt = new Date().toISOString();
           tokenData.email = email;
           if (emailId) tokenData.reportEmailId = emailId;
-          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
+          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
         }
       } catch (resendErr) {
         emailError = String(resendErr && resendErr.message || resendErr).slice(0, 500);
