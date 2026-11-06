@@ -314,11 +314,11 @@
                             </div>
                             <div id="level-selector" class="space-y-2">
                                 <button type="button" onclick="selectOption('10_basic')" id="btn-10_basic" class="level-btn w-full text-left px-3 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:border-indigo-500 transition">
-                                    <span class="flex items-center justify-between gap-2 text-sm font-bold text-white"><span>Базовый</span><span class="level-price text-indigo-300 whitespace-nowrap">790 ₽</span></span>
+                                    <span class="flex items-center justify-between gap-2 text-sm font-bold text-white"><span>Лёгкий старт</span><span class="level-price text-indigo-300 whitespace-nowrap">790 ₽</span></span>
                                     <span class="block text-xs font-normal text-slate-300 mt-1">Ключевые базовые знания</span>
                                 </button>
                                 <button type="button" onclick="selectOption('10_advanced')" id="btn-10_advanced" class="level-btn w-full text-left px-3 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:border-indigo-500 transition">
-                                    <span class="flex items-center justify-between gap-2 text-sm font-bold text-white"><span>Продвинутый</span><span class="level-price text-indigo-300 whitespace-nowrap">990 ₽</span></span>
+                                    <span class="flex items-center justify-between gap-2 text-sm font-bold text-white"><span>Полная диагностика</span><span class="level-price text-indigo-300 whitespace-nowrap">990 ₽</span></span>
                                     <span class="block text-xs font-normal text-slate-300 mt-1">Более сложные и многошаговые задачи</span>
                                 </button>
                             </div>
@@ -380,7 +380,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-slate-800 pb-3 mb-3">
                         <div>
                             <h3 id="card-title" class="text-xl sm:text-2xl font-extrabold text-white">Диагностика 10 класса</h3>
-                            <p id="card-level" class="text-sm font-semibold text-indigo-300 mt-1">Базовый уровень</p>
+                            <p id="card-level" class="text-sm font-semibold text-indigo-300 mt-1">Лёгкий старт</p>
                         </div>
                         <div class="sm:text-right">
                             <p class="text-sm sm:text-base font-bold text-white">Программа диагностики</p>
@@ -882,7 +882,7 @@
                 activeBtn.classList.add('border-indigo-500', 'bg-indigo-600', 'shadow-lg', 'shadow-indigo-600/30');
             }
             document.getElementById('card-title').innerText = 'Диагностика ' + gradeKey + ' класса';
-            document.getElementById('card-level').innerText = key.endsWith('_basic') ? 'Базовый уровень' : 'Продвинутый уровень';
+            document.getElementById('card-level').innerText = key.endsWith('_basic') ? 'Лёгкий старт' : 'Полная диагностика';
             document.getElementById('card-desc').innerText = 'Содержание программы одинаковое для обоих уровней; меняется сложность заданий.';
             const paymentAvailable = true;
             appliedPromoCode = '';
