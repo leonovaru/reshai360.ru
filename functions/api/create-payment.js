@@ -137,7 +137,7 @@ export async function onRequestPost(context) {
       discountAmount,
       discountPercent,
       displayAmount: discountedDisplayPrice
-    }), { expirationTtl: 86400 });
+    }), { expirationTtl: 604800 });
     // Отдельная запись подтверждения согласия нужна для доказуемости факта и версии документов.
     await env.TEST_TOKENS.put("consent:" + token, JSON.stringify({
       ...consentRecord,
@@ -202,7 +202,7 @@ export async function onRequestPost(context) {
     if (latestTokenRaw) {
       const latestTokenData = JSON.parse(latestTokenRaw);
       latestTokenData.paymentId = payment.id;
-      await env.TEST_TOKENS.put(createdToken, JSON.stringify(latestTokenData), { expirationTtl: 86400 });
+      await env.TEST_TOKENS.put(createdToken, JSON.stringify(latestTokenData), { expirationTtl: 604800 });
     }
 
     return new Response(JSON.stringify({
