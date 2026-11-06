@@ -53,6 +53,12 @@ async function clientText(env, chatId, text, state) {
       await saveTicket(env.TEST_TOKENS, ticket);
       await refreshActiveTicket(env, ticket);
     }
+  } else {
+    const current = await getState(env.TEST_TOKENS, chatId);
+    current.history = Array.isArray(current.history) ? current.history : [];
+    current.history.push({ at: new Date().toISOString(), from: "bot", text: String(text).slice(0, 3000) });
+    current.history = current.history.slice(-80);
+    await setState(env.TEST_TOKENS, chatId, current);
   }
 }
 async function addStateBotMessage(env, chatId, text) {
