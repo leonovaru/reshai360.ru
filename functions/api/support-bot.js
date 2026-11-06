@@ -404,7 +404,8 @@ export async function onRequestPost({ request, env }) {
         }
       } else if (action === "promo") {
         await sendPromoInfo(env, chatId, state.email, state);
-        await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
+        const updatedState = await getState(env.TEST_TOKENS, chatId);
+        await setState(env.TEST_TOKENS, chatId, { ...updatedState, step: "menu" });
       }
       return Response.json({ ok: true });
     }
