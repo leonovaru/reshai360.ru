@@ -77,6 +77,8 @@ async function askForEmail(env, chatId) {
   await sendText(env, chatId, prompt);
 }
 async function showMenu(env, chatId) {
+  const state = await getState(env.TEST_TOKENS, chatId);
+  await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
   await addStateBotMessage(env, chatId, "Чем можем помочь?");
   await sendText(env, chatId, "Чем можем помочь?", { reply_markup: { inline_keyboard: [
     [{ text: "Не открывается диагностика", callback_data: "support:open_test" }],
@@ -481,10 +483,6 @@ export async function onRequestPost({ request, env }) {
         await sendText(env, chatId, "Сообщение добавлено к вашему обращению. Специалист увидит его в переписке.");
         return Response.json({ ok: true });
       }
-    }
-    if (text === "/start" || text === "/restart") {
-      await askForEmail(env, chatId);
-      return Response.json({ ok: true });
     }
     if (state.step === "email") {
       const email = text.toLowerCase();
