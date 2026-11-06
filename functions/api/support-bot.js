@@ -503,7 +503,7 @@ export async function onRequestPost({ request, env }) {
         await clientText(env, chatId, reply, state);
         await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
       } else {
-        await askMoreHelp(env, chatId, state);
+        await showMenu(env, chatId);
       }
       return Response.json({ ok: true });
     }
