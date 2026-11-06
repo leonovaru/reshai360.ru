@@ -51,7 +51,7 @@ export async function onRequestPost({ request, env }) {
         stats: { ...(previousSnapshot.stats || {}), ...snapshot.stats },
         savedAt: snapshot.savedAt
       } : snapshot;
-      await env.TEST_TOKENS.put(progressKey, JSON.stringify(mergedSnapshot), { expirationTtl: 86400 });
+      await env.TEST_TOKENS.put(progressKey, JSON.stringify(mergedSnapshot), { expirationTtl: 604800 });
     }
 
     return Response.json({ success: true });
