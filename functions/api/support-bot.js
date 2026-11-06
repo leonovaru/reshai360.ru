@@ -346,7 +346,16 @@ export async function onRequestPost({ request, env }) {
     if (message && isAdmin) {
       const handled = await handleAdminMessage(env, message, chatId);
       if (handled) return Response.json({ ok: true });
-      if (message.text === "/queue") {
+      if (message.text === "/start" || message.text === "/restart") {
+        const activeId = await env.TEST_TOKENS.get(ACTIVE_KEY);
+        const activeTicket = activeId ? await getTicket(env.TEST_TOKENS, activeId) : null;
+        if (activeTicket && activeTicket.status === "active") {
+          await refreshActiveTicket(env, activeTicket);
+        } else {
+          const q = await getQueue(env.TEST_TOKENS);
+          await sendText(env, chatId, "Сейчас нет активного обращения.\nВ очереди: " + q.length);
+        }
+      } else if (message.text === "/queue") {
         const q = await getQueue(env.TEST_TOKENS);
         const active = await env.TEST_TOKENS.get(ACTIVE_KEY);
         await sendText(env, chatId, "Активное обращение: " + (active || "нет") + "\nВ очереди: " + q.length);
