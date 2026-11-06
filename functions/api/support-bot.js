@@ -55,11 +55,20 @@ async function clientText(env, chatId, text, state) {
     }
   }
 }
+async function addStateBotMessage(env, chatId, text) {
+  const state = await getState(env.TEST_TOKENS, chatId);
+  state.history = Array.isArray(state.history) ? state.history : [];
+  state.history.push({ at: new Date().toISOString(), from: "bot", text });
+  state.history = state.history.slice(-80);
+  await setState(env.TEST_TOKENS, chatId, state);
+}
 async function askForEmail(env, chatId) {
-  await setState(env.TEST_TOKENS, chatId, { step: "email", history: [] });
-  await sendText(env, chatId, "Здравствуйте! Это поддержка Решай360. Напишите email, который вы указывали перед оплатой диагностики.");
+  const prompt = "Здравствуйте! Это поддержка Решай360. Напишите email, который вы указывали перед оплатой диагностики.";
+  await setState(env.TEST_TOKENS, chatId, { step: "email", history: [{ at: new Date().toISOString(), from: "bot", text: prompt }] });
+  await sendText(env, chatId, prompt);
 }
 async function showMenu(env, chatId) {
+  await addStateBotMessage(env, chatId, "Чем можем помочь?");
   await sendText(env, chatId, "Чем можем помочь?", { reply_markup: { inline_keyboard: [
     [{ text: "Не открывается диагностика", callback_data: "support:open_test" }],
     [{ text: "Не пришёл PDF-отчёт", callback_data: "support:report" }],
@@ -350,6 +359,7 @@ export async function onRequestPost({ request, env }) {
       if (!state.email) { await askForEmail(env, chatId); return Response.json({ ok: true }); }
       if (action === "human") {
         await setState(env.TEST_TOKENS, chatId, { ...state, step: "human" });
+        await addStateBotMessage(env, chatId, "Опишите, пожалуйста, ваш вопрос одним сообщением.");
         await sendText(env, chatId, "Опишите, пожалуйста, ваш вопрос одним сообщением.");
       } else if (action === "open_test") {
         const order = await findOrder(env, state.email, false);
@@ -362,7 +372,9 @@ export async function onRequestPost({ request, env }) {
             const ms = Math.max(0, 86400000 - (Date.now() - new Date(order.paidAt).getTime()));
             if (Number.isFinite(ms)) remaining = "\nОриентировочно осталось: " + Math.floor(ms / 3600000) + " ч. " + Math.floor((ms % 3600000) / 60000) + " мин.";
           }
-          await sendText(env, chatId, "Нашёл вашу диагностику. Вот персональная ссылка:\n" + url + remaining);
+          const reply = "Нашёл вашу диагностику. Вот персональная ссылка:\n" + url + remaining;
+          state.history = [...(state.history || []), { at: new Date().toISOString(), from: "bot", text: reply }];
+          await sendText(env, chatId, reply);
           await setState(env.TEST_TOKENS, chatId, { ...state, step: "thanks" });
         }
       } else if (action === "report") {
@@ -372,7 +384,9 @@ export async function onRequestPost({ request, env }) {
         } else {
           const unfinished = await findOrder(env, state.email, false);
           if (unfinished) {
-            await sendText(env, chatId, "Чтобы сформировать отчёт, завершите диагностику, нажав на зелёную кнопку внизу страницы. После этого вы сможете скачать отчёт прямо на странице с результатами или посмотреть его в письме на почте.");
+            const reply = "Чтобы сформировать отчёт, завершите диагностику, нажав на зелёную кнопку внизу страницы. После этого вы сможете скачать отчёт прямо на странице с результатами или посмотреть его в письме на почте.";
+            state.history = [...(state.history || []), { at: new Date().toISOString(), from: "bot", text: reply }];
+            await sendText(env, chatId, reply);
             await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
           } else {
             await createTicket(env, chatId, state, callback.from?.id, "Не пришёл PDF-отчёт", "Не удалось автоматически определить статус отчёта. Нужно проверить заказ вручную.");
@@ -404,7 +418,10 @@ export async function onRequestPost({ request, env }) {
     if (state.step === "email") {
       const email = text.toLowerCase();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        await sendText(env, chatId, "Похоже, это не email. Проверьте адрес и отправьте его ещё раз.");
+        const prompt = "Похоже, это не email. Проверьте адрес и отправьте его ещё раз.";
+        state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text }, { at: new Date().toISOString(), from: "bot", text: prompt }];
+        await setState(env.TEST_TOKENS, chatId, state);
+        await sendText(env, chatId, prompt);
       } else {
         await setState(env.TEST_TOKENS, chatId, { step: "menu", email, history: [{ at: new Date().toISOString(), from: "client", text: "Email: " + email }] });
         await showMenu(env, chatId);
@@ -414,7 +431,9 @@ export async function onRequestPost({ request, env }) {
       await createTicket(env, chatId, state, message.from?.id, "Вопрос клиента", text);
     } else if (state.step === "thanks") {
       if (/^(спасибо|благодарю|ок|понятно|thanks|спс)[!.\s😊🙏🙂👍❤️]*$/i.test(text)) {
-        await sendText(env, chatId, "Пожалуйста! Желаем продуктивного прохождения диагностики! 😊");
+        const reply = "Пожалуйста! Желаем продуктивного прохождения диагностики! 😊";
+        state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text }, { at: new Date().toISOString(), from: "bot", text: reply }];
+        await sendText(env, chatId, reply);
         await setState(env.TEST_TOKENS, chatId, { step: "menu", email: state.email, history: state.history || [] });
       } else {
         state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text }];
