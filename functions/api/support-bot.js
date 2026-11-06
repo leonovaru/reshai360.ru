@@ -69,7 +69,8 @@ async function notifyHuman(env, chatId, state, message, telegramUserId) {
     email: state.email || null,
     telegramUserId: String(telegramUserId || ""),
     chatId: String(chatId),
-    message: String(message || "").slice(0, 4000)
+    message: String(message || "").slice(0, 4000),
+    history: Array.isArray(state.history) ? state.history.slice(-20) : []
   };
   await env.TEST_TOKENS.put("support-ticket:" + ticketId, JSON.stringify(ticket), { expirationTtl: 31536000 });
   if (env.TELEGRAM_SUPPORT_ADMIN_CHAT_ID) {
@@ -215,9 +216,22 @@ export async function onRequestPost({ request, env }) {
     if (!chatId) return Response.json({ ok: true });
 
     if (callback) {
+      const rateKey = "support-lookup-rate:" + chatId;
+      const lastLookup = Number(await env.TEST_TOKENS.get(rateKey) || 0);
+      if (Date.now() - lastLookup < 5000) {
+        await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id, text: "Подождите несколько секунд перед следующим запросом." });
+        return Response.json({ ok: true });
+      }
+      await env.TEST_TOKENS.put(rateKey, String(Date.now()), { expirationTtl: 60 });
       await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id });
       const action = String(callback.data || "").replace("support:", "");
       const state = await getState(env.TEST_TOKENS, chatId);
+      state.history = [...(Array.isArray(state.history) ? state.history : []), {
+        at: new Date().toISOString(),
+        from: "client",
+        text: "Выбрано действие: " + action
+      }].slice(-20);
+      await setState(env.TEST_TOKENS, chatId, state);
       if (!state.email) {
         await askForEmail(env, env.TEST_TOKENS, chatId);
         return Response.json({ ok: true });
@@ -271,6 +285,13 @@ export async function onRequestPost({ request, env }) {
     }
 
     const state = await getState(env.TEST_TOKENS, chatId);
+    const history = [...(Array.isArray(state.history) ? state.history : []), {
+      at: new Date().toISOString(),
+      from: "client",
+      text: text.slice(0, 1000)
+    }].slice(-20);
+    state.history = history;
+    await setState(env.TEST_TOKENS, chatId, state);
     if (state.step === "email") {
       const email = text.toLowerCase();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
