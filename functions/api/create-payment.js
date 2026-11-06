@@ -59,20 +59,20 @@ export async function onRequestPost(context) {
 
     const PRODUCTS = {
       '7': { title: 'Диагностика — 7 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_7_basic.html' },
-      '7_basic': { title: 'Диагностика — 7 класс, базовый уровень', price: 1, displayPrice: 790, file: 'test_7_basic.html' },
-      '7_advanced': { title: 'Диагностика — 7 класс, продвинутый уровень', price: 1, displayPrice: 990, file: 'test_7_advanced.html' },
+      '7_basic': { title: 'Диагностика — 7 класс, Лёгкий старт', price: 1, displayPrice: 790, file: 'test_7_basic.html' },
+      '7_advanced': { title: 'Диагностика — 7 класс, Полная диагностика', price: 1, displayPrice: 990, file: 'test_7_advanced.html' },
       '8': { title: 'Диагностика — 8 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_8_basic.html' },
-      '8_basic': { title: 'Диагностика — 8 класс, базовый уровень', price: 1, displayPrice: 790, file: 'test_8_basic.html' },
-      '8_advanced': { title: 'Диагностика — 8 класс, продвинутый уровень', price: 1, displayPrice: 990, file: 'test_8_advanced.html' },
+      '8_basic': { title: 'Диагностика — 8 класс, Лёгкий старт', price: 1, displayPrice: 790, file: 'test_8_basic.html' },
+      '8_advanced': { title: 'Диагностика — 8 класс, Полная диагностика', price: 1, displayPrice: 990, file: 'test_8_advanced.html' },
       '9': { title: 'Диагностика — 9 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_9_basic.html' },
-      '9_basic': { title: 'Диагностика — 9 класс, базовый уровень', price: 1, displayPrice: 790, file: 'test_9_basic.html' },
-      '9_advanced': { title: 'Диагностика — 9 класс, продвинутый уровень', price: 1, displayPrice: 990, file: 'test_9_advanced.html' },
+      '9_basic': { title: 'Диагностика — 9 класс, Лёгкий старт', price: 1, displayPrice: 790, file: 'test_9_basic.html' },
+      '9_advanced': { title: 'Диагностика — 9 класс, Полная диагностика', price: 1, displayPrice: 990, file: 'test_9_advanced.html' },
       '10': { title: 'Диагностика — 10 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_10_basic.html' },
       '11': { title: 'Диагностика — 11 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_11_basic.html' },
-      '10_basic': { title: 'Диагностика — 10 класс, базовый уровень', price: 1, displayPrice: 790, file: 'test_10_basic.html' },
-      '10_advanced': { title: 'Диагностика — 10 класс, продвинутый уровень', price: 1, displayPrice: 990, file: 'test_10_advanced.html' },
-      '11_basic': { title: 'Диагностика — 11 класс, базовый уровень', price: 1, file: 'test_11_basic.html' },
-      '11_advanced': { title: 'Диагностика — 11 класс, продвинутый уровень', price: 1, displayPrice: 990, file: 'test_11_advanced.html' }
+      '10_basic': { title: 'Диагностика — 10 класс, Лёгкий старт', price: 1, displayPrice: 790, file: 'test_10_basic.html' },
+      '10_advanced': { title: 'Диагностика — 10 класс, Полная диагностика', price: 1, displayPrice: 990, file: 'test_10_advanced.html' },
+      '11_basic': { title: 'Диагностика — 11 класс, Лёгкий старт', price: 1, file: 'test_11_basic.html' },
+      '11_advanced': { title: 'Диагностика — 11 класс, Полная диагностика', price: 1, displayPrice: 990, file: 'test_11_advanced.html' }
     };
     PRODUCTS['11_basic'].displayPrice = 790;
 
