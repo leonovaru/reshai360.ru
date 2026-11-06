@@ -147,6 +147,56 @@ export async function onRequestPost({ request, env }) {
             await env.TEST_TOKENS.put(emailIndexKey, JSON.stringify(index), { expirationTtl: promoTtl });
           }
         }
+        // Дополнительно сохраняем готовый PDF в закрытое R2-хранилище.
+        // Это не меняет генерацию отчёта и не влияет на отправку в Telegram или по email.
+        if (env.REPORTS_BUCKET && email) {
+          try {
+            const normalizedReportEmail = String(email).trim().toLowerCase();
+            const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalizedReportEmail));
+            const reportEmailHash = Array.from(new Uint8Array(hashBuffer), byte => byte.toString(16).padStart(2, "0")).join("");
+            const reportObjectKey = "reports/" + reportEmailHash + "/" + token + ".pdf";
+            if (!tokenData.reportR2Key) {
+              const reportBytes = new Uint8Array(await pdfFile.arrayBuffer());
+              await env.REPORTS_BUCKET.put(reportObjectKey, reportBytes, {
+                httpMetadata: {
+                  contentType: "application/pdf",
+                  cacheControl: "private, no-store"
+                },
+                customMetadata: {
+                  emailHash: reportEmailHash,
+                  orderToken: token,
+                  productKey: String(tokenData.productKey || ""),
+                  completedAt: String(tokenData.completedAt || new Date().toISOString())
+                }
+              });
+              tokenData.reportR2Key = reportObjectKey;
+              tokenData.reportStoredAt = new Date().toISOString();
+
+              const reportIndexKey = "report-email:" + reportEmailHash;
+              const reportIndexRaw = await env.TEST_TOKENS.get(reportIndexKey);
+              const reportIndex = reportIndexRaw ? JSON.parse(reportIndexRaw) : [];
+              const safeReportIndex = Array.isArray(reportIndex) ? reportIndex : [];
+              if (!safeReportIndex.some(item => item && item.token === token)) {
+                safeReportIndex.push({
+                  token,
+                  objectKey: reportObjectKey,
+                  productKey: String(tokenData.productKey || ""),
+                  productTitle: String(tokenData.productTitle || ""),
+                  studentName: String(name || ""),
+                  completedAt: String(tokenData.completedAt || new Date().toISOString()),
+                  score: scoreNumber,
+                  total: totalNumber,
+                  percent
+                });
+              }
+              await env.TEST_TOKENS.put(reportIndexKey, JSON.stringify(safeReportIndex), { expirationTtl: 94608000 });
+            }
+          } catch (storageError) {
+            // Ошибка R2 не должна ломать привычную отправку PDF клиенту.
+            console.error("PDF R2 storage error:", storageError);
+          }
+        }
+
         await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
     }
 
