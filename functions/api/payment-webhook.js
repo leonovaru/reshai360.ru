@@ -88,7 +88,7 @@ export async function onRequestPost(context) {
     tokenData.isPaid = true;
     tokenData.paymentId = confirmedPayment.id;
     tokenData.paidAt = confirmedPayment.captured_at || confirmedPayment.created_at || new Date().toISOString();
-    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
+    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
 
     // Партнёрское начисление создаётся только после серверного подтверждения оплаты.
     // Ключ основан на payment ID: повторный webhook перезаписывает ту же запись, а не создаёт новую.
