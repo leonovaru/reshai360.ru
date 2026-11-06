@@ -162,9 +162,13 @@ async function createTicket(env, chatId, state, userId, reason, firstMessage) {
   const activeId = await kv.get(ACTIVE_KEY);
   if (!activeId) await activateNext(env);
   const nowActive = await kv.get(ACTIVE_KEY);
-  await sendText(env, chatId, nowActive === ticket.id
+  const confirmation = nowActive === ticket.id
     ? "Ваше обращение принято. Я передал его специалисту поддержки. Мы ответим здесь."
-    : "Ваше обращение принято и добавлено в очередь поддержки. Как только специалист завершит предыдущее обращение, мы передадим ему ваше.");
+    : "Ваше обращение принято и добавлено в очередь поддержки. Как только специалист завершит предыдущее обращение, мы передадим ему ваше.";
+  addHistory(ticket, "bot", confirmation);
+  await saveTicket(kv, ticket);
+  if (nowActive === ticket.id) await refreshActiveTicket(env, ticket);
+  await sendText(env, chatId, confirmation);
   return ticket;
 }
 async function closeTicket(env, ticket) {
@@ -405,6 +409,7 @@ export async function onRequestPost({ request, env }) {
       const ticket = await getTicket(env.TEST_TOKENS, state.ticketId);
       if (ticket && ticket.status !== "closed") {
         addHistory(ticket, "client", text || (message.document ? "Клиент отправил документ" : "Новое сообщение"));
+        addHistory(ticket, "bot", "Сообщение добавлено к вашему обращению. Специалист увидит его в переписке.");
         await saveTicket(env.TEST_TOKENS, ticket);
         await refreshActiveTicket(env, ticket);
         await sendText(env, chatId, "Сообщение добавлено к вашему обращению. Специалист увидит его в переписке.");
