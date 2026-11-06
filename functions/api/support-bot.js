@@ -19,7 +19,10 @@ async function telegram(env, method, payload) {
   return data.result;
 }
 async function sendText(env, chatId, text, extra = {}) {
-  return telegram(env, "sendMessage", { chat_id: chatId, text, disable_web_page_preview: true, ...extra });
+  const clientMenu = String(chatId) !== String(env.TG_CHAT_ID || "") ? {
+    reply_markup: { inline_keyboard: [[{ text: "☰ Меню", callback_data: "support:menu" }]] }
+  } : {};
+  return telegram(env, "sendMessage", { chat_id: chatId, text, disable_web_page_preview: true, ...clientMenu, ...extra });
 }
 async function hashEmail(email) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(email));
@@ -44,8 +47,8 @@ function addHistory(ticket, from, text, extra = {}) {
   ticket.history.push({ at: new Date().toISOString(), from, text: String(text || "").slice(0, 3000), ...extra });
   ticket.history = ticket.history.slice(-100);
 }
-async function clientText(env, chatId, text, state) {
-  await sendText(env, chatId, text);
+async function clientText(env, chatId, text, state, extra = {}) {
+  await sendText(env, chatId, text, extra);
   if (state?.ticketId) {
     const ticket = await getTicket(env.TEST_TOKENS, state.ticketId);
     if (ticket && ticket.status !== "closed") {
@@ -79,7 +82,23 @@ async function showMenu(env, chatId) {
     [{ text: "Не открывается диагностика", callback_data: "support:open_test" }],
     [{ text: "Не пришёл PDF-отчёт", callback_data: "support:report" }],
     [{ text: "Какой у меня промокод", callback_data: "support:promo" }],
-    [{ text: "Позвать человека", callback_data: "support:human" }]
+    [{ text: "Позвать специалиста", callback_data: "support:human" }]
+  ] } });
+}
+async function removeClientButtons(env, callback) {
+  if (!callback?.message?.message_id || !callback?.message?.chat?.id) return;
+  try {
+    await telegram(env, "editMessageReplyMarkup", {
+      chat_id: callback.message.chat.id,
+      message_id: callback.message.message_id,
+      reply_markup: { inline_keyboard: [] }
+    });
+  } catch {}
+}
+async function askMoreHelp(env, chatId, state) {
+  const prompt = "Можем ли ещё чем-нибудь помочь?";
+  await clientText(env, chatId, prompt, state, { reply_markup: { inline_keyboard: [
+    [{ text: "Да", callback_data: "support:help_yes" }, { text: "Нет", callback_data: "support:help_no" }]
   ] } });
 }
 async function getQueue(kv) {
@@ -230,12 +249,15 @@ async function sendPromoInfo(env, chatId, email, state) {
   await clientText(env, chatId, lines.join("\n"), state);
   const latest = promos[0];
   if (Number(latest.discountPercent || 10) >= 15) return;
+  const latestOrder = await findOrder(env, email, true) || await findOrder(env, email, false);
+  const prefillName = String(latest.name || latestOrder?.name || latestOrder?.customerName || state?.name || "").trim();
   const prefillToken = crypto.randomUUID().replace(/-/g, "");
   await env.TEST_TOKENS.put("feedback-prefill:" + prefillToken, JSON.stringify({
-    name: "", email, createdAt: Date.now()
+    name: prefillName, email, createdAt: Date.now()
   }), { expirationTtl: 3888000 });
   const feedbackUrl = "https://reshai360.ru/index.html?feedback_token=" + encodeURIComponent(prefillToken) + "#feedback";
-  await clientText(env, chatId, "Оставьте отзыв, пожелание или идею — скидка по последнему промокоду может увеличиться до 15%: " + feedbackUrl, state);
+  const feedbackText = "Оставьте отзыв, пожелание или идею — скидка по последнему промокоду может увеличиться до 15%: <a href=\"" + feedbackUrl + "\">перейти к форме обратной связи</a>.";
+  await clientText(env, chatId, feedbackText, state, { parse_mode: "HTML" });
 }
 async function findOrder(env, email, completed) {
   let cursor;
@@ -295,9 +317,11 @@ async function handleAdminMessage(env, message, chatId) {
   let adminState;
   try { adminState = JSON.parse(raw); } catch { return false; }
   const ticket = await getTicket(env.TEST_TOKENS, adminState.ticketId);
-  if (!ticket || ticket.status !== "active" || await env.TEST_TOKENS.get(ACTIVE_KEY) !== ticket.id) {
+  const isCurrentActive = ticket && ticket.status === "active" && await env.TEST_TOKENS.get(ACTIVE_KEY) === ticket.id;
+  const canSendPdfToOpenTicket = ticket && ticket.status !== "closed" && adminState.mode === "pdf";
+  if (!ticket || ticket.status === "closed" || (!isCurrentActive && !canSendPdfToOpenTicket)) {
     await env.TEST_TOKENS.delete("support-admin-state:" + chatId);
-    await sendText(env, chatId, "Это обращение уже не активно. Выберите действие в актуальном уведомлении.");
+    await sendText(env, chatId, "Это обращение уже закрыто или недоступно. Выберите действие в актуальном уведомлении.");
     return true;
   }
   if (adminState.mode === "reply") {
@@ -313,7 +337,10 @@ async function handleAdminMessage(env, message, chatId) {
   }
   if (adminState.mode === "pdf") {
     const doc = message.document;
-    if (!doc) { await sendText(env, chatId, "Пожалуйста, отправьте PDF именно как документ."); return true; }
+    if (!doc || (doc.mime_type && doc.mime_type !== "application/pdf" && !String(doc.file_name || "").toLowerCase().endsWith(".pdf"))) {
+      await sendText(env, chatId, "Пожалуйста, отправьте PDF именно как документ.");
+      return true;
+    }
     await telegram(env, "sendDocument", {
       chat_id: ticket.chatId, document: doc.file_id,
       caption: "Ваш PDF-отчёт по диагностике Решай360."
@@ -372,9 +399,26 @@ export async function onRequestPost({ request, env }) {
     if (callback) {
       await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id });
       const action = String(callback.data || "").replace("support:", "");
+      await removeClientButtons(env, callback);
       const state = await getState(env.TEST_TOKENS, chatId);
+      state.name = state.name || String(callback.from?.first_name || "").trim();
       state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text: "Выбрано действие: " + action }];
       await setState(env.TEST_TOKENS, chatId, state);
+      if (action === "menu") {
+        if (state.email) await showMenu(env, chatId);
+        else await askForEmail(env, chatId);
+        return Response.json({ ok: true });
+      }
+      if (action === "help_yes") {
+        await showMenu(env, chatId);
+        return Response.json({ ok: true });
+      }
+      if (action === "help_no") {
+        const reply = "Спасибо за обращение в Решай360! Если понадобится помощь, меню всегда доступно в чате. 😊";
+        await clientText(env, chatId, reply, state);
+        await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
+        return Response.json({ ok: true });
+      }
       if (!state.email) { await askForEmail(env, chatId); return Response.json({ ok: true }); }
       if (action === "human") {
         await setState(env.TEST_TOKENS, chatId, { ...state, step: "human" });
@@ -414,13 +458,19 @@ export async function onRequestPost({ request, env }) {
       } else if (action === "promo") {
         await sendPromoInfo(env, chatId, state.email, state);
         const updatedState = await getState(env.TEST_TOKENS, chatId);
-        await setState(env.TEST_TOKENS, chatId, { ...updatedState, step: "menu" });
+        await setState(env.TEST_TOKENS, chatId, { ...updatedState, step: "after_promo" });
+        await askMoreHelp(env, chatId, { ...updatedState, step: "after_promo" });
       }
       return Response.json({ ok: true });
     }
     if (!message) return Response.json({ ok: true });
     const state = await getState(env.TEST_TOKENS, chatId);
     const text = String(message.text || "").trim();
+    if (text === "/start" || text === "/restart" || text === "/menu" || text === "☰ Меню") {
+      if (state.email) await showMenu(env, chatId);
+      else await askForEmail(env, chatId);
+      return Response.json({ ok: true });
+    }
     if (state.ticketId) {
       const ticket = await getTicket(env.TEST_TOKENS, state.ticketId);
       if (ticket && ticket.status !== "closed") {
@@ -444,8 +494,18 @@ export async function onRequestPost({ request, env }) {
         await setState(env.TEST_TOKENS, chatId, state);
         await sendText(env, chatId, prompt);
       } else {
-        await setState(env.TEST_TOKENS, chatId, { step: "menu", email, history: [{ at: new Date().toISOString(), from: "client", text: "Email: " + email }] });
+        await setState(env.TEST_TOKENS, chatId, { step: "menu", email, name: String(message.from?.first_name || "").trim(), history: [{ at: new Date().toISOString(), from: "client", text: "Email: " + email }] });
         await showMenu(env, chatId);
+      }
+    } else if (state.step === "after_promo") {
+      if (/^(да|yes)$/i.test(text)) {
+        await showMenu(env, chatId);
+      } else if (/^(нет|no)$/i.test(text)) {
+        const reply = "Спасибо за обращение в Решай360! Если понадобится помощь, меню всегда доступно в чате. 😊";
+        await clientText(env, chatId, reply, state);
+        await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
+      } else {
+        await askMoreHelp(env, chatId, state);
       }
     } else if (state.step === "human") {
       state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text }];
