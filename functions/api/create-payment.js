@@ -1,3 +1,4 @@
+import { getOrderExpirationTtl } from "../_lib/telegram-payment.js";
 export async function onRequestPost(context) {
   const { request, env } = context;
   let createdToken = null;
@@ -120,11 +121,13 @@ export async function onRequestPost(context) {
     createdToken = token;
     if (promoCode) reservedPromoCode = promoCode;
 
-    // Сохраняем заказ в KV-хранилище (срок жизни 7 дней)
+    // Сохраняем заказ в KV-хранилище (срок жизни 7 дней с момента создания).
+    const orderCreatedAt = new Date().toISOString();
     await env.TEST_TOKENS.put(token, JSON.stringify({
       studentName,
       email,
       productKey,
+      createdAt: orderCreatedAt,
       productTitle: product.title,
       promoCode: promoCode || null,
       referralCode,
@@ -137,7 +140,7 @@ export async function onRequestPost(context) {
       discountAmount,
       discountPercent,
       displayAmount: discountedDisplayPrice
-    }), { expirationTtl: 604800 });
+    }), { expirationTtl: getOrderExpirationTtl({ createdAt: orderCreatedAt }) });
     // Отдельная запись подтверждения согласия нужна для доказуемости факта и версии документов.
     await env.TEST_TOKENS.put("consent:" + token, JSON.stringify({
       ...consentRecord,
@@ -202,7 +205,7 @@ export async function onRequestPost(context) {
     if (latestTokenRaw) {
       const latestTokenData = JSON.parse(latestTokenRaw);
       latestTokenData.paymentId = payment.id;
-      await env.TEST_TOKENS.put(createdToken, JSON.stringify(latestTokenData), { expirationTtl: 604800 });
+      await env.TEST_TOKENS.put(createdToken, JSON.stringify(latestTokenData), { expirationTtl: getOrderExpirationTtl(latestTokenData) });
     }
 
     return new Response(JSON.stringify({
