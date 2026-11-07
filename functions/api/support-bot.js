@@ -226,6 +226,17 @@ async function closeTicket(env, ticket) {
   const queue = (await getQueue(env.TEST_TOKENS)).filter(id => id !== ticket.id);
   await setQueue(env.TEST_TOKENS, queue);
   await env.TEST_TOKENS.delete(ACTIVE_KEY);
+  if (ticket.adminMessageId && env.TG_CHAT_ID) {
+    try {
+      await telegram(env, "editMessageReplyMarkup", {
+        chat_id: env.TG_CHAT_ID,
+        message_id: ticket.adminMessageId,
+        reply_markup: { inline_keyboard: [] }
+      });
+    } catch (error) {
+      console.error("Support bot: failed to remove closed ticket buttons:", error);
+    }
+  }
   const state = await getState(env.TEST_TOKENS, ticket.chatId);
   await setState(env.TEST_TOKENS, ticket.chatId, { step: "menu", email: ticket.email, history: state.history || [] });
   await sendText(env, ticket.chatId, "Спасибо за обращение! Ваш запрос обработан.", { reply_markup: { ...CLIENT_KEYBOARD } });
@@ -442,6 +453,22 @@ export async function onRequestPost({ request, env }) {
       await env.TEST_TOKENS.put(updateKey, "1", { expirationTtl: 86400 });
     }
     if (callback) {
+      const callbackData = String(callback.data || "");
+      if (callbackData === "client:other_email" || callbackData === "client:human") {
+        await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id });
+        if (callbackData === "client:other_email") {
+          await env.TEST_TOKENS.delete("support-email:" + chatId);
+          await setState(env.TEST_TOKENS, chatId, { step: "email", history: [] });
+          await askForEmail(env, chatId);
+        } else {
+          const clientState = await getState(env.TEST_TOKENS, chatId);
+          await setState(env.TEST_TOKENS, chatId, { ...clientState, step: "human" });
+          const prompt = "Опишите, пожалуйста, ваш вопрос одним сообщением. Специалист поддержки поможет разобраться.";
+          await addStateBotMessage(env, chatId, prompt);
+          await sendText(env, chatId, prompt, { reply_markup: { remove_keyboard: true } });
+        }
+        return Response.json({ ok: true });
+      }
       await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id });
       return Response.json({ ok: true });
     }
@@ -508,7 +535,18 @@ export async function onRequestPost({ request, env }) {
         } else if (action === "open_test") {
           const order = await findOrder(env, state.email, null);
           if (!order) {
-            await createTicket(env, chatId, state, message.from?.id, "Не открывается диагностика", "Не удалось автоматически найти активную ссылку на диагностику.");
+            const notice = "По этому адресу электронной почты не найдена оплаченная диагностика.\n\nВы можете перейти на сайт и оформить диагностику, указать другую почту, если оплачивали с неё, или позвать специалиста для помощи.";
+            await setState(env.TEST_TOKENS, chatId, { ...state, step: "no_paid_order" });
+            await addStateBotMessage(env, chatId, notice);
+            await sendText(env, chatId, notice, {
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: "Перейти на сайт Решай360", url: "https://reshai360.ru/" }],
+                  [{ text: "Ввести другую почту", callback_data: "client:other_email" }],
+                  [{ text: "Позвать специалиста", callback_data: "client:human" }]
+                ]
+              }
+            });
           } else {
             const url = "https://reshai360.ru/" + TEST_FILES[order.productKey] + "?token=" + encodeURIComponent(order.token);
             let remaining = "";
