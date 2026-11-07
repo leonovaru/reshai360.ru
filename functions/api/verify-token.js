@@ -1,4 +1,4 @@
-import { sendPaymentTelegramNotification } from "../_lib/telegram-payment.js";
+import { sendPaymentTelegramNotification, ensurePaidOrderLinkExpiry, getOrderExpirationTtl, ORDER_ACCESS_TTL_MS } from "../_lib/telegram-payment.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -14,6 +14,13 @@ export async function onRequestPost(context) {
     }
 
     const tokenData = JSON.parse(tokenDataRaw);
+    let orderDataChanged = false;
+    if (tokenData.isPaid === true) {
+      const oldExpiry = Number(tokenData.linkExpiresAt) || null;
+      const expiresAt = ensurePaidOrderLinkExpiry(tokenData);
+      if (expiresAt <= Date.now()) return Response.json({ valid: false, message: "Срок действия ссылки на диагностику истёк." }, { status: 403 });
+      if (Number(tokenData.linkExpiresAt) !== oldExpiry) orderDataChanged = true;
+    }
 
     // Черновик прогресса хранится отдельно от заказа, чтобы автосохранение
     // не продлевало срок действия оплаченной ссылки.
@@ -57,7 +64,9 @@ export async function onRequestPost(context) {
             tokenData.isPaid = true;
             tokenData.paymentId = payment.id;
             tokenData.paidAt = payment.captured_at || payment.created_at || new Date().toISOString();
-            await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+            tokenData.linkExpiresAt = Date.parse(tokenData.paidAt) + ORDER_ACCESS_TTL_MS;
+            orderDataChanged = true;
+            await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
           }
         }
       } catch (paymentCheckError) {
@@ -106,10 +115,8 @@ export async function onRequestPost(context) {
 
     // Завершённый заказ можно открыть повторно: клиент восстановит сохранённые ответы
     // и покажет результат, не начиная новую диагностику.
-    if (!tokenData.isCompleted) {
-      tokenData.isUsed = true;
-      await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
-    }
+    if (!tokenData.isCompleted) { tokenData.isUsed = true; orderDataChanged = true; }
+    if (orderDataChanged) await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
     return Response.json({ valid: true, data: { ...tokenData, progressSnapshot }, completed: tokenData.isCompleted === true });
   } catch (err) {
     console.error('Verify token error:', err);
