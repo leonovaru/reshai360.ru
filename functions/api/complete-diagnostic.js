@@ -45,9 +45,32 @@ export async function onRequestPost({ request, env }) {
       changed = true;
     }
 
+    if (!tokenData.linkExpiresAt) {
+      const completedAtMs = Date.parse(tokenData.completedAt || "") || Date.now();
+      tokenData.linkExpiresAt = completedAtMs + 7 * 86400000;
+      changed = true;
+    }
+
     if (changed) {
       await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
     }
+
+    const archiveKey = "completed-order:" + token;
+    let previousArchive = {};
+    try { previousArchive = JSON.parse(await env.TEST_TOKENS.get(archiveKey) || "{}"); } catch {}
+    await env.TEST_TOKENS.put(archiveKey, JSON.stringify({
+      ...previousArchive,
+      email: String(tokenData.email || "").trim().toLowerCase(),
+      productKey: tokenData.productKey || previousArchive.productKey || null,
+      productTitle: tokenData.productTitle || previousArchive.productTitle || null,
+      studentName: tokenData.studentName || previousArchive.studentName || null,
+      token,
+      isCompleted: true,
+      completedAt: tokenData.completedAt || previousArchive.completedAt || new Date().toISOString(),
+      linkExpiresAt: tokenData.linkExpiresAt,
+      reportReady: previousArchive.reportReady === true,
+      promoCodeIssued: tokenData.promoCodeIssued || previousArchive.promoCodeIssued || null
+    }), { expirationTtl: 3888000 });
 
     return Response.json({ success: true, completed: true, completedAt: tokenData.completedAt || null });
   } catch (error) {
