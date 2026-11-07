@@ -273,7 +273,7 @@ async function sendWaitingReportPromo(env, chatId, email, ticket) {
     (discount < 15 ? "\n\nОставьте отзыв, пожелание или идею — скидка по последнему активному промокоду увеличится до 15%. <a href=\"" + feedbackUrl + "\">Открыть форму обратной связи</a>." : "");
   addHistory(ticket, "bot", message.replace(/<[^>]+>/g, ""));
   await saveTicket(env.TEST_TOKENS, ticket);
-  await sendText(env, chatId, message, { parse_mode: "HTML" });
+  await sendText(env, chatId, message, { parse_mode: "HTML", reply_markup: { remove_keyboard: true } });
 }
 async function sendPromoInfo(env, chatId, email, state) {
   const promos = await getPromoRecords(env, email);
@@ -407,7 +407,6 @@ async function handleAdminMessage(env, message, chatId) {
     await saveTicket(env.TEST_TOKENS, ticket);
     await env.TEST_TOKENS.delete("support-admin-state:" + chatId);
     await refreshActiveTicket(env, ticket);
-    await sendText(env, ticket.chatId, "Выберите нужный пункт поддержки:", { reply_markup: { ...CLIENT_KEYBOARD } });
     await sendText(env, chatId, "PDF отправлен клиенту. Обращение остаётся открытым. Нажмите «Завершить обращение», когда будете готовы закрыть его.");
     return true;
   }
@@ -582,7 +581,7 @@ export async function onRequestPost({ request, env }) {
       };
       const action = actions[text];
       if (action) {
-        await hideClientKeyboard(env, chatId);
+        if (action !== "report") await hideClientKeyboard(env, chatId);
         state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text: "Выбрано действие: " + text }];
         await setState(env.TEST_TOKENS, chatId, { ...state, step: action === "human" ? "human" : "processing" });
         if (action === "human") {
