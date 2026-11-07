@@ -194,7 +194,7 @@ async function createTicket(env, chatId, state, userId, reason, firstMessage) {
   const queue = await getQueue(kv);
   queue.push(ticket.id);
   await setQueue(kv, queue);
-  await setState(kv, chatId, { step: "ticket_open", email: ticket.email, ticketId: ticket.id });
+  await setState(kv, chatId, { step: "ticket_open", email: ticket.email, ticketId: ticket.id, history: ticket.history });
   const activeId = await kv.get(ACTIVE_KEY);
   if (!activeId) await activateNext(env);
   const nowActive = await kv.get(ACTIVE_KEY);
@@ -210,7 +210,8 @@ async function createTicket(env, chatId, state, userId, reason, firstMessage) {
     const position = updatedQueue.indexOf(ticket.id) + 1;
     await notifyQueuedTicket(env, ticket, position || updatedQueue.length);
   }
-  await sendText(env, chatId, confirmation);
+  await sendText(env, chatId, confirmation, { reply_markup: { remove_keyboard: true } });
+  if (reason === "Повторная отправка PDF-отчёта") await sendWaitingReportPromo(env, chatId, ticket.email, ticket);
   return ticket;
 }
 async function closeTicket(env, ticket) {
@@ -222,7 +223,8 @@ async function closeTicket(env, ticket) {
   await env.TEST_TOKENS.delete(ACTIVE_KEY);
   const state = await getState(env.TEST_TOKENS, ticket.chatId);
   await setState(env.TEST_TOKENS, ticket.chatId, { step: "menu", email: ticket.email, history: state.history || [] });
-  await sendText(env, ticket.chatId, "Ваше обращение завершено. Если понадобится помощь, вы можете снова выбрать нужный пункт в меню.");
+  await sendText(env, ticket.chatId, "Спасибо за обращение! Ваш запрос обработан.", { reply_markup: { ...CLIENT_KEYBOARD } });
+  await setState(env.TEST_TOKENS, ticket.chatId, { step: "menu", email: ticket.email, history: state.history || [] });
   await activateNext(env);
 }
 async function getPromoRecords(env, email) {
@@ -252,6 +254,24 @@ function promoStatus(promo) {
   if (promo.reservedUntil && Number(promo.reservedUntil) > Date.now()) return "оформляется";
   return "активен";
 }
+async function sendWaitingReportPromo(env, chatId, email, ticket) {
+  const promos = await getPromoRecords(env, email);
+  const latest = promos.find(promo => promoStatus(promo) === "активен");
+  if (!latest) return;
+  const feedbackToken = crypto.randomUUID().replace(/-/g, "");
+  await env.TEST_TOKENS.put("feedback-prefill:" + feedbackToken, JSON.stringify({
+    name: String(latest.name || "").trim(), email, createdAt: Date.now()
+  }), { expirationTtl: 3888000 });
+  const feedbackUrl = "https://reshai360.ru/index.html?feedback_token=" + encodeURIComponent(feedbackToken) + "#feedback";
+  const discount = Number(latest.discountPercent || 10);
+  const message = "Мы ищем ваш отчёт, это может занять некоторое время\n\n🎁 Подарок за прохождение\n\n" +
+    latest.code + "\n\nПромокод даёт скидку " + discount +
+    "% на следующую диагностику. Используйте его сами или поделитесь с другом. Код одноразовый и действует 45 дней." +
+    (discount < 15 ? "\n\nОставьте отзыв, пожелание или идею — скидка по последнему активному промокоду увеличится до 15%. <a href=\"" + feedbackUrl + "\">Открыть форму обратной связи</a>." : "");
+  addHistory(ticket, "bot", message.replace(/<[^>]+>/g, ""));
+  await saveTicket(env.TEST_TOKENS, ticket);
+  await sendText(env, chatId, message, { parse_mode: "HTML" });
+}
 async function sendPromoInfo(env, chatId, email, state) {
   const promos = await getPromoRecords(env, email);
   if (!promos.length) {
@@ -264,8 +284,8 @@ async function sendPromoInfo(env, chatId, email, state) {
     lines.push("• " + promo.code + " — скидка " + Number(promo.discountPercent || 0) + "%, до " + expires + " (" + promoStatus(promo) + ")");
   }
   await clientText(env, chatId, lines.join("\n"), state);
-  const latest = promos[0];
-  if (Number(latest.discountPercent || 10) >= 15) return;
+  const latest = promos.find(promo => promoStatus(promo) === "активен");
+  if (!latest || Number(latest.discountPercent || 10) >= 15) return;
   const latestOrder = await findOrder(env, email, true) || await findOrder(env, email, false);
   const prefillName = String(latest.name || latestOrder?.name || latestOrder?.customerName || state?.name || "").trim();
   const prefillToken = crypto.randomUUID().replace(/-/g, "");
@@ -273,7 +293,7 @@ async function sendPromoInfo(env, chatId, email, state) {
     name: prefillName, email, createdAt: Date.now()
   }), { expirationTtl: 3888000 });
   const feedbackUrl = "https://reshai360.ru/index.html?feedback_token=" + encodeURIComponent(prefillToken) + "#feedback";
-  const feedbackText = "Оставьте отзыв, пожелание или идею — скидка по последнему промокоду может увеличиться до 15%: <a href=\"" + feedbackUrl + "\">перейти к форме обратной связи</a>.";
+  const feedbackText = "Оставьте отзыв, пожелание или идею — скидка по последнему активному промокоду может увеличиться до 15%: <a href=\"" + feedbackUrl + "\">перейти к форме обратной связи</a>.";
   await clientText(env, chatId, feedbackText, state, { parse_mode: "HTML" });
 }
 async function findOrder(env, email, completed) {
@@ -366,7 +386,8 @@ async function handleAdminMessage(env, message, chatId) {
     await saveTicket(env.TEST_TOKENS, ticket);
     await env.TEST_TOKENS.delete("support-admin-state:" + chatId);
     await refreshActiveTicket(env, ticket);
-    await sendText(env, chatId, "PDF отправлен клиенту. Обращение остаётся открытым — нажмите «Завершить обращение», когда закончите.");
+    await sendText(env, chatId, "PDF отправлен клиенту. Обращение будет завершено автоматически.");
+    await closeTicket(env, ticket);
     return true;
   }
   return false;
