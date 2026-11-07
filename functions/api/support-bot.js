@@ -658,7 +658,7 @@ export async function onRequestPost({ request, env }) {
             }
           } else if (order.isCompleted === true) {
             const completedAtMs = Date.parse(order.completedAt || "") || Date.parse(order.paidAt || "") || Date.now();
-            const expiresAt = Number(order.linkExpiresAt) || (completedAtMs + 7 * 86400000);
+            const expiresAt = (Date.parse(order.paidAt || "") || completedAtMs) + 7 * 86400000;
             if (expiresAt > Date.now()) {
               const daysLeft = Math.max(1, Math.ceil((expiresAt - Date.now()) / 86400000));
               const url = "https://reshai360.ru/" + TEST_FILES[order.productKey] + "?token=" + encodeURIComponent(order.token);
@@ -690,7 +690,8 @@ export async function onRequestPost({ request, env }) {
             const url = "https://reshai360.ru/" + TEST_FILES[order.productKey] + "?token=" + encodeURIComponent(order.token);
             let remaining = "";
             if (order.linkExpiresAt) {
-              const daysLeft = Math.max(0, Math.ceil((Number(order.linkExpiresAt) - Date.now()) / 86400000));
+              const expiresAt = (Date.parse(order.paidAt || "") || completedAtMs) + 7 * 86400000;
+              const daysLeft = Math.max(0, Math.ceil((expiresAt - Date.now()) / 86400000));
               remaining = "\nСсылка действительна ещё " + daysLeft + " дн.";
             } else if (order.paidAt) {
               const expiresAt = new Date(new Date(order.paidAt).getTime() + 7 * 86400000);
