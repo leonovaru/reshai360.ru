@@ -622,7 +622,7 @@ export async function onRequestPost({ request, env }) {
                 }
               });
             } else {
-              const notice = "По этому адресу электронной почты не найдена оплаченная диагностика.\\n\\nВы можете перейти на сайт https://reshai360.ru/ и оформить диагностику. После оплаты вернитесь в этот чат и нажмите «Я оплатил». Если оплачивали с другой почты, выберите «Ввести другую почту».";
+              const notice = "По этому адресу электронной почты не найдена оплаченная диагностика.\n\nВы можете перейти на сайт https://reshai360.ru/ и оформить диагностику. После оплаты вернитесь в этот чат и нажмите «Я оплатил». Если оплачивали с другой почты, выберите «Ввести другую почту».";
               await setState(env.TEST_TOKENS, chatId, { ...state, step: "no_paid_order" });
               await addStateBotMessage(env, chatId, notice);
               await sendText(env, chatId, notice, {
@@ -641,12 +641,12 @@ export async function onRequestPost({ request, env }) {
             if (expiresAt > Date.now()) {
               const daysLeft = Math.max(1, Math.ceil((expiresAt - Date.now()) / 86400000));
               const url = "https://reshai360.ru/" + TEST_FILES[order.productKey] + "?token=" + encodeURIComponent(order.token);
-              let reply = "Вы уже завершили диагностику. Результаты можно посмотреть по персональной ссылке:\\n" + url +
-                "\\nСсылка будет доступна ещё " + daysLeft + " дн.";
+              let reply = "Вы уже завершили диагностику. Результаты можно посмотреть по персональной ссылке:\n" + url +
+                "\nСсылка будет доступна ещё " + daysLeft + " дн.";
               const isLightStart = /_basic$/.test(String(order.productKey || "")) || /л[её]гкий старт/i.test(String(order.productTitle || ""));
               const grade = String(order.productKey || "").split("_")[0];
               if (isLightStart && /^(7|8|9|10|11)$/.test(grade)) {
-                reply += "\\n\\nВы прошли диагностику «Лёгкий старт» для " + grade + " класса. Теперь можно пройти Полную диагностику для " + grade +
+                reply += "\n\nВы прошли диагностику «Лёгкий старт» для " + grade + " класса. Теперь можно пройти Полную диагностику для " + grade +
                   " класса: https://reshai360.ru/#select-program";
               }
               await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu", ticketId: undefined });
@@ -670,13 +670,13 @@ export async function onRequestPost({ request, env }) {
             let remaining = "";
             if (order.linkExpiresAt) {
               const daysLeft = Math.max(0, Math.ceil((Number(order.linkExpiresAt) - Date.now()) / 86400000));
-              remaining = "\\nСсылка действительна ещё " + daysLeft + " дн.";
+              remaining = "\nСсылка действительна ещё " + daysLeft + " дн.";
             } else if (order.paidAt) {
               const expiresAt = new Date(new Date(order.paidAt).getTime() + 7 * 86400000);
               const daysLeft = Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / 86400000));
-              remaining = "\\nСсылка действительна ещё " + daysLeft + " дн.";
+              remaining = "\nСсылка действительна ещё " + daysLeft + " дн.";
             }
-            const reply = "Нашёл вашу диагностику. Вот персональная ссылка:\\n" + url + remaining;
+            const reply = "Нашёл вашу диагностику. Вот персональная ссылка:\n" + url + remaining;
             state.history = [...(state.history || []), { at: new Date().toISOString(), from: "bot", text: reply }];
             await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
             await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
