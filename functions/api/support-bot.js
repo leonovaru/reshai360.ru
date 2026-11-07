@@ -313,6 +313,29 @@ async function sendPromoInfo(env, chatId, email, state) {
   const feedbackText = "Оставьте отзыв, пожелание или идею — скидка по последнему активному промокоду может увеличиться до 15%: <a href=\"" + feedbackUrl + "\">перейти к форме обратной связи</a>.";
   await clientText(env, chatId, feedbackText, state, { parse_mode: "HTML" });
 }
+async function findCompletedArchive(env, email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  let cursor;
+  const matches = [];
+  do {
+    const page = await env.TEST_TOKENS.list({ prefix: "completed-order:", limit: 1000, ...(cursor ? { cursor } : {}) });
+    for (const item of page.keys || []) {
+      const raw = await env.TEST_TOKENS.get(item.name);
+      if (!raw) continue;
+      try {
+        const record = JSON.parse(raw);
+        if (record.isCompleted === true && String(record.email || "").trim().toLowerCase() === normalizedEmail) matches.push(record);
+      } catch {}
+    }
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+  matches.sort((a, b) => Date.parse(b.completedAt || 0) - Date.parse(a.completedAt || 0));
+  return matches[0] || null;
+}
+function completedLinkExpiredMessage() {
+  return "Вы уже завершили диагностику. Ссылка на результаты больше не активна, но мы можем отправить вам PDF-отчёт. Выберите, пожалуйста, подходящий вариант:";
+}
+
 async function findOrder(env, email, completed) {
   let cursor;
   const matches = [];
@@ -454,7 +477,7 @@ export async function onRequestPost({ request, env }) {
     }
     if (callback) {
       const callbackData = String(callback.data || "");
-      if (callbackData === "client:other_email" || callbackData === "client:human" || callbackData === "client:paid_check") {
+      if (callbackData === "client:other_email" || callbackData === "client:human" || callbackData === "client:paid_check" || callbackData === "client:resend_pdf" || callbackData === "client:has_pdf") {
         await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id });
         if (callbackData === "client:paid_check") {
           const clientState = await getState(env.TEST_TOKENS, chatId);
@@ -489,6 +512,21 @@ export async function onRequestPost({ request, env }) {
               }
             });
           }
+          return Response.json({ ok: true });
+        }
+        if (callbackData === "client:resend_pdf") {
+          const clientState = await getState(env.TEST_TOKENS, chatId);
+          const order = await findOrder(env, clientState.email || "", true);
+          const archive = order || await findCompletedArchive(env, clientState.email || "");
+          const detail = archive ? (archive.productTitle || archive.productKey || "класс не указан") : "завершённая диагностика";
+          await createTicket(env, chatId, clientState, callback.from?.id, "Повторная отправка PDF-отчёта", "Клиент запросил PDF-отчёт после завершённой диагностики (" + detail + "). Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
+          return Response.json({ ok: true });
+        }
+        if (callbackData === "client:has_pdf") {
+          const clientState = await getState(env.TEST_TOKENS, chatId);
+          const reply = "Хорошо! Если понадобится повторная отправка, выберите в меню «Не пришёл PDF-отчёт».";
+          await setState(env.TEST_TOKENS, chatId, { ...clientState, step: "menu", ticketId: undefined });
+          await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
           return Response.json({ ok: true });
         }
         if (callbackData === "client:other_email") {
@@ -570,27 +608,75 @@ export async function onRequestPost({ request, env }) {
         } else if (action === "open_test") {
           const order = await findOrder(env, state.email, null);
           if (!order) {
-            const notice = "По этому адресу электронной почты не найдена оплаченная диагностика.\n\nВы можете перейти на сайт https://reshai360.ru/ и оформить диагностику. После оплаты вернитесь в этот чат и нажмите «Я оплатил». Если оплачивали с другой почты, выберите «Ввести другую почту».";
-            await setState(env.TEST_TOKENS, chatId, { ...state, step: "no_paid_order" });
-            await addStateBotMessage(env, chatId, notice);
-            await sendText(env, chatId, notice, {
-              reply_markup: {
-                inline_keyboard: [
-                  [{ text: "Я оплатил", callback_data: "client:paid_check" }],
-                  [{ text: "Ввести другую почту", callback_data: "client:other_email" }],
-                  [{ text: "Позвать специалиста", callback_data: "client:human" }]
-                ]
+            const archive = await findCompletedArchive(env, state.email);
+            if (archive) {
+              const notice = completedLinkExpiredMessage();
+              await setState(env.TEST_TOKENS, chatId, { ...state, step: "completed_link_expired" });
+              await addStateBotMessage(env, chatId, notice);
+              await sendText(env, chatId, notice, {
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: "Отправить PDF-отчёт", callback_data: "client:resend_pdf" }],
+                    [{ text: "У меня уже есть PDF-отчёт", callback_data: "client:has_pdf" }]
+                  ]
+                }
+              });
+            } else {
+              const notice = "По этому адресу электронной почты не найдена оплаченная диагностика.\\n\\nВы можете перейти на сайт https://reshai360.ru/ и оформить диагностику. После оплаты вернитесь в этот чат и нажмите «Я оплатил». Если оплачивали с другой почты, выберите «Ввести другую почту».";
+              await setState(env.TEST_TOKENS, chatId, { ...state, step: "no_paid_order" });
+              await addStateBotMessage(env, chatId, notice);
+              await sendText(env, chatId, notice, {
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: "Я оплатил", callback_data: "client:paid_check" }],
+                    [{ text: "Ввести другую почту", callback_data: "client:other_email" }],
+                    [{ text: "Позвать специалиста", callback_data: "client:human" }]
+                  ]
+                }
+              });
+            }
+          } else if (order.isCompleted === true) {
+            const completedAtMs = Date.parse(order.completedAt || "") || Date.parse(order.paidAt || "") || Date.now();
+            const expiresAt = Number(order.linkExpiresAt) || (completedAtMs + 7 * 86400000);
+            if (expiresAt > Date.now()) {
+              const daysLeft = Math.max(1, Math.ceil((expiresAt - Date.now()) / 86400000));
+              const url = "https://reshai360.ru/" + TEST_FILES[order.productKey] + "?token=" + encodeURIComponent(order.token);
+              let reply = "Вы уже завершили диагностику. Результаты можно посмотреть по персональной ссылке:\\n" + url +
+                "\\nСсылка будет доступна ещё " + daysLeft + " дн.";
+              const isLightStart = /_basic$/.test(String(order.productKey || "")) || /л[её]гкий старт/i.test(String(order.productTitle || ""));
+              const grade = String(order.productKey || "").split("_")[0];
+              if (isLightStart && /^(7|8|9|10|11)$/.test(grade)) {
+                reply += "\\n\\nВы прошли диагностику «Лёгкий старт» для " + grade + " класса. Теперь можно пройти Полную диагностику для " + grade +
+                  " класса: https://reshai360.ru/#select-program";
               }
-            });
+              await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu", ticketId: undefined });
+              await addStateBotMessage(env, chatId, reply);
+              await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
+            } else {
+              const notice = completedLinkExpiredMessage();
+              await setState(env.TEST_TOKENS, chatId, { ...state, step: "completed_link_expired" });
+              await addStateBotMessage(env, chatId, notice);
+              await sendText(env, chatId, notice, {
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: "Отправить PDF-отчёт", callback_data: "client:resend_pdf" }],
+                    [{ text: "У меня уже есть PDF-отчёт", callback_data: "client:has_pdf" }]
+                  ]
+                }
+              });
+            }
           } else {
             const url = "https://reshai360.ru/" + TEST_FILES[order.productKey] + "?token=" + encodeURIComponent(order.token);
             let remaining = "";
-            if (order.paidAt) {
+            if (order.linkExpiresAt) {
+              const daysLeft = Math.max(0, Math.ceil((Number(order.linkExpiresAt) - Date.now()) / 86400000));
+              remaining = "\\nСсылка действительна ещё " + daysLeft + " дн.";
+            } else if (order.paidAt) {
               const expiresAt = new Date(new Date(order.paidAt).getTime() + 7 * 86400000);
               const daysLeft = Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / 86400000));
-              remaining = "\nСсылка действительна ещё " + daysLeft + " дн.";
+              remaining = "\\nСсылка действительна ещё " + daysLeft + " дн.";
             }
-            const reply = "Нашёл вашу диагностику. Вот персональная ссылка:\n" + url + remaining;
+            const reply = "Нашёл вашу диагностику. Вот персональная ссылка:\\n" + url + remaining;
             state.history = [...(state.history || []), { at: new Date().toISOString(), from: "bot", text: reply }];
             await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
             await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
