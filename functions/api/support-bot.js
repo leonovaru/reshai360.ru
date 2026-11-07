@@ -281,7 +281,7 @@ async function sendWaitingReportPromo(env, chatId, email, ticket) {
 async function sendPromoInfo(env, chatId, email, state) {
   const promos = await getPromoRecords(env, email);
   if (!promos.length) {
-    await clientText(env, chatId, "По этому email промокодов пока не найдено. Если вы считаете, что это ошибка, выберите «Позвать человека».", state);
+    await clientText(env, chatId, "По этому email промокодов пока не найдено. Если вы считаете, что это ошибка, выберите «Позвать специалиста».", state);
     return;
   }
   const lines = ["Ваши промокоды Решай360:"];
