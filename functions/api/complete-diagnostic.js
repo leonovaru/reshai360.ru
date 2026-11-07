@@ -64,6 +64,7 @@ export async function onRequestPost({ request, env }) {
       token,
       isCompleted: true,
       completedAt: tokenData.completedAt || previousArchive.completedAt || new Date().toISOString(),
+      paidAt: tokenData.paidAt || previousArchive.paidAt || null,
       linkExpiresAt: tokenData.linkExpiresAt,
       reportReady: previousArchive.reportReady === true,
       promoCodeIssued: tokenData.promoCodeIssued || previousArchive.promoCodeIssued || null
