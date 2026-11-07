@@ -321,10 +321,12 @@ export async function onRequestPost({ request, env }) {
               }
             }
             if (pdfDelivered && !promoSentTo.includes(clientChatId)) {
-              await sendAutomaticSupportPromo(env, clientChatId, email, feedbackPrefillToken);
-              promoSentTo.push(clientChatId);
-              tokenData.supportPromoSentTo = promoSentTo;
-              await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+              const promoSent = await sendAutomaticSupportPromo(env, clientChatId, email, feedbackPrefillToken);
+              if (promoSent) {
+                promoSentTo.push(clientChatId);
+                tokenData.supportPromoSentTo = promoSentTo;
+                await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+              }
             }
           } catch (supportError) {
             console.error("Telegram support PDF/promo delivery error:", supportError);
