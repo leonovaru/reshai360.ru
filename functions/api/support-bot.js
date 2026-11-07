@@ -122,7 +122,7 @@ function formatHistory(ticket) {
     "Email: " + (ticket.email || "не указан"),
     "Клиент Telegram ID: " + ticket.telegramUserId,
     "Причина: " + (ticket.reason || "вопрос клиента"),
-    "Статус: " + (ticket.status === "active" ? "в работе" : "в очереди"),
+    "Статус: " + (ticket.status === "closed" ? "закрыто" : "открыто"),
     "",
     "ИСТОРИЯ ПЕРЕПИСКИ:"
   ];
@@ -134,8 +134,7 @@ function formatHistory(ticket) {
 }
 async function refreshActiveTicket(env, ticket) {
   if (!env.TG_CHAT_ID) return;
-  const activeId = await env.TEST_TOKENS.get(ACTIVE_KEY);
-  if (activeId !== ticket.id || ticket.status !== "active") return;
+  if (ticket.status === "closed") return;
   const text = formatHistory(ticket);
   if (ticket.adminMessageId) {
     try {
@@ -191,31 +190,19 @@ async function createTicket(env, chatId, state, userId, reason, firstMessage) {
   const ticket = {
     id: crypto.randomUUID(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     email: state.email || null, telegramUserId: String(userId || ""), chatId: String(chatId),
-    reason, status: "queued", history: Array.isArray(state.history) ? state.history.slice(-80) : [],
+    reason, status: "active", history: Array.isArray(state.history) ? state.history.slice(-80) : [],
     adminMessageId: null
   };
   if (firstMessage) addHistory(ticket, "client", firstMessage);
   await saveTicket(kv, ticket);
-  const queue = await getQueue(kv);
-  queue.push(ticket.id);
-  await setQueue(kv, queue);
+
   await setState(kv, chatId, { step: "ticket_open", email: ticket.email, ticketId: ticket.id, history: ticket.history });
-  const activeId = await kv.get(ACTIVE_KEY);
-  if (!activeId) await activateNext(env);
-  const nowActive = await kv.get(ACTIVE_KEY);
+
   const isPdfResend = reason === "Повторная отправка PDF-отчёта";
-  const confirmation = nowActive === ticket.id
-    ? "Ваше обращение принято. Я передал его специалисту поддержки. Мы ответим здесь."
-    : "Ваше обращение принято и добавлено в очередь поддержки. Как только специалист завершит предыдущее обращение, мы передадим ему ваше.";
+  const confirmation = "Ваше обращение принято. Я передал его специалисту поддержки. Мы ответим здесь.";
   if (!isPdfResend) addHistory(ticket, "bot", confirmation);
   await saveTicket(kv, ticket);
-  if (nowActive === ticket.id) {
-    await refreshActiveTicket(env, ticket);
-  } else {
-    const updatedQueue = await getQueue(kv);
-    const position = updatedQueue.indexOf(ticket.id) + 1;
-    await notifyQueuedTicket(env, ticket, position || updatedQueue.length);
-  }
+  await refreshActiveTicket(env, ticket);
   if (!isPdfResend) {
     await sendText(env, chatId, confirmation, { reply_markup: { remove_keyboard: true } });
   }
@@ -225,9 +212,7 @@ async function closeTicket(env, ticket) {
   ticket.status = "closed";
   ticket.closedAt = new Date().toISOString();
   await saveTicket(env.TEST_TOKENS, ticket);
-  const queue = (await getQueue(env.TEST_TOKENS)).filter(id => id !== ticket.id);
-  await setQueue(env.TEST_TOKENS, queue);
-  await env.TEST_TOKENS.delete(ACTIVE_KEY);
+
   if (ticket.adminMessageId && env.TG_CHAT_ID) {
     try {
       await telegram(env, "editMessageReplyMarkup", {
@@ -242,7 +227,6 @@ async function closeTicket(env, ticket) {
   const state = await getState(env.TEST_TOKENS, ticket.chatId);
   await setState(env.TEST_TOKENS, ticket.chatId, { step: "menu", email: ticket.email, history: state.history || [] });
   await sendText(env, ticket.chatId, "Спасибо за обращение в поддержку!", { reply_markup: { ...CLIENT_KEYBOARD } });
-  await activateNext(env);
 }
 async function getPromoRecords(env, email) {
   const hash = await hashEmail(email);
@@ -371,10 +355,6 @@ async function adminAction(env, callback, chatId) {
     await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id, text: "Обращение уже закрыто или не найдено." });
     return true;
   }
-  if (await env.TEST_TOKENS.get(ACTIVE_KEY) !== id) {
-    await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id, text: "Это обращение ещё ожидает своей очереди." });
-    return true;
-  }
   await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id });
   if (action === "reply") {
     await env.TEST_TOKENS.put("support-admin-state:" + chatId, JSON.stringify({ mode: "reply", ticketId: id }), { expirationTtl: 3600 });
@@ -397,9 +377,7 @@ async function handleAdminMessage(env, message, chatId) {
   let adminState;
   try { adminState = JSON.parse(raw); } catch { return false; }
   const ticket = await getTicket(env.TEST_TOKENS, adminState.ticketId);
-  const isCurrentActive = ticket && ticket.status === "active" && await env.TEST_TOKENS.get(ACTIVE_KEY) === ticket.id;
-  const canSendPdfToOpenTicket = ticket && ticket.status !== "closed" && adminState.mode === "pdf";
-  if (!ticket || ticket.status === "closed" || (!isCurrentActive && !canSendPdfToOpenTicket)) {
+  if (!ticket || ticket.status === "closed") {
     await env.TEST_TOKENS.delete("support-admin-state:" + chatId);
     await sendText(env, chatId, "Это обращение уже закрыто или недоступно. Выберите действие в актуальном уведомлении.");
     return true;
@@ -454,19 +432,22 @@ export async function onRequestPost({ request, env }) {
     if (message && isAdmin) {
       const handled = await handleAdminMessage(env, message, chatId);
       if (handled) return Response.json({ ok: true });
-      if (message.text === "/start" || message.text === "/restart") {
-        const activeId = await env.TEST_TOKENS.get(ACTIVE_KEY);
-        const activeTicket = activeId ? await getTicket(env.TEST_TOKENS, activeId) : null;
-        if (activeTicket && activeTicket.status === "active") {
-          await refreshActiveTicket(env, activeTicket);
-        } else {
-          const q = await getQueue(env.TEST_TOKENS);
-          await sendText(env, chatId, "Сейчас нет активного обращения.\nВ очереди: " + q.length);
-        }
-      } else if (message.text === "/queue") {
-        const q = await getQueue(env.TEST_TOKENS);
-        const active = await env.TEST_TOKENS.get(ACTIVE_KEY);
-        await sendText(env, chatId, "Активное обращение: " + (active || "нет") + "\nВ очереди: " + q.length);
+      if (message.text === "/start" || message.text === "/restart" || message.text === "/queue") {
+        let cursor;
+        let openCount = 0;
+        do {
+          const page = await env.TEST_TOKENS.list({ prefix: "support-ticket:", limit: 1000, ...(cursor ? { cursor } : {}) });
+          for (const item of page.keys || []) {
+            const ticket = await getTicket(env.TEST_TOKENS, item.name.slice("support-ticket:".length));
+            if (!ticket || ticket.status === "closed") continue;
+            openCount++;
+            await refreshActiveTicket(env, ticket);
+          }
+          cursor = page.list_complete ? undefined : page.cursor;
+        } while (cursor);
+        await sendText(env, chatId, openCount
+          ? "Открытых обращений: " + openCount + ". Все обращения доступны выше отдельными сообщениями."
+          : "Сейчас нет открытых обращений.");
       } else {
         await sendText(env, chatId, "Откройте актуальное обращение и выберите действие под сообщением: «Ответить», «Отправить PDF» или «Завершить».");
       }
