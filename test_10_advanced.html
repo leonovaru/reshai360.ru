@@ -550,6 +550,17 @@
       });
       if (!response.ok) return;
       const result = await response.json();
+      if (result && result.completed) {
+        if (!window.__reshai360CompletionReloading) {
+          window.__reshai360CompletionReloading = true;
+          if (progressSyncTimer) {
+            clearInterval(progressSyncTimer);
+            progressSyncTimer = null;
+          }
+          window.location.reload();
+        }
+        return;
+      }
       const remote = result && result.success ? result.snapshot : null;
       if (!remote || remote.version !== 1) return;
 
@@ -1912,7 +1923,7 @@
       }
 
       // Повторный просмотр завершённой диагностики не должен повторно отправлять тот же отчёт.
-      if (currentToken && !isCompletedView) {
+      if (currentToken) {
         const formData = new FormData();
         formData.append('token', currentToken);
         if (studentData.email) formData.append('email', studentData.email);
