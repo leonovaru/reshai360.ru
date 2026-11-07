@@ -19,7 +19,13 @@ export async function onRequestGet({ request, env }) {
       try { snapshot = JSON.parse(progressRaw); } catch (_) {}
     }
 
-    return Response.json({ success: true, snapshot }, { headers });
+    return Response.json({
+      success: true,
+      snapshot,
+      completed: tokenData.isCompleted === true,
+      completedAt: tokenData.completedAt || null,
+      answersSnapshot: tokenData.isCompleted === true ? (tokenData.answersSnapshot || null) : null
+    }, { headers });
   } catch (error) {
     console.error("Get diagnostic progress error:", error);
     return Response.json({ success: false, message: "Не удалось получить прогресс." }, { status: 500, headers: { "Cache-Control": "no-store" } });
