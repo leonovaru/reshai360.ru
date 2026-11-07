@@ -309,13 +309,14 @@ async function findOrder(env, email, completed) {
         const r = JSON.parse(raw);
         if (String(r.email || "").trim().toLowerCase() !== email || r.isPaid !== true) continue;
         if (!TEST_FILES[r.productKey]) continue;
-        if (completed ? r.isCompleted !== true : r.isCompleted === true) continue;
+        if (completed === true && r.isCompleted !== true) continue;
+        if (completed === false && r.isCompleted === true) continue;
         matches.push({ token: item.name, ...r });
       } catch {}
     }
     cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor);
-  matches.sort((a, b) => new Date(b.completedAt || b.paidAt || 0) - new Date(a.completedAt || a.paidAt || 0));
+  matches.sort((a, b) => new Date(b.paidAt || 0) - new Date(a.paidAt || 0));
   return matches[0] || null;
 }
 async function adminAction(env, callback, chatId) {
@@ -475,7 +476,7 @@ export async function onRequestPost({ request, env }) {
           await addStateBotMessage(env, chatId, prompt);
           await sendText(env, chatId, prompt);
         } else if (action === "open_test") {
-          const order = await findOrder(env, state.email, false);
+          const order = await findOrder(env, state.email, null);
           if (!order) {
             await createTicket(env, chatId, state, message.from?.id, "Не открывается диагностика", "Не удалось автоматически найти активную ссылку на диагностику.");
           } else {
