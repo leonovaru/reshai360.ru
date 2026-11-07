@@ -1,3 +1,22 @@
+export const ORDER_ACCESS_TTL_SECONDS = 7 * 24 * 60 * 60;
+export const ORDER_ACCESS_TTL_MS = ORDER_ACCESS_TTL_SECONDS * 1000;
+export function getOrderLinkExpiresAt(order, now = Date.now()) {
+  const paidAt = Date.parse(order?.paidAt || "");
+  if (Number.isFinite(paidAt) && paidAt > 0) return paidAt + ORDER_ACCESS_TTL_MS;
+  const storedExpiry = Number(order?.linkExpiresAt);
+  if (Number.isFinite(storedExpiry) && storedExpiry > 0) return storedExpiry;
+  const createdAt = Date.parse(order?.createdAt || "");
+  return (Number.isFinite(createdAt) ? createdAt : now) + ORDER_ACCESS_TTL_MS;
+}
+export function ensurePaidOrderLinkExpiry(order, now = Date.now()) {
+  const paidAt = Date.parse(order?.paidAt || "");
+  if (Number.isFinite(paidAt) && paidAt > 0) order.linkExpiresAt = paidAt + ORDER_ACCESS_TTL_MS;
+  return getOrderLinkExpiresAt(order, now);
+}
+export function getOrderExpirationTtl(order, now = Date.now()) {
+  return Math.max(60, Math.ceil((getOrderLinkExpiresAt(order, now) - now) / 1000));
+}
+
 export async function sendPaymentTelegramNotification({ env, token, tokenData, amount }) {
   if (tokenData.paymentTelegramSentAt) {
     return { sent: true, alreadySent: true };
@@ -45,7 +64,7 @@ export async function sendPaymentTelegramNotification({ env, token, tokenData, a
     }
 
     tokenData.paymentTelegramSentAt = new Date().toISOString();
-    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 86400 });
+    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
     return { sent: true, configured: true };
   } catch (error) {
     console.error("Telegram payment notification error:", error);
