@@ -542,7 +542,7 @@ export async function onRequestPost({ request, env }) {
         return Response.json({ ok: true });
       }
     }
-    if (state.ticketId) {
+    if (state.ticketId && state.step !== "email") {
       const ticket = await getTicket(env.TEST_TOKENS, state.ticketId);
       if (ticket && ticket.status !== "closed") {
         addHistory(ticket, "client", text || (message.document ? "Клиент отправил документ" : "Новое сообщение"));
