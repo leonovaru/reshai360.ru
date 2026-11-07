@@ -203,10 +203,11 @@ async function createTicket(env, chatId, state, userId, reason, firstMessage) {
   const activeId = await kv.get(ACTIVE_KEY);
   if (!activeId) await activateNext(env);
   const nowActive = await kv.get(ACTIVE_KEY);
+  const isPdfResend = reason === "Повторная отправка PDF-отчёта";
   const confirmation = nowActive === ticket.id
     ? "Ваше обращение принято. Я передал его специалисту поддержки. Мы ответим здесь."
     : "Ваше обращение принято и добавлено в очередь поддержки. Как только специалист завершит предыдущее обращение, мы передадим ему ваше.";
-  addHistory(ticket, "bot", confirmation);
+  if (!isPdfResend) addHistory(ticket, "bot", confirmation);
   await saveTicket(kv, ticket);
   if (nowActive === ticket.id) {
     await refreshActiveTicket(env, ticket);
@@ -215,8 +216,9 @@ async function createTicket(env, chatId, state, userId, reason, firstMessage) {
     const position = updatedQueue.indexOf(ticket.id) + 1;
     await notifyQueuedTicket(env, ticket, position || updatedQueue.length);
   }
-  await sendText(env, chatId, confirmation, { reply_markup: { remove_keyboard: true } });
-  if (reason === "Повторная отправка PDF-отчёта") await sendWaitingReportPromo(env, chatId, ticket.email, ticket);
+  if (!isPdfResend) {
+    await sendText(env, chatId, confirmation, { reply_markup: { remove_keyboard: true } });
+  }
   return ticket;
 }
 async function closeTicket(env, ticket) {
@@ -239,7 +241,7 @@ async function closeTicket(env, ticket) {
   }
   const state = await getState(env.TEST_TOKENS, ticket.chatId);
   await setState(env.TEST_TOKENS, ticket.chatId, { step: "menu", email: ticket.email, history: state.history || [] });
-  await sendText(env, ticket.chatId, "Спасибо за обращение! Ваш запрос обработан.", { reply_markup: { ...CLIENT_KEYBOARD } });
+  await sendText(env, ticket.chatId, "Спасибо за обращение в поддержку!", { reply_markup: { ...CLIENT_KEYBOARD } });
   await activateNext(env);
 }
 async function getPromoRecords(env, email) {
@@ -427,8 +429,8 @@ async function handleAdminMessage(env, message, chatId) {
     await saveTicket(env.TEST_TOKENS, ticket);
     await env.TEST_TOKENS.delete("support-admin-state:" + chatId);
     await refreshActiveTicket(env, ticket);
-    await sendText(env, chatId, "PDF отправлен клиенту. Обращение будет завершено автоматически.");
-    await closeTicket(env, ticket);
+    await sendText(env, ticket.chatId, "Выберите нужный пункт поддержки:", { reply_markup: { ...CLIENT_KEYBOARD } });
+    await sendText(env, chatId, "PDF отправлен клиенту. Обращение остаётся открытым. Нажмите «Завершить обращение», когда будете готовы закрыть его.");
     return true;
   }
   return false;
