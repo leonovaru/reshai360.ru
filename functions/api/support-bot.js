@@ -436,75 +436,12 @@ export async function onRequestPost({ request, env }) {
     }
     if (callback) {
       await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id });
-      const action = String(callback.data || "").replace("support:", "");
-      await removeClientButtons(env, callback);
-      const state = await getState(env.TEST_TOKENS, chatId);
-      state.name = state.name || String(callback.from?.first_name || "").trim();
-      state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text: "Выбрано действие: " + action }];
-      await setState(env.TEST_TOKENS, chatId, state);
-      if (action === "menu") {
-        if (state.email) await showMenu(env, chatId);
-        else await askForEmail(env, chatId);
-        return Response.json({ ok: true });
-      }
-      if (action === "help_yes") {
-        await showMenu(env, chatId);
-        return Response.json({ ok: true });
-      }
-      if (action === "help_no") {
-        const reply = "Спасибо за обращение в Решай360! Если понадобится помощь, меню всегда доступно в чате. 😊";
-        await clientText(env, chatId, reply, state);
-        await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
-        return Response.json({ ok: true });
-      }
-      if (!state.email) { await askForEmail(env, chatId); return Response.json({ ok: true }); }
-      if (action === "human") {
-        await setState(env.TEST_TOKENS, chatId, { ...state, step: "human" });
-        await addStateBotMessage(env, chatId, "Опишите, пожалуйста, ваш вопрос одним сообщением.");
-        await sendText(env, chatId, "Опишите, пожалуйста, ваш вопрос одним сообщением.");
-      } else if (action === "open_test") {
-        const order = await findOrder(env, state.email, false);
-        if (!order) {
-          await createTicket(env, chatId, state, callback.from?.id, "Не открывается диагностика", "Не удалось автоматически найти активную ссылку на диагностику.");
-        } else {
-          const url = "https://reshai360.ru/" + TEST_FILES[order.productKey] + "?token=" + encodeURIComponent(order.token);
-          let remaining = "";
-          if (order.paidAt) {
-            const ms = Math.max(0, 86400000 - (Date.now() - new Date(order.paidAt).getTime()));
-            if (Number.isFinite(ms)) remaining = "\nОриентировочно осталось: " + Math.floor(ms / 3600000) + " ч. " + Math.floor((ms % 3600000) / 60000) + " мин.";
-          }
-          const reply = "Нашёл вашу диагностику. Вот персональная ссылка:\n" + url + remaining;
-          state.history = [...(state.history || []), { at: new Date().toISOString(), from: "bot", text: reply }];
-          await sendText(env, chatId, reply);
-          await setState(env.TEST_TOKENS, chatId, { ...state, step: "thanks" });
-        }
-      } else if (action === "report") {
-        const completed = await findOrder(env, state.email, true);
-        if (completed) {
-          await createTicket(env, chatId, state, callback.from?.id, "Повторная отправка PDF-отчёта", "Клиент запросил повторную отправку PDF. Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
-        } else {
-          const unfinished = await findOrder(env, state.email, false);
-          if (unfinished) {
-            const reply = "Чтобы сформировать отчёт, завершите диагностику, нажав на зелёную кнопку внизу страницы. После этого вы сможете скачать отчёт прямо на странице с результатами или посмотреть его в письме на почте.";
-            state.history = [...(state.history || []), { at: new Date().toISOString(), from: "bot", text: reply }];
-            await sendText(env, chatId, reply);
-            await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
-          } else {
-            await createTicket(env, chatId, state, callback.from?.id, "Не пришёл PDF-отчёт", "Не удалось автоматически определить статус отчёта. Нужно проверить заказ вручную.");
-          }
-        }
-      } else if (action === "promo") {
-        await sendPromoInfo(env, chatId, state.email, state);
-        const updatedState = await getState(env.TEST_TOKENS, chatId);
-        await setState(env.TEST_TOKENS, chatId, { ...updatedState, step: "menu" });
-      }
       return Response.json({ ok: true });
     }
     if (!message) return Response.json({ ok: true });
     const state = await getState(env.TEST_TOKENS, chatId);
     const text = String(message.text || "").trim();
     if (text === "/start" || text === "/restart" || text === "/menu" || text === "☰ Меню") {
-      await ensureClientMenu(env, chatId);
       if (state.email) await showMenu(env, chatId);
       else await askForEmail(env, chatId);
       return Response.json({ ok: true });
@@ -520,6 +457,62 @@ export async function onRequestPost({ request, env }) {
         await showMenu(env, chatId);
       }
       return Response.json({ ok: true });
+    }
+    if (state.step === "menu" && state.email) {
+      const actions = {
+        "Не открывается диагностика": "open_test",
+        "Не пришёл PDF-отчёт": "report",
+        "Какой у меня промокод": "promo",
+        "Позвать специалиста": "human"
+      };
+      const action = actions[text];
+      if (action) {
+        await hideClientKeyboard(env, chatId);
+        state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text: "Выбрано действие: " + text }];
+        await setState(env.TEST_TOKENS, chatId, { ...state, step: action === "human" ? "human" : "processing" });
+        if (action === "human") {
+          const prompt = "Опишите, пожалуйста, ваш вопрос одним сообщением.";
+          await addStateBotMessage(env, chatId, prompt);
+          await sendText(env, chatId, prompt);
+        } else if (action === "open_test") {
+          const order = await findOrder(env, state.email, false);
+          if (!order) {
+            await createTicket(env, chatId, state, message.from?.id, "Не открывается диагностика", "Не удалось автоматически найти активную ссылку на диагностику.");
+          } else {
+            const url = "https://reshai360.ru/" + TEST_FILES[order.productKey] + "?token=" + encodeURIComponent(order.token);
+            let remaining = "";
+            if (order.paidAt) {
+              const expiresAt = new Date(new Date(order.paidAt).getTime() + 7 * 86400000);
+              const daysLeft = Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / 86400000));
+              remaining = "\nСсылка действительна ещё " + daysLeft + " дн.";
+            }
+            const reply = "Нашёл вашу диагностику. Вот персональная ссылка:\n" + url + remaining;
+            state.history = [...(state.history || []), { at: new Date().toISOString(), from: "bot", text: reply }];
+            await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
+            await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
+          }
+        } else if (action === "report") {
+          const completed = await findOrder(env, state.email, true);
+          if (completed) {
+            await createTicket(env, chatId, state, message.from?.id, "Повторная отправка PDF-отчёта", "Клиент запросил повторную отправку PDF. Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
+          } else {
+            const unfinished = await findOrder(env, state.email, false);
+            if (unfinished) {
+              const reply = "Чтобы сформировать отчёт, завершите диагностику, нажав на зелёную кнопку внизу страницы. После этого вы сможете скачать отчёт прямо на странице с результатами или посмотреть его в письме на почте.";
+              await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
+              await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
+            } else {
+              await createTicket(env, chatId, state, message.from?.id, "Не пришёл PDF-отчёт", "Не удалось автоматически определить статус отчёта. Нужно проверить заказ вручную.");
+            }
+          }
+        } else if (action === "promo") {
+          await sendPromoInfo(env, chatId, state.email, state);
+          const updatedState = await getState(env.TEST_TOKENS, chatId);
+          await setState(env.TEST_TOKENS, chatId, { ...updatedState, step: "menu" });
+          await sendText(env, chatId, "Выберите нужный пункт поддержки:", { reply_markup: { ...CLIENT_KEYBOARD } });
+        }
+        return Response.json({ ok: true });
+      }
     }
     if (state.ticketId) {
       const ticket = await getTicket(env.TEST_TOKENS, state.ticketId);
@@ -540,9 +533,8 @@ export async function onRequestPost({ request, env }) {
         await setState(env.TEST_TOKENS, chatId, state);
         await sendText(env, chatId, prompt);
       } else {
-        await ensureClientMenu(env, chatId);
         await setState(env.TEST_TOKENS, chatId, { step: "menu", email, name: String(message.from?.first_name || "").trim(), history: [{ at: new Date().toISOString(), from: "client", text: "Email: " + email }] });
-        await showMenu(env, chatId);
+        await showMenu(env, chatId, "Email принят. Выберите нужный пункт поддержки.");
       }
     } else if (state.step === "human") {
       state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text }];
