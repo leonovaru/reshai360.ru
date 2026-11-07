@@ -1,3 +1,4 @@
+import { ensurePaidOrderLinkExpiry, getOrderExpirationTtl } from "../_lib/telegram-payment.js";
 
 async function getPromoRecordsForEmail(env, email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
@@ -223,8 +224,7 @@ export async function onRequestPost({ request, env }) {
             await env.TEST_TOKENS.put(emailIndexKey, JSON.stringify(index), { expirationTtl: promoTtl });
           }
         }
-        tokenData.linkExpiresAt = Date.now() + 7 * 86400000;
-        await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+        await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
         const archiveKey = "completed-order:" + token;
         let previousArchive = {};
         try { previousArchive = JSON.parse(await env.TEST_TOKENS.get(archiveKey) || "{}"); } catch {}
@@ -281,7 +281,7 @@ export async function onRequestPost({ request, env }) {
           console.error("Telegram results notification error:", JSON.stringify(tgResult).slice(0, 1000));
         } else {
           tokenData.resultsTelegramSentAt = new Date().toISOString();
-          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
         }
       } catch (tgErr) {
         console.error("Telegram results notification error:", tgErr);
@@ -315,7 +315,7 @@ export async function onRequestPost({ request, env }) {
                 sentTo.push(clientChatId);
                 tokenData.supportTelegramSentTo = sentTo;
                 pdfDelivered = true;
-                await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+                await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
               } else {
                 console.error("Telegram support PDF delivery error:", JSON.stringify(supportResult).slice(0, 1000));
               }
@@ -325,7 +325,7 @@ export async function onRequestPost({ request, env }) {
               if (promoSent) {
                 promoSentTo.push(clientChatId);
                 tokenData.supportPromoSentTo = promoSentTo;
-                await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+                await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
               }
             }
           } catch (supportError) {
@@ -418,7 +418,7 @@ export async function onRequestPost({ request, env }) {
           tokenData.reportEmailSentAt = new Date().toISOString();
           tokenData.email = email;
           if (emailId) tokenData.reportEmailId = emailId;
-          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
         }
       } catch (resendErr) {
         emailError = String(resendErr && resendErr.message || resendErr).slice(0, 500);
