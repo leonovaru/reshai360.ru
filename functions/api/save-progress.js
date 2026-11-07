@@ -1,3 +1,4 @@
+import { ensurePaidOrderLinkExpiry, getOrderExpirationTtl } from "../_lib/telegram-payment.js";
 export async function onRequestPost({ request, env }) {
   try {
     if (!env.TEST_TOKENS) {
@@ -30,9 +31,9 @@ export async function onRequestPost({ request, env }) {
     }
 
     const tokenData = JSON.parse(tokenDataRaw);
-    if (tokenData.isPaid !== true) {
-      return Response.json({ success: false, message: "Прогресс можно сохранить только для оплаченной диагностики." }, { status: 403 });
-    }
+    if (tokenData.isPaid !== true) return Response.json({ success: false, message: "Прогресс можно сохранить только для оплаченной диагностики." }, { status: 403 });
+    const linkExpiresAt = ensurePaidOrderLinkExpiry(tokenData);
+    if (linkExpiresAt <= Date.now()) return Response.json({ success: false, message: "Срок действия ссылки на диагностику истёк." }, { status: 403 });
     if (tokenData.isCompleted === true) {
       return Response.json({ success: false, completed: true, message: "Диагностика уже завершена." }, { status: 409 });
     }
@@ -51,7 +52,7 @@ export async function onRequestPost({ request, env }) {
         stats: { ...(previousSnapshot.stats || {}), ...snapshot.stats },
         savedAt: snapshot.savedAt
       } : snapshot;
-      await env.TEST_TOKENS.put(progressKey, JSON.stringify(mergedSnapshot), { expirationTtl: 604800 });
+      await env.TEST_TOKENS.put(progressKey, JSON.stringify(mergedSnapshot), { expirationTtl: getOrderExpirationTtl(tokenData) });
     }
 
     return Response.json({ success: true });
