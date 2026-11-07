@@ -5,10 +5,10 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 3;
+  const VERSION = 4;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
-  const PAGE_CONTENT_HEIGHT = 1000;
+  const PAGE_CONTENT_HEIGHT = 930;
 
   function escapeHtml(value) {
     return String(value == null ? "" : value)
@@ -249,12 +249,20 @@
           const clonedPage = clonedPages[i];
           if (!clonedPage) return;
           clonedPage.style.cssText += ";width:794px;height:1122px;min-height:1122px;max-height:1122px;max-width:none;overflow:hidden;box-sizing:border-box;background:#fff;opacity:1;visibility:visible;";
+          clonedPage.querySelectorAll(".pdf-q").forEach(node => {
+            node.style.textAlign = "left";
+            node.style.overflowWrap = "normal";
+            node.style.wordBreak = "normal";
+          });
           clonedPage.querySelectorAll("mjx-container").forEach(node => {
+            node.style.display = "inline-block";
             node.style.maxWidth = "100%";
             node.style.overflow = "visible";
+            node.style.verticalAlign = "middle";
           });
           clonedPage.querySelectorAll("mjx-container svg").forEach(svg => {
-            svg.style.maxWidth = "none";
+            svg.style.maxWidth = "100%";
+            svg.style.height = "auto";
             svg.style.overflow = "visible";
           });
         }
