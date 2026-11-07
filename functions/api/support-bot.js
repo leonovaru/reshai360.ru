@@ -502,7 +502,8 @@ export async function onRequestPost({ request, env }) {
           const order = await findOrder(env, clientState.email || "", true);
           const archive = order || await findCompletedArchive(env, clientState.email || "");
           const detail = archive ? (archive.productTitle || archive.productKey || "класс не указан") : "завершённая диагностика";
-          await createTicket(env, chatId, clientState, callback.from?.id, "Повторная отправка PDF-отчёта", "Клиент запросил PDF-отчёт после завершённой диагностики (" + detail + "). Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
+          const ticket = await createTicket(env, chatId, clientState, callback.from?.id, "Повторная отправка PDF-отчёта", "Клиент запросил PDF-отчёт после завершённой диагностики (" + detail + "). Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
+          await sendWaitingReportPromo(env, chatId, clientState.email, ticket);
           return Response.json({ ok: true });
         }
         if (callbackData === "client:has_pdf") {
@@ -667,13 +668,15 @@ export async function onRequestPost({ request, env }) {
         } else if (action === "report") {
           const reportOrder = await findOrder(env, state.email, null);
           if (reportOrder?.isCompleted === true) {
-            await createTicket(env, chatId, state, message.from?.id, "Повторная отправка PDF-отчёта", "Клиент запросил повторную отправку PDF. Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
+            const ticket = await createTicket(env, chatId, state, message.from?.id, "Повторная отправка PDF-отчёта", "Клиент запросил повторную отправку PDF. Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
+            await sendWaitingReportPromo(env, chatId, state.email, ticket);
           } else if (reportOrder) {
             const reply = "Чтобы сформировать отчёт, завершите диагностику, нажав на зелёную кнопку внизу страницы. После этого вы сможете скачать отчёт прямо на странице с результатами или посмотреть его в письме на почте.";
             await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
             await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
           } else {
-            await createTicket(env, chatId, state, message.from?.id, "Не пришёл PDF-отчёт", "Не удалось автоматически определить статус отчёта. Нужно проверить заказ вручную.");
+            const ticket = await createTicket(env, chatId, state, message.from?.id, "Не пришёл PDF-отчёт", "Не удалось автоматически определить статус отчёта. Нужно проверить заказ вручную.");
+            await sendWaitingReportPromo(env, chatId, state.email, ticket);
           }
         } else if (action === "promo") {
           await sendPromoInfo(env, chatId, state.email, state);
