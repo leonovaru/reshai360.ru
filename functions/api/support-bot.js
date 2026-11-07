@@ -625,17 +625,17 @@ export async function onRequestPost({ request, env }) {
             if (expiresAt > Date.now()) {
               const daysLeft = Math.max(1, Math.ceil((expiresAt - Date.now()) / 86400000));
               const url = "https://reshai360.ru/" + TEST_FILES[order.productKey] + "?token=" + encodeURIComponent(order.token);
-              let reply = "Вы уже завершили диагностику. Результаты можно посмотреть по персональной ссылке:\n" + url +
+              let reply = "Вы уже завершили диагностику. Результаты можно посмотреть по <a href=\"" + url + "\">персональной ссылке</a>." +
                 "\nСсылка будет доступна ещё " + daysLeft + " дн.";
               const isLightStart = /_basic$/.test(String(order.productKey || "")) || /л[её]гкий старт/i.test(String(order.productTitle || ""));
               const grade = String(order.productKey || "").split("_")[0];
               if (isLightStart && /^(7|8|9|10|11)$/.test(grade)) {
-                reply += "\n\nВы прошли диагностику «Лёгкий старт» для " + grade + " класса. Теперь можно пройти Полную диагностику для " + grade +
-                  " класса: https://reshai360.ru/#select-program";
+                reply += "\n\nВы прошли диагностику «Лёгкий старт» для " + grade + " класса. Теперь можно пройти <a href=\"https://reshai360.ru/#select-program\">Полную диагностику для " + grade +
+                  " класса</a>.";
               }
               await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu", ticketId: undefined });
               await addStateBotMessage(env, chatId, reply);
-              await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
+              await sendText(env, chatId, reply, { parse_mode: "HTML", reply_markup: { ...CLIENT_KEYBOARD } });
             } else {
               const notice = completedLinkExpiredMessage();
               await setState(env.TEST_TOKENS, chatId, { ...state, step: "completed_link_expired" });
