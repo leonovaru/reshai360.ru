@@ -469,9 +469,9 @@ export async function onRequestPost({ request, env }) {
             if (paidOrder.paidAt) {
               const expiresAt = new Date(new Date(paidOrder.paidAt).getTime() + 7 * 86400000);
               const daysLeft = Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / 86400000));
-              remaining = "\\nСсылка действительна ещё " + daysLeft + " дн.";
+              remaining = "\nСсылка действительна ещё " + daysLeft + " дн.";
             }
-            const reply = "Оплата найдена! Вот персональная ссылка на вашу диагностику:\\n" + url + remaining;
+            const reply = "Оплата найдена! Вот персональная ссылка на вашу диагностику:\n" + url + remaining;
             await setState(env.TEST_TOKENS, chatId, { ...clientState, step: "menu", ticketId: undefined });
             await addStateBotMessage(env, chatId, reply);
             await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
@@ -570,7 +570,7 @@ export async function onRequestPost({ request, env }) {
         } else if (action === "open_test") {
           const order = await findOrder(env, state.email, null);
           if (!order) {
-            const notice = "По этому адресу электронной почты не найдена оплаченная диагностика.\\n\\nВы можете перейти на сайт https://reshai360.ru/ и оформить диагностику. После оплаты вернитесь в этот чат и нажмите «Я оплатил». Если оплачивали с другой почты, выберите «Ввести другую почту».";
+            const notice = "По этому адресу электронной почты не найдена оплаченная диагностика.\n\nВы можете перейти на сайт https://reshai360.ru/ и оформить диагностику. После оплаты вернитесь в этот чат и нажмите «Я оплатил». Если оплачивали с другой почты, выберите «Ввести другую почту».";
             await setState(env.TEST_TOKENS, chatId, { ...state, step: "no_paid_order" });
             await addStateBotMessage(env, chatId, notice);
             await sendText(env, chatId, notice, {
