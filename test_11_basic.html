@@ -1650,36 +1650,50 @@
 
         window.__lastReportScore = totalCorrect;
         window.__lastReportTotal = totalQuestions;
-        const reportResponse = await fetch('/api/send-report', {
-          method: 'POST',
-          body: formData
-        });
-        const reportResult = await reportResponse.json().catch(() => ({}));
-        if (reportResponse.ok && reportResult.promoCode) {
+                let reportResponse = null;
+        let reportResult = {};
+        try {
+          reportResponse = await fetch('/api/send-report', {
+            method: 'POST',
+            body: formData
+          });
+          reportResult = await reportResponse.json().catch(() => ({}));
+        } catch (reportError) {
+          console.error("Ошибка отправки письма:", reportError);
+          reportResult.message = reportError.message || "Не удалось связаться с почтовым сервисом.";
+        }
+
+        const emailStatus = document.getElementById('report-email-status');
+        const emailInput = document.getElementById('corrected-report-email');
+        if (emailInput) emailInput.value = studentData.email || '';
+
+        if (reportResponse && reportResponse.ok && reportResult.success && reportResult.promoCode) {
           document.getElementById('promo-code-result-value').textContent = reportResult.promoCode;
           document.getElementById('promo-code-result').style.display = 'block';
-          const emailStatus = document.getElementById('report-email-status');
           if (studentData.email) {
             const accepted = reportResult.emailSent || reportResult.emailPreviouslyAccepted;
             emailStatus.textContent = accepted
-              ? 'Почтовый сервис принял письмо с PDF на ' + studentData.email + '. Если письма нет во входящих, проверьте «Спам» и «Промоакции» — ниже можно отправить его ещё раз.'
-              : 'Не удалось отправить письмо на ' + studentData.email + '. Проверьте адрес или укажите актуальный ниже.';
-            const emailInput = document.getElementById('corrected-report-email');
-            if (emailInput) emailInput.value = studentData.email || '';
-            if (reportResult.feedbackUrl) {
-              const feedbackLink = document.getElementById('feedback-form-link');
-              if (feedbackLink) feedbackLink.href = reportResult.feedbackUrl;
-            }
-          } else emailStatus.textContent = 'Отчёт сформирован. Email не был указан, поэтому письмо не отправлялось.';
+              ? 'Письмо с PDF отправлено на ' + studentData.email + '. Проверьте входящие, а если письма нет — папки «Спам» и «Промоакции».'
+              : 'Не удалось отправить письмо на ' + studentData.email + '. Причина: ' + (reportResult.emailError || 'почтовый сервис не подтвердил отправку.') + ' Проверьте правильность адреса и введите актуальную почту ниже для повторной отправки.';
+          } else {
+            emailStatus.textContent = 'PDF-отчёт сформирован. Адрес электронной почты не указан — введите актуальную почту ниже, чтобы получить письмо.';
+          }
+          if (reportResult.feedbackUrl) {
+            const feedbackLink = document.getElementById('feedback-form-link');
+            if (feedbackLink) feedbackLink.href = reportResult.feedbackUrl;
+          }
         } else {
-          document.getElementById('promo-code-result-note').textContent = 'Не удалось загрузить промокод. Обратитесь в поддержку, если он не появится.';
+          document.getElementById('promo-code-result-note').textContent = 'Не удалось подтвердить отправку данных отчёта. Сам PDF уже сформирован и доступен для просмотра. Если письмо не пришло, проверьте причину ниже и укажите актуальный адрес.';
           document.getElementById('promo-code-result').style.display = 'block';
+          if (emailStatus) {
+            emailStatus.textContent = 'Не удалось подтвердить отправку письма' + (studentData.email ? ' на ' + studentData.email : '') + '. Причина: ' + (reportResult.emailError || reportResult.message || 'нет ответа от сервера отправки почты') + '. Проверьте адрес и введите актуальную почту ниже.';
+          }
         }
       }
 
     } catch (err) {
       console.error("Ошибка при генерации/отправке PDF:", err);
-      if (downloadBtn) downloadBtn.innerText = "⚠️ Не удалось подготовить или отправить PDF";
+      if (downloadBtn) downloadBtn.innerText = generatedPdfBlob ? "📄 Скачать PDF-отчёт" : "⚠️ Не удалось сформировать PDF";
     }
   }
 </script>
