@@ -1,4 +1,4 @@
-import { sendPaymentTelegramNotification } from "../_lib/telegram-payment.js";
+import { sendPaymentTelegramNotification, getOrderExpirationTtl, ORDER_ACCESS_TTL_MS } from "../_lib/telegram-payment.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -88,7 +88,8 @@ export async function onRequestPost(context) {
     tokenData.isPaid = true;
     tokenData.paymentId = confirmedPayment.id;
     tokenData.paidAt = confirmedPayment.captured_at || confirmedPayment.created_at || new Date().toISOString();
-    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+    tokenData.linkExpiresAt = Date.parse(tokenData.paidAt) + ORDER_ACCESS_TTL_MS;
+    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
 
     // Партнёрское начисление создаётся только после серверного подтверждения оплаты.
     // Ключ основан на payment ID: повторный webhook перезаписывает ту же запись, а не создаёт новую.
