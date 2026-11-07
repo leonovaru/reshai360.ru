@@ -1,3 +1,4 @@
+import { ensurePaidOrderLinkExpiry, getOrderExpirationTtl } from "../_lib/telegram-payment.js";
 export async function onRequestPost({ request, env }) {
   try {
     if (!env.TEST_TOKENS) {
@@ -45,15 +46,11 @@ export async function onRequestPost({ request, env }) {
       changed = true;
     }
 
-    if (!tokenData.linkExpiresAt) {
-      const completedAtMs = Date.parse(tokenData.completedAt || "") || Date.now();
-      tokenData.linkExpiresAt = completedAtMs + 7 * 86400000;
-      changed = true;
-    }
-
-    if (changed) {
-      await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
-    }
+    const previousLinkExpiry = Number(tokenData.linkExpiresAt) || null;
+    const linkExpiresAt = ensurePaidOrderLinkExpiry(tokenData);
+    if (linkExpiresAt <= Date.now()) return Response.json({ success: false, message: "Срок действия ссылки на диагностику истёк." }, { status: 403 });
+    if (Number(tokenData.linkExpiresAt) !== previousLinkExpiry) changed = true;
+    if (changed) await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
 
     const archiveKey = "completed-order:" + token;
     let previousArchive = {};
