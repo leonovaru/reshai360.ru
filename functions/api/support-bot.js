@@ -443,6 +443,13 @@ export async function onRequestPost({ request, env }) {
     const state = await getState(env.TEST_TOKENS, chatId);
     const text = String(message.text || "").trim();
     if (text === "/start" || text === "/restart" || text === "/menu" || text === "☰ Меню") {
+      if (state.ticketId) {
+        const openTicket = await getTicket(env.TEST_TOKENS, state.ticketId);
+        if (openTicket && openTicket.status !== "closed") {
+          await sendText(env, chatId, "Ваше обращение ещё в работе. Специалист ответит здесь, как только обработает запрос.", { reply_markup: { remove_keyboard: true } });
+          return Response.json({ ok: true });
+        }
+      }
       if (state.email) await showMenu(env, chatId);
       else await askForEmail(env, chatId);
       return Response.json({ ok: true });
