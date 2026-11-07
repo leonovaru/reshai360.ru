@@ -1,4 +1,80 @@
 
+async function getPromoRecordsForEmail(env, email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!normalizedEmail) return [];
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalizedEmail));
+  const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+  let index = [];
+  try { index = JSON.parse(await env.TEST_TOKENS.get("promo-email:" + hash) || "[]"); } catch {}
+  if (!Array.isArray(index)) return [];
+  const records = [];
+  for (const item of index) {
+    const code = String(item?.code || "").trim().toUpperCase();
+    if (!/^[A-Z0-9-]{5,24}$/.test(code)) continue;
+    const raw = await env.TEST_TOKENS.get("promo:" + code);
+    if (!raw) continue;
+    try {
+      const promo = JSON.parse(raw);
+      if (promo.email && String(promo.email).trim().toLowerCase() !== normalizedEmail) continue;
+      records.push({ ...promo, code });
+    } catch {}
+  }
+  return records.sort((a, b) => Number(b.issuedAt || b.createdAt || 0) - Number(a.issuedAt || a.createdAt || 0));
+}
+function getPromoStatusForMessage(promo) {
+  if (promo.used) return "использован";
+  if (promo.expiresAt && Number(promo.expiresAt) <= Date.now()) return "истёк";
+  if (promo.reservedUntil && Number(promo.reservedUntil) > Date.now()) return "оформляется";
+  return "активен";
+}
+async function sendAutomaticSupportPromo(env, chatId, email, feedbackToken) {
+  const promos = await getPromoRecordsForEmail(env, email);
+  if (!promos.length) return false;
+  const lines = ["🎁 Подарок за прохождение", "Ваши промокоды Решай360:"];
+  for (const promo of promos) {
+    const expires = promo.expiresAt
+      ? new Date(Number(promo.expiresAt)).toLocaleDateString("ru-RU")
+      : "срок не указан";
+    lines.push("• " + promo.code + " — скидка " + Number(promo.discountPercent || 0) + "%, до " + expires + " (" + getPromoStatusForMessage(promo) + ")");
+  }
+  const latest = promos.find(promo => getPromoStatusForMessage(promo) === "активен");
+  if (latest && Number(latest.discountPercent || 10) < 15 && feedbackToken) {
+    const feedbackUrl = "https://reshai360.ru/index.html?feedback_token=" + encodeURIComponent(feedbackToken) + "#feedback";
+    lines.push("", "Оставьте отзыв, пожелание или идею — скидка по последнему активному промокоду увеличится до 15%: <a href=\"" + feedbackUrl + "\">перейти к форме обратной связи</a>.");
+  }
+  lines.push("", "Можем ли ещё чем-нибудь помочь?");
+  const response = await fetch("https://api.telegram.org/bot" + env.TELEGRAM_SUPPORT_BOT_TOKEN + "/sendMessage", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: lines.join("\n"),
+      parse_mode: "HTML",
+      disable_web_page_preview: true,
+      reply_markup: {
+        keyboard: [[{ text: "Да" }, { text: "Нет" }]],
+        resize_keyboard: true,
+        is_persistent: true
+      }
+    })
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.ok !== true) throw new Error("Support promo message was not accepted by Telegram");
+  const stateKey = "support-state:" + chatId;
+  let state = {};
+  try { state = JSON.parse(await env.TEST_TOKENS.get(stateKey) || "{}"); } catch {}
+  state.email = normalizedEmailForSupport(email);
+  state.step = "after_promo";
+  state.history = Array.isArray(state.history) ? state.history : [];
+  state.history.push({ at: new Date().toISOString(), from: "bot", text: lines.join("\n").replace(/<[^>]+>/g, "") });
+  state.history = state.history.slice(-80);
+  await env.TEST_TOKENS.put(stateKey, JSON.stringify(state), { expirationTtl: 86400 });
+  return true;
+}
+function normalizedEmailForSupport(email) {
+  return String(email || "").trim().toLowerCase();
+}
+
 export async function onRequestPost({ request, env }) {
   try {
     const formData = await request.formData();
@@ -147,7 +223,24 @@ export async function onRequestPost({ request, env }) {
             await env.TEST_TOKENS.put(emailIndexKey, JSON.stringify(index), { expirationTtl: promoTtl });
           }
         }
+        tokenData.linkExpiresAt = Date.now() + 7 * 86400000;
         await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+        const archiveKey = "completed-order:" + token;
+        let previousArchive = {};
+        try { previousArchive = JSON.parse(await env.TEST_TOKENS.get(archiveKey) || "{}"); } catch {}
+        await env.TEST_TOKENS.put(archiveKey, JSON.stringify({
+          ...previousArchive,
+          email: String(email || "").trim().toLowerCase(),
+          productKey: tokenData.productKey || previousArchive.productKey || null,
+          productTitle: tokenData.productTitle || previousArchive.productTitle || null,
+          studentName: tokenData.studentName || previousArchive.studentName || name || null,
+          token,
+          isCompleted: true,
+          completedAt: tokenData.completedAt || previousArchive.completedAt || new Date().toISOString(),
+          linkExpiresAt: tokenData.linkExpiresAt,
+          reportReady: true,
+          promoCodeIssued: promoCode || previousArchive.promoCodeIssued || null
+        }), { expirationTtl: 3888000 });
     }
 
     // Отдельный бот результатов получает PDF и ссылку на сохранённую диагностику.
@@ -195,35 +288,46 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    // Если клиент уже обращался в бот поддержки и подтвердил email, отправляем PDF в тот же чат.
+    // Если клиент подтвердил email в боте поддержки, отправляем PDF, а затем отдельное сообщение с промокодами.
     if (env.TELEGRAM_SUPPORT_BOT_TOKEN) {
       try {
         const sentTo = Array.isArray(tokenData.supportTelegramSentTo) ? tokenData.supportTelegramSentTo : [];
+        const promoSentTo = Array.isArray(tokenData.supportPromoSentTo) ? tokenData.supportPromoSentTo : [];
         const page = await env.TEST_TOKENS.list({ prefix: "support-email:", limit: 1000 });
         for (const item of page.keys || []) {
           const clientChatId = item.name.slice("support-email:".length);
-          if (!clientChatId || sentTo.includes(clientChatId)) continue;
+          if (!clientChatId) continue;
           const clientEmail = String(await env.TEST_TOKENS.get(item.name) || "").trim().toLowerCase();
           if (!clientEmail || clientEmail !== email.trim().toLowerCase()) continue;
           try {
-            const supportForm = new FormData();
-            supportForm.append("chat_id", clientChatId);
-            supportForm.append("caption", "Ваш PDF-отчёт по завершённой диагностике Решай360.");
-            supportForm.append("document", pdfFile, `Отчёт_${safeName}.pdf`);
-            const supportResponse = await fetch(
-              "https://api.telegram.org/bot" + env.TELEGRAM_SUPPORT_BOT_TOKEN + "/sendDocument",
-              { method: "POST", body: supportForm }
-            );
-            const supportResult = await supportResponse.json().catch(() => ({}));
-            if (supportResponse.ok && supportResult.ok === true) {
-              sentTo.push(clientChatId);
-              tokenData.supportTelegramSentTo = sentTo;
+            let pdfDelivered = sentTo.includes(clientChatId);
+            if (!pdfDelivered) {
+              const supportForm = new FormData();
+              supportForm.append("chat_id", clientChatId);
+              supportForm.append("caption", "Ваш PDF-отчёт по завершённой диагностике Решай360.");
+              supportForm.append("document", pdfFile, `Отчёт_${safeName}.pdf`);
+              const supportResponse = await fetch(
+                "https://api.telegram.org/bot" + env.TELEGRAM_SUPPORT_BOT_TOKEN + "/sendDocument",
+                { method: "POST", body: supportForm }
+              );
+              const supportResult = await supportResponse.json().catch(() => ({}));
+              if (supportResponse.ok && supportResult.ok === true) {
+                sentTo.push(clientChatId);
+                tokenData.supportTelegramSentTo = sentTo;
+                pdfDelivered = true;
+                await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+              } else {
+                console.error("Telegram support PDF delivery error:", JSON.stringify(supportResult).slice(0, 1000));
+              }
+            }
+            if (pdfDelivered && !promoSentTo.includes(clientChatId)) {
+              await sendAutomaticSupportPromo(env, clientChatId, email, feedbackPrefillToken);
+              promoSentTo.push(clientChatId);
+              tokenData.supportPromoSentTo = promoSentTo;
               await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
-            } else {
-              console.error("Telegram support PDF delivery error:", JSON.stringify(supportResult).slice(0, 1000));
             }
           } catch (supportError) {
-            console.error("Telegram support PDF delivery error:", supportError);
+            console.error("Telegram support PDF/promo delivery error:", supportError);
           }
         }
       } catch (supportListError) {
