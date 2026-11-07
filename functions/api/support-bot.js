@@ -507,18 +507,15 @@ export async function onRequestPost({ request, env }) {
             await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
           }
         } else if (action === "report") {
-          const completed = await findOrder(env, state.email, true);
-          if (completed) {
+          const reportOrder = await findOrder(env, state.email, null);
+          if (reportOrder?.isCompleted === true) {
             await createTicket(env, chatId, state, message.from?.id, "Повторная отправка PDF-отчёта", "Клиент запросил повторную отправку PDF. Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
+          } else if (reportOrder) {
+            const reply = "Чтобы сформировать отчёт, завершите диагностику, нажав на зелёную кнопку внизу страницы. После этого вы сможете скачать отчёт прямо на странице с результатами или посмотреть его в письме на почте.";
+            await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
+            await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
           } else {
-            const unfinished = await findOrder(env, state.email, false);
-            if (unfinished) {
-              const reply = "Чтобы сформировать отчёт, завершите диагностику, нажав на зелёную кнопку внизу страницы. После этого вы сможете скачать отчёт прямо на странице с результатами или посмотреть его в письме на почте.";
-              await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
-              await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
-            } else {
-              await createTicket(env, chatId, state, message.from?.id, "Не пришёл PDF-отчёт", "Не удалось автоматически определить статус отчёта. Нужно проверить заказ вручную.");
-            }
+            await createTicket(env, chatId, state, message.from?.id, "Не пришёл PDF-отчёт", "Не удалось автоматически определить статус отчёта. Нужно проверить заказ вручную.");
           }
         } else if (action === "promo") {
           await sendPromoInfo(env, chatId, state.email, state);
