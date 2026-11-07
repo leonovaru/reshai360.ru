@@ -107,13 +107,31 @@ async function getQueue(kv) {
 async function setQueue(kv, queue) {
   await kv.put(QUEUE_KEY, JSON.stringify(queue), { expirationTtl: TICKET_TTL });
 }
-function ticketKeyboard(ticketId) {
-  return { inline_keyboard: [
-    [{ text: "💬 Ответить клиенту", callback_data: "admin:reply:" + ticketId }],
-    [{ text: "📎 Отправить PDF", callback_data: "admin:pdf:" + ticketId }],
-    [{ text: "🔄 Обновить переписку", callback_data: "admin:history:" + ticketId }],
-    [{ text: "✅ Завершить обращение", callback_data: "admin:close:" + ticketId }]
-  ] };
+function ticketKeyboard(ticketId, includeClose = false) {
+  const keyboard = [
+    [{ text: "Посмотреть переписку", callback_data: "admin:history:" + ticketId }],
+    [{ text: "Ответить клиенту", callback_data: "admin:reply:" + ticketId }],
+    [{ text: "Отправить PDF-отчёт", callback_data: "admin:pdf:" + ticketId }]
+  ];
+  if (includeClose) keyboard.push([{ text: "Завершить обращение", callback_data: "admin:close:" + ticketId }]);
+  return { inline_keyboard: keyboard };
+}
+function escapeHtml(value) {
+  return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function formatTicketCard(ticket) {
+  const telegramLink = ticket.telegramUsername
+    ? "https://t.me/" + encodeURIComponent(ticket.telegramUsername)
+    : "tg://user?id=" + encodeURIComponent(ticket.telegramUserId || ticket.chatId);
+  const telegramLabel = '<a href="' + telegramLink + '">Открыть чат</a>';
+  return [
+    "🆘 <b>ОБРАЩЕНИЕ В ПОДДЕРЖКУ РЕШАЙ360</b>",
+    "Имя: " + escapeHtml(ticket.customerName || "не найдено") + " (" + escapeHtml(ticket.telegramName || "имя не указано") + ")",
+    "Email: " + escapeHtml(ticket.email || "не указан"),
+    "Telegram ID: " + escapeHtml(ticket.telegramUserId || ticket.chatId) + " (" + telegramLabel + ")",
+    "Причина: " + escapeHtml(ticket.reason || "вопрос клиента"),
+    "Статус: " + (ticket.status === "closed" ? "закрыто" : "открыто")
+  ].join("\n");
 }
 function formatHistory(ticket) {
   const lines = [
@@ -133,23 +151,21 @@ function formatHistory(ticket) {
   return lines.join("\n").slice(0, 3900);
 }
 async function refreshActiveTicket(env, ticket) {
-  if (!env.TG_CHAT_ID) return;
-  if (ticket.status === "closed") return;
-  const text = formatHistory(ticket);
+  if (!env.TG_CHAT_ID || ticket.status === "closed") return;
   if (ticket.adminMessageId) {
     try {
-      await telegram(env, "editMessageText", {
+      await telegram(env, "editMessageReplyMarkup", {
         chat_id: env.TG_CHAT_ID,
         message_id: ticket.adminMessageId,
-        text,
-        reply_markup: ticketKeyboard(ticket.id),
-        disable_web_page_preview: true
+        reply_markup: { inline_keyboard: [] }
       });
-      return;
     } catch {}
   }
   try {
-    const sent = await sendText(env, env.TG_CHAT_ID, text, { reply_markup: ticketKeyboard(ticket.id) });
+    const sent = await sendText(env, env.TG_CHAT_ID, formatTicketCard(ticket), {
+      parse_mode: "HTML",
+      reply_markup: ticketKeyboard(ticket.id, ticket.adminHasClose === true)
+    });
     ticket.adminMessageId = sent.message_id;
     await saveTicket(env.TEST_TOKENS, ticket);
   } catch (error) {
@@ -185,13 +201,19 @@ async function notifyQueuedTicket(env, ticket, position) {
     console.error("Support bot: failed to notify admin about queued ticket:", error);
   }
 }
-async function createTicket(env, chatId, state, userId, reason, firstMessage) {
+async function createTicket(env, chatId, state, telegramUser, reason, firstMessage) {
   const kv = env.TEST_TOKENS;
+  const user = telegramUser && typeof telegramUser === "object" ? telegramUser : { id: telegramUser };
+  const order = await findOrder(env, state.email || "", null);
+  const archive = order ? null : await findCompletedArchive(env, state.email || "");
+  const customerName = String(order?.studentName || order?.name || order?.customerName || archive?.studentName || archive?.name || archive?.customerName || "").trim();
+  const telegramName = [user.first_name, user.last_name].filter(Boolean).join(" ").trim();
   const ticket = {
     id: crypto.randomUUID(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-    email: state.email || null, telegramUserId: String(userId || ""), chatId: String(chatId),
+    email: state.email || null, telegramUserId: String(user.id || ""), chatId: String(chatId),
+    telegramName, telegramUsername: String(user.username || ""), customerName,
     reason, status: "active", history: Array.isArray(state.history) ? state.history.slice(-80) : [],
-    adminMessageId: null
+    adminMessageId: null, adminHasClose: false
   };
   if (firstMessage) addHistory(ticket, "client", firstMessage);
   await saveTicket(kv, ticket);
@@ -356,18 +378,30 @@ async function adminAction(env, callback, chatId) {
     return true;
   }
   await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id });
-  if (action === "reply") {
-    await env.TEST_TOKENS.put("support-admin-state:" + chatId, JSON.stringify({ mode: "reply", ticketId: id }), { expirationTtl: 3600 });
-    await sendText(env, chatId, "Напишите ответ клиенту одним сообщением. Я отправлю его от имени поддержки Решай360.");
-  } else if (action === "pdf") {
-    await env.TEST_TOKENS.put("support-admin-state:" + chatId, JSON.stringify({ mode: "pdf", ticketId: id }), { expirationTtl: 3600 });
-    await sendText(env, chatId, "Теперь отправьте или перешлите сюда PDF-файл. Я передам его клиенту из этого обращения.");
-  } else if (action === "history") {
-    const sent = await sendText(env, chatId, formatHistory(ticket), { reply_markup: ticketKeyboard(id) });
-    ticket.adminMessageId = sent.message_id;
-    await saveTicket(env.TEST_TOKENS, ticket);
-  } else if (action === "close") {
+  if (ticket.adminMessageId && env.TG_CHAT_ID) {
+    try {
+      await telegram(env, "editMessageReplyMarkup", {
+        chat_id: env.TG_CHAT_ID,
+        message_id: ticket.adminMessageId,
+        reply_markup: { inline_keyboard: [] }
+      });
+    } catch {}
+  }
+  if (action === "close") {
     await closeTicket(env, ticket);
+  } else {
+    ticket.adminHasClose = true;
+    await saveTicket(env.TEST_TOKENS, ticket);
+    if (action === "reply") {
+      await env.TEST_TOKENS.put("support-admin-state:" + chatId, JSON.stringify({ mode: "reply", ticketId: id }), { expirationTtl: 3600 });
+      await sendText(env, chatId, "Напишите ответ клиенту одним сообщением. Я отправлю его от имени поддержки Решай360.");
+    } else if (action === "pdf") {
+      await env.TEST_TOKENS.put("support-admin-state:" + chatId, JSON.stringify({ mode: "pdf", ticketId: id }), { expirationTtl: 3600 });
+      await sendText(env, chatId, "Теперь отправьте или перешлите сюда PDF-файл. Я передам его клиенту из этого обращения.");
+    } else if (action === "history") {
+      await sendText(env, chatId, formatHistory(ticket));
+    }
+    await refreshActiveTicket(env, ticket);
   }
   return true;
 }
@@ -501,7 +535,7 @@ export async function onRequestPost({ request, env }) {
           const order = await findOrder(env, clientState.email || "", true);
           const archive = order || await findCompletedArchive(env, clientState.email || "");
           const detail = archive ? (archive.productTitle || archive.productKey || "класс не указан") : "завершённая диагностика";
-          const ticket = await createTicket(env, chatId, clientState, callback.from?.id, "Повторная отправка PDF-отчёта", "Клиент запросил PDF-отчёт после завершённой диагностики (" + detail + "). Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
+          const ticket = await createTicket(env, chatId, clientState, callback.from, "Повторная отправка PDF-отчёта", "Клиент запросил PDF-отчёт после завершённой диагностики (" + detail + "). Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
           await sendWaitingReportPromo(env, chatId, clientState.email, ticket);
           return Response.json({ ok: true });
         }
@@ -667,14 +701,14 @@ export async function onRequestPost({ request, env }) {
         } else if (action === "report") {
           const reportOrder = await findOrder(env, state.email, null);
           if (reportOrder?.isCompleted === true) {
-            const ticket = await createTicket(env, chatId, state, message.from?.id, "Повторная отправка PDF-отчёта", "Клиент запросил повторную отправку PDF. Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
+            const ticket = await createTicket(env, chatId, state, message.from, "Повторная отправка PDF-отчёта", "Клиент запросил повторную отправку PDF. Требуется найти отчёт в боте «Результаты» и переслать его в бот поддержки.");
             await sendWaitingReportPromo(env, chatId, state.email, ticket);
           } else if (reportOrder) {
             const reply = "Чтобы сформировать отчёт, завершите диагностику, нажав на зелёную кнопку внизу страницы. После этого вы сможете скачать отчёт прямо на странице с результатами или посмотреть его в письме на почте.";
             await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
             await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
           } else {
-            const ticket = await createTicket(env, chatId, state, message.from?.id, "Не пришёл PDF-отчёт", "Не удалось автоматически определить статус отчёта. Нужно проверить заказ вручную.");
+            const ticket = await createTicket(env, chatId, state, message.from, "Не пришёл PDF-отчёт", "Не удалось автоматически определить статус отчёта. Нужно проверить заказ вручную.");
             await sendWaitingReportPromo(env, chatId, state.email, ticket);
           }
         } else if (action === "promo") {
@@ -725,7 +759,7 @@ export async function onRequestPost({ request, env }) {
       }
     } else if (state.step === "human") {
       state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text }];
-      await createTicket(env, chatId, state, message.from?.id, "Вопрос клиента", text);
+      await createTicket(env, chatId, state, message.from, "Вопрос клиента", text);
     } else if (state.step === "thanks") {
       if (/^(спасибо|благодарю|ок|понятно|thanks|спс)[!.\s😊🙏🙂👍❤️]*$/i.test(text)) {
         const reply = "Пожалуйста! Желаем продуктивного прохождения диагностики! 😊";
@@ -734,7 +768,7 @@ export async function onRequestPost({ request, env }) {
         await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
       } else {
         state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text }];
-        await createTicket(env, chatId, state, message.from?.id, "Вопрос после получения ссылки", text);
+        await createTicket(env, chatId, state, message.from, "Вопрос после получения ссылки", text);
       }
     } else if (state.email) {
       await showMenu(env, chatId);
