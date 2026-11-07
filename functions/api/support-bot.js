@@ -26,9 +26,14 @@ async function hashEmail(email) {
   return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
 }
 async function getState(kv, chatId) {
-  try { return JSON.parse(await kv.get("support-state:" + chatId) || "{}"); } catch { return {}; }
+  let state = {};
+  try { state = JSON.parse(await kv.get("support-state:" + chatId) || "{}"); } catch {}
+  const email = await kv.get("support-email:" + chatId);
+  if (email) state.email = email;
+  return state;
 }
 async function setState(kv, chatId, state) {
+  if (state.email) await kv.put("support-email:" + chatId, String(state.email).trim().toLowerCase(), { expirationTtl: TICKET_TTL });
   await kv.put("support-state:" + chatId, JSON.stringify(state), { expirationTtl: STATE_TTL });
 }
 async function getTicket(kv, id) {
