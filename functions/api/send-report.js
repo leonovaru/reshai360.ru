@@ -196,7 +196,7 @@ export async function onRequestPost({ request, env }) {
     }
 
     // Если клиент уже обращался в бот поддержки и подтвердил email, отправляем PDF в тот же чат.
-    if (env.TELEGRAM_SUPPORT_BOT_TOKEN && !tokenData.supportTelegramSentTo?.length) {
+    if (env.TELEGRAM_SUPPORT_BOT_TOKEN) {
       try {
         const sentTo = Array.isArray(tokenData.supportTelegramSentTo) ? tokenData.supportTelegramSentTo : [];
         const page = await env.TEST_TOKENS.list({ prefix: "support-email:", limit: 1000 });
