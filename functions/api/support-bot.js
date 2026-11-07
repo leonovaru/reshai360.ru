@@ -81,8 +81,13 @@ const CLIENT_KEYBOARD = {
   resize_keyboard: true,
   is_persistent: true
 };
+async function clearClientCommands(env, chatId) {
+  await telegram(env, "setMyCommands", { commands: [] });
+  await telegram(env, "setChatMenuButton", { chat_id: chatId, menu_button: { type: "default" } });
+}
 async function askForEmail(env, chatId) {
   const prompt = "Здравствуйте! Это поддержка Решай360. Напишите email, который вы указывали перед оплатой диагностики.";
+  await clearClientCommands(env, chatId);
   const state = await getState(env.TEST_TOKENS, chatId);
   await setState(env.TEST_TOKENS, chatId, { ...state, step: "email", history: [{ at: new Date().toISOString(), from: "bot", text: prompt }] });
   await sendText(env, chatId, prompt, { reply_markup: { remove_keyboard: true } });
@@ -224,7 +229,6 @@ async function closeTicket(env, ticket) {
   const state = await getState(env.TEST_TOKENS, ticket.chatId);
   await setState(env.TEST_TOKENS, ticket.chatId, { step: "menu", email: ticket.email, history: state.history || [] });
   await sendText(env, ticket.chatId, "Спасибо за обращение! Ваш запрос обработан.", { reply_markup: { ...CLIENT_KEYBOARD } });
-  await setState(env.TEST_TOKENS, ticket.chatId, { step: "menu", email: ticket.email, history: state.history || [] });
   await activateNext(env);
 }
 async function getPromoRecords(env, email) {
@@ -443,6 +447,7 @@ export async function onRequestPost({ request, env }) {
     const state = await getState(env.TEST_TOKENS, chatId);
     const text = String(message.text || "").trim();
     if (text === "/start" || text === "/restart" || text === "/menu" || text === "☰ Меню") {
+      await clearClientCommands(env, chatId);
       if (state.ticketId) {
         const openTicket = await getTicket(env.TEST_TOKENS, state.ticketId);
         if (openTicket && openTicket.status !== "closed") {
