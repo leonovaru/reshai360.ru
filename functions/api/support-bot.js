@@ -263,8 +263,10 @@ async function sendWaitingReportPromo(env, chatId, email, ticket) {
   const latest = promos.find(promo => promoStatus(promo) === "активен");
   if (!latest) return;
   const feedbackToken = crypto.randomUUID().replace(/-/g, "");
+  const latestOrder = await findOrder(env, email, true);
+  const prefillName = String(latest.name || latestOrder?.studentName || latestOrder?.name || latestOrder?.customerName || "").trim();
   await env.TEST_TOKENS.put("feedback-prefill:" + feedbackToken, JSON.stringify({
-    name: String(latest.name || "").trim(), email, createdAt: Date.now()
+    name: prefillName, email, createdAt: Date.now()
   }), { expirationTtl: 3888000 });
   const feedbackUrl = "https://reshai360.ru/index.html?feedback_token=" + encodeURIComponent(feedbackToken) + "#feedback";
   const discount = Number(latest.discountPercent || 10);
@@ -556,8 +558,8 @@ export async function onRequestPost({ request, env }) {
       if (/^(спасибо|благодарю|ок|понятно|thanks|спс)[!.\s😊🙏🙂👍❤️]*$/i.test(text)) {
         const reply = "Пожалуйста! Желаем продуктивного прохождения диагностики! 😊";
         state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text }, { at: new Date().toISOString(), from: "bot", text: reply }];
-        await sendText(env, chatId, reply);
         await setState(env.TEST_TOKENS, chatId, { step: "menu", email: state.email, history: state.history || [] });
+        await sendText(env, chatId, reply, { reply_markup: { ...CLIENT_KEYBOARD } });
       } else {
         state.history = [...(state.history || []), { at: new Date().toISOString(), from: "client", text }];
         await createTicket(env, chatId, state, message.from?.id, "Вопрос после получения ссылки", text);
