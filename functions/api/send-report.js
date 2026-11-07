@@ -183,14 +183,51 @@ export async function onRequestPost({ request, env }) {
           'https://api.telegram.org/bot' + env.TELEGRAM_RESULTS_BOT_TOKEN + '/sendDocument',
           { method: "POST", body: tgFormData }
         );
-        if (!tgResponse.ok) {
-          console.error("Telegram results notification error:", await tgResponse.text());
+        const tgResult = await tgResponse.json().catch(() => ({}));
+        if (!tgResponse.ok || tgResult.ok !== true) {
+          console.error("Telegram results notification error:", JSON.stringify(tgResult).slice(0, 1000));
         } else {
           tokenData.resultsTelegramSentAt = new Date().toISOString();
           await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
         }
       } catch (tgErr) {
         console.error("Telegram results notification error:", tgErr);
+      }
+    }
+
+    // Если клиент уже обращался в бот поддержки и подтвердил email, отправляем PDF в тот же чат.
+    if (env.TELEGRAM_SUPPORT_BOT_TOKEN && !tokenData.supportTelegramSentTo?.length) {
+      try {
+        const sentTo = Array.isArray(tokenData.supportTelegramSentTo) ? tokenData.supportTelegramSentTo : [];
+        const page = await env.TEST_TOKENS.list({ prefix: "support-email:", limit: 1000 });
+        for (const item of page.keys || []) {
+          const clientChatId = item.name.slice("support-email:".length);
+          if (!clientChatId || sentTo.includes(clientChatId)) continue;
+          const clientEmail = String(await env.TEST_TOKENS.get(item.name) || "").trim().toLowerCase();
+          if (!clientEmail || clientEmail !== email.trim().toLowerCase()) continue;
+          try {
+            const supportForm = new FormData();
+            supportForm.append("chat_id", clientChatId);
+            supportForm.append("caption", "Ваш PDF-отчёт по завершённой диагностике Решай360.");
+            supportForm.append("document", pdfFile, `Отчёт_${safeName}.pdf`);
+            const supportResponse = await fetch(
+              "https://api.telegram.org/bot" + env.TELEGRAM_SUPPORT_BOT_TOKEN + "/sendDocument",
+              { method: "POST", body: supportForm }
+            );
+            const supportResult = await supportResponse.json().catch(() => ({}));
+            if (supportResponse.ok && supportResult.ok === true) {
+              sentTo.push(clientChatId);
+              tokenData.supportTelegramSentTo = sentTo;
+              await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: 604800 });
+            } else {
+              console.error("Telegram support PDF delivery error:", JSON.stringify(supportResult).slice(0, 1000));
+            }
+          } catch (supportError) {
+            console.error("Telegram support PDF delivery error:", supportError);
+          }
+        }
+      } catch (supportListError) {
+        console.error("Telegram support chat lookup error:", supportListError);
       }
     }
 
