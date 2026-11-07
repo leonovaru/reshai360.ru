@@ -1685,6 +1685,38 @@
     const topicsToRepeat = Array.from(topicsToRepeatSet);
     const topicsToStudy = Array.from(topicsToStudySet);
 
+    // Сначала фиксируем завершение и полный снимок ответов на сервере.
+    // Генерация или отправка PDF больше не влияет на статус завершённой диагностики.
+    const completionSnapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {} };
+    questionNavigation.forEach(item => {
+      const answer = getQuestionAnswer(item.id, item.qDef);
+      if (answer) completionSnapshot.answers[item.id] = answer;
+      completionSnapshot.stats[item.id] = {
+        checkCount: item.qDef.checkCount || 0,
+        attemptsHistory: item.qDef.attemptsHistory || []
+      };
+    });
+    try {
+      const completionResponse = await fetch('/api/complete-diagnostic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: currentToken, snapshot: completionSnapshot })
+      });
+      const completionResult = await completionResponse.json().catch(() => ({}));
+      if (!completionResponse.ok || !completionResult.success) {
+        throw new Error(completionResult.message || 'Не удалось зафиксировать завершение диагностики.');
+      }
+      isCompletedView = true;
+      if (progressSyncTimer) {
+        clearInterval(progressSyncTimer);
+        progressSyncTimer = null;
+      }
+    } catch (completionError) {
+      console.error('Ошибка фиксации завершения диагностики:', completionError);
+      alert(completionError.message || 'Не удалось сохранить завершение диагностики. Проверьте подключение и нажмите «Завершить» ещё раз.');
+      return;
+    }
+
     let repeatBoxHtml = topicsToRepeat.length > 0 ? `<ol>${topicsToRepeat.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Ошибок в решенных заданиях нет.</p>`;
     let studyBoxHtml = topicsToStudy.length > 0 ? `<ol>${topicsToStudy.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Пропущенных заданий нет.</p>`;
 
