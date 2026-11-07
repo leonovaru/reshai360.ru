@@ -551,6 +551,8 @@
       if (!response.ok) return;
       const result = await response.json();
       if (result && result.completed) {
+        // Не перезагружаем устройство, которое само завершает тест и формирует PDF.
+        if (isCompletedView) return;
         if (!window.__reshai360CompletionReloading) {
           window.__reshai360CompletionReloading = true;
           if (progressSyncTimer) {
