@@ -73,40 +73,28 @@ async function addStateBotMessage(env, chatId, text) {
   state.history = state.history.slice(-80);
   await setState(env.TEST_TOKENS, chatId, state);
 }
-async function ensureClientMenu(env, chatId) {
-  await telegram(env, "setMyCommands", {
-    commands: [{ command: "menu", description: "Открыть меню поддержки" }]
-  });
-  await telegram(env, "setChatMenuButton", {
-    chat_id: chatId,
-    menu_button: { type: "commands" }
-  });
-}
+const CLIENT_KEYBOARD = {
+  keyboard: [
+    [{ text: "Не открывается диагностика" }, { text: "Не пришёл PDF-отчёт" }],
+    [{ text: "Какой у меня промокод" }, { text: "Позвать специалиста" }]
+  ],
+  resize_keyboard: true,
+  is_persistent: true
+};
 async function askForEmail(env, chatId) {
   const prompt = "Здравствуйте! Это поддержка Решай360. Напишите email, который вы указывали перед оплатой диагностики.";
-  await setState(env.TEST_TOKENS, chatId, { step: "email", history: [{ at: new Date().toISOString(), from: "bot", text: prompt }] });
-  await sendText(env, chatId, prompt);
-}
-async function showMenu(env, chatId) {
   const state = await getState(env.TEST_TOKENS, chatId);
-  await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu" });
-  await addStateBotMessage(env, chatId, "Выберите нужный пункт поддержки:");
-  await sendText(env, chatId, "Выберите нужный пункт поддержки:", { reply_markup: { inline_keyboard: [
-    [{ text: "Не открывается диагностика", callback_data: "support:open_test" }],
-    [{ text: "Не пришёл PDF-отчёт", callback_data: "support:report" }],
-    [{ text: "Какой у меня промокод", callback_data: "support:promo" }],
-    [{ text: "Позвать специалиста", callback_data: "support:human" }]
-  ] } });
+  await setState(env.TEST_TOKENS, chatId, { ...state, step: "email", history: [{ at: new Date().toISOString(), from: "bot", text: prompt }] });
+  await sendText(env, chatId, prompt, { reply_markup: { remove_keyboard: true } });
 }
-async function removeClientButtons(env, callback) {
-  if (!callback?.message?.message_id || !callback?.message?.chat?.id) return;
-  try {
-    await telegram(env, "editMessageReplyMarkup", {
-      chat_id: callback.message.chat.id,
-      message_id: callback.message.message_id,
-      reply_markup: { inline_keyboard: [] }
-    });
-  } catch {}
+async function showMenu(env, chatId, notice = "Выберите нужный пункт поддержки:") {
+  const state = await getState(env.TEST_TOKENS, chatId);
+  await setState(env.TEST_TOKENS, chatId, { ...state, step: "menu", ticketId: undefined });
+  await addStateBotMessage(env, chatId, notice);
+  await sendText(env, chatId, notice, { reply_markup: { ...CLIENT_KEYBOARD } });
+}
+async function hideClientKeyboard(env, chatId) {
+  await telegram(env, "sendMessage", { chat_id: chatId, text: "Принято. Выполняю запрос…", reply_markup: { remove_keyboard: true } });
 }
 async function getQueue(kv) {
   try { const q = JSON.parse(await kv.get(QUEUE_KEY) || "[]"); return Array.isArray(q) ? q : []; } catch { return []; }
