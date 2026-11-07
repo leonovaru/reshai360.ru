@@ -205,8 +205,9 @@ async function createTicket(env, chatId, state, telegramUser, reason, firstMessa
   const kv = env.TEST_TOKENS;
   const user = telegramUser && typeof telegramUser === "object" ? telegramUser : { id: telegramUser };
   const order = await findOrder(env, state.email || "", null);
-  const archive = order ? null : await findCompletedArchive(env, state.email || "");
-  const customerName = String(order?.studentName || order?.name || order?.customerName || archive?.studentName || archive?.name || archive?.customerName || "").trim();
+  const orderName = String(order?.studentName || order?.name || order?.customerName || "").trim();
+  const archive = orderName ? null : await findCompletedArchive(env, state.email || "");
+  const customerName = orderName || String(archive?.studentName || archive?.name || archive?.customerName || "").trim();
   const telegramName = [user.first_name, user.last_name].filter(Boolean).join(" ").trim();
   const ticket = {
     id: crypto.randomUUID(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
@@ -378,14 +379,17 @@ async function adminAction(env, callback, chatId) {
     return true;
   }
   await telegram(env, "answerCallbackQuery", { callback_query_id: callback.id });
-  if (ticket.adminMessageId && env.TG_CHAT_ID) {
-    try {
-      await telegram(env, "editMessageReplyMarkup", {
-        chat_id: env.TG_CHAT_ID,
-        message_id: ticket.adminMessageId,
-        reply_markup: { inline_keyboard: [] }
-      });
-    } catch {}
+  if (env.TG_CHAT_ID) {
+    const messageIds = new Set([ticket.adminMessageId, callback.message?.message_id].filter(Boolean));
+    for (const messageId of messageIds) {
+      try {
+        await telegram(env, "editMessageReplyMarkup", {
+          chat_id: env.TG_CHAT_ID,
+          message_id: messageId,
+          reply_markup: { inline_keyboard: [] }
+        });
+      } catch {}
+    }
   }
   if (action === "close") {
     await closeTicket(env, ticket);
