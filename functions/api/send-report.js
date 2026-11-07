@@ -125,6 +125,7 @@ export async function onRequestPost({ request, env }) {
         { status: 403 }
       );
     }
+    ensurePaidOrderLinkExpiry(tokenData);
 
     // Используем контактные данные из серверной записи заказа.
     const email = String((forceEmail && submittedEmail ? submittedEmail : (tokenData.email || submittedEmail))).trim();
@@ -237,6 +238,7 @@ export async function onRequestPost({ request, env }) {
           token,
           isCompleted: true,
           completedAt: tokenData.completedAt || previousArchive.completedAt || new Date().toISOString(),
+          paidAt: tokenData.paidAt || previousArchive.paidAt || null,
           linkExpiresAt: tokenData.linkExpiresAt,
           reportReady: true,
           promoCodeIssued: promoCode || previousArchive.promoCodeIssued || null
