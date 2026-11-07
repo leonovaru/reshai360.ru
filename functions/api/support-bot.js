@@ -450,19 +450,18 @@ export async function onRequestPost({ request, env }) {
     const text = String(message.text || "").trim();
     if (text === "/start" || text === "/restart") {
       await clearClientCommands(env, chatId);
+      let preservedTicketId;
       if (state.ticketId) {
         const openTicket = await getTicket(env.TEST_TOKENS, state.ticketId);
-        if (openTicket && openTicket.status !== "closed") {
-          await sendText(env, chatId, "Здравствуйте! Это поддержка Решай360. Ваше обращение ещё в работе. Специалист ответит здесь, как только обработает запрос.", { reply_markup: { remove_keyboard: true } });
-          return Response.json({ ok: true });
-        }
+        if (openTicket && openTicket.status !== "closed") preservedTicketId = state.ticketId;
       }
-      if (state.email) {
-        await sendText(env, chatId, "Здравствуйте! Это поддержка Решай360.");
-        await showMenu(env, chatId);
-      } else {
-        await askForEmail(env, chatId);
-      }
+      await env.TEST_TOKENS.delete("support-email:" + chatId);
+      await setState(env.TEST_TOKENS, chatId, {
+        step: "email",
+        ...(preservedTicketId ? { ticketId: preservedTicketId } : {}),
+        history: []
+      });
+      await askForEmail(env, chatId);
       return Response.json({ ok: true });
     }
     if (text === "/menu" || text === "☰ Меню") {
@@ -562,7 +561,22 @@ export async function onRequestPost({ request, env }) {
         await setState(env.TEST_TOKENS, chatId, state);
         await sendText(env, chatId, prompt);
       } else {
-        await setState(env.TEST_TOKENS, chatId, { step: "menu", email, name: String(message.from?.first_name || "").trim(), history: [{ at: new Date().toISOString(), from: "client", text: "Email: " + email }] });
+        const emailHistory = [{ at: new Date().toISOString(), from: "client", text: "Email: " + email }];
+        if (state.ticketId) {
+          const openTicket = await getTicket(env.TEST_TOKENS, state.ticketId);
+          if (openTicket && openTicket.status !== "closed") {
+            await setState(env.TEST_TOKENS, chatId, {
+              step: "ticket_open",
+              email,
+              ticketId: state.ticketId,
+              name: String(message.from?.first_name || "").trim(),
+              history: emailHistory
+            });
+            await sendText(env, chatId, "Email принят. Ваше обращение ещё в работе. Специалист ответит здесь, как только обработает запрос.", { reply_markup: { remove_keyboard: true } });
+            return Response.json({ ok: true });
+          }
+        }
+        await setState(env.TEST_TOKENS, chatId, { step: "menu", email, name: String(message.from?.first_name || "").trim(), history: emailHistory });
         await showMenu(env, chatId, "Email принят. Выберите нужный пункт поддержки.");
       }
     } else if (state.step === "human") {
