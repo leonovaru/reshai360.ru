@@ -90,9 +90,94 @@
         #mobile-program-toggle-top { min-height: 44px; }
         #mobile-program-toggle-label { text-decoration: underline; text-decoration-color: rgba(165, 180, 252, 0.65); text-underline-offset: 4px; }
     @media (max-width: 768px) { input, select, textarea { font-size: 16px !important; } }
+
+        /* Уведомление перед переходом к оплате */
+        #checkout-notice-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(3, 7, 18, 0.78);
+            -webkit-backdrop-filter: blur(7px);
+            backdrop-filter: blur(7px);
+        }
+        #checkout-notice-overlay[hidden] { display: none !important; }
+        #checkout-notice-card {
+            position: relative;
+            width: min(100%, 460px);
+            padding: 30px 28px 26px;
+            overflow: hidden;
+            text-align: center;
+            border: 1px solid rgba(129, 140, 248, 0.48);
+            border-radius: 22px;
+            background: linear-gradient(145deg, rgba(24, 32, 62, 0.99), rgba(10, 15, 31, 0.99));
+            box-shadow: 0 24px 90px rgba(0, 0, 0, 0.58), 0 0 42px rgba(99, 102, 241, 0.17);
+            animation: checkoutNoticeIn 180ms ease-out;
+        }
+        #checkout-notice-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 12%;
+            right: 12%;
+            height: 2px;
+            background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+        }
+        #checkout-notice-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 10px;
+            color: #a5b4fc;
+            background: rgba(255,255,255,0.06);
+            font-size: 25px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        #checkout-notice-close:hover { color: white; background: rgba(255,255,255,0.12); }
+        #checkout-notice-continue {
+            min-height: 46px;
+            border: 1px solid rgba(165, 180, 252, 0.5);
+            border-radius: 12px;
+            background: linear-gradient(100deg, #4f46e5, #7c3aed);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+        }
+        #checkout-notice-continue:hover { filter: brightness(1.12); }
+        @keyframes checkoutNoticeIn {
+            from { opacity: 0; transform: translateY(8px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @media (max-width: 480px) {
+            #checkout-notice-card { padding: 28px 20px 22px; border-radius: 18px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #checkout-notice-card { animation: none; }
+        }
+
   </style>
 </head>
 <body class="font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col justify-between pt-20">
+
+    <div id="checkout-notice-overlay" hidden>
+        <section id="checkout-notice-card" role="dialog" aria-modal="true" aria-labelledby="checkout-notice-title" aria-describedby="checkout-notice-message">
+            <button id="checkout-notice-close" type="button" aria-label="Закрыть уведомление">&times;</button>
+            <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-indigo-300/25 bg-indigo-400/10 text-3xl">✉</div>
+            <h2 id="checkout-notice-title" class="mb-3 text-xl sm:text-2xl font-extrabold text-white">Важная информация</h2>
+            <p id="checkout-notice-message" class="text-sm sm:text-base leading-relaxed text-slate-200">
+                Если после оплаты вы не сможете открыть диагностику, проверьте свою электронную почту. На неё будет отправлено письмо со ссылкой для прохождения диагностики.
+            </p>
+            <button id="checkout-notice-continue" type="button" class="mt-7 w-full px-5 py-3 transition">Понятно</button>
+        </section>
+    </div>
+
 
     <!-- ВЕРХНЯЯ ПЛАШКА О БЛАГОТВОРИТЕЛЬНОСТИ -->
     <div class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white text-xs sm:text-sm font-bold py-1.5 px-4 text-center flex items-center justify-center space-x-2 shadow-md">
@@ -963,7 +1048,43 @@
             } finally { button.disabled = false; button.textContent = 'Применить'; }
         }
 
-        // Создание платежа и открытие официального виджета ЮKassa поверх сайта.
+
+        function showCheckoutNotice() {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('checkout-notice-overlay');
+                const continueButton = document.getElementById('checkout-notice-continue');
+                const closeButton = document.getElementById('checkout-notice-close');
+                const previousFocus = document.activeElement;
+                let finished = false;
+
+                const close = () => {
+                    if (finished) return;
+                    finished = true;
+                    overlay.hidden = true;
+                    document.body.style.overflow = '';
+                    continueButton.removeEventListener('click', close);
+                    closeButton.removeEventListener('click', close);
+                    document.removeEventListener('keydown', onKeydown);
+                    if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+                    resolve();
+                };
+                const onKeydown = event => {
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        close();
+                    }
+                };
+
+                overlay.hidden = false;
+                document.body.style.overflow = 'hidden';
+                continueButton.addEventListener('click', close);
+                closeButton.addEventListener('click', close);
+                document.addEventListener('keydown', onKeydown);
+                continueButton.focus();
+            });
+        }
+
+        // Создание платежа и переход на страницу оплаты ЮKassa.
         async function handleSubmit(e) {
             e.preventDefault();
 
@@ -982,7 +1103,7 @@
                 return;
             }
 
-            alert('Если после оплаты вы не сможете открыть диагностику, проверьте свою электронную почту. На неё будет отправлено письмо со ссылкой для прохождения диагностики.');
+            await showCheckoutNotice();
 
             // Фиксация цели Яндекс.Метрики: клик по кнопке оплаты
             if (typeof ym !== 'undefined') {
