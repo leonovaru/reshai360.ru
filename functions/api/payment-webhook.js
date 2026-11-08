@@ -97,6 +97,10 @@ export async function onRequestPost(context) {
     // Маркер записываем только после успешного ответа Resend: повторный webhook
     // сможет повторить отправку, если первая попытка завершилась ошибкой.
     let diagnosticLinkEmailFailed = false;
+    if (!tokenData.diagnosticLinkEmailSentAt && (!tokenData.email || !env.RESEND_API_KEY)) {
+      diagnosticLinkEmailFailed = true;
+      console.error("Diagnostic link email cannot be sent: missing customer email or RESEND_API_KEY.");
+    }
     if (!tokenData.diagnosticLinkEmailSentAt && tokenData.email && env.RESEND_API_KEY) {
       const testFiles = {
         "7": "test_7_basic.html", "7_basic": "test_7_basic.html", "7_advanced": "test_7_advanced.html",
