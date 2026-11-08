@@ -210,6 +210,43 @@
 }
 
   </style>
+
+  /* Единое оформление настоящих таблиц в заданиях, на итоговом экране и в PDF-карточках. */
+  .question-data-table {
+    display: table !important;
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    margin: 12px 0;
+    background: #ffffff;
+    color: #1e293b;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .question-data-table th,
+  .question-data-table td {
+    border: 1px solid #cbd5e1;
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+  }
+  .question-data-table th {
+    background: #eff6ff;
+    color: #1e3a8a;
+    font-weight: 700;
+  }
+  .question-data-table th:last-child,
+  .question-data-table td:last-child { text-align: center; }
+  #result-screen .question-data-table,
+  #result-pdf .question-data-table { box-sizing: border-box; }
+  @media (max-width: 640px) {
+    .question-data-table { font-size: 13px; }
+    .question-data-table th,
+    .question-data-table td { padding: 7px 8px; }
+  }
+
 </head>
 <body>
 
