@@ -197,6 +197,9 @@
     const repeatHeading = grade === "7"
       ? "Темы с неверными итоговыми ответами:"
       : "⚠️ Темы для повторения (ошибки / перебор):";
+    const studyHeading = grade === "7"
+      ? "Темы с пропущенными заданиями (недостаточно данных):"
+      : "📌 Темы для изучения (не решено):";
     return `
       <div class="pdf-first-page-content">
         <h1 class="pdf-header-title">Диагностическая карта знаний</h1>
@@ -220,7 +223,7 @@
             <h4>${repeatHeading}</h4>${repeatHtml}
           </div>
           <div class="pdf-topics-box study">
-            <h4>📌 Темы для изучения (не решено):</h4>${studyHtml}
+            <h4>${studyHeading}</h4>${studyHtml}
           </div>
         </div>
       </div>`;
