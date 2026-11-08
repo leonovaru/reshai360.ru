@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 9;
+  const VERSION = 10;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -108,7 +108,6 @@
         <div class="pdf-q">${number}. ${questionHtml}</div>
         <div class="pdf-card-footer">
           <div class="pdf-ans">
-            ${result.isSkipped ? "" : "<b>Итоговый ответ:</b> " + escapeHtml(result.finalAnswer) + "<br>"}
             <b>Введенных ответов:</b> ${result.checkCount} | <b>Ответы:</b> ${result.checkCount ? escapeHtml(result.attemptsText) : (result.isSkipped ? (question.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")}<br>
             <b>Правильный ответ:</b> ${correctHtml}
           </div>

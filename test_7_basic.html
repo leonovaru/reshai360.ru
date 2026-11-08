@@ -36,7 +36,7 @@
   <!-- Библиотеки генерации PDF из canvas (html2canvas + jsPDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="/assets/report-generator.js?v=9"></script>
+  <script src="/assets/report-generator.js?v=10"></script>
 
   <style>
     :root {
@@ -91,7 +91,7 @@
     .pdf-first-page-content { transform-origin: top left; }
     .pdf-card { box-sizing: border-box; break-inside: avoid; page-break-inside: avoid; overflow-wrap: anywhere; }
     .pdf-q, .pdf-ans { overflow-wrap: anywhere; min-width: 0; }
-    #result-screen .pdf-page { width: 100% !important; max-width: 794px; height: auto !important; min-height: auto !important; padding: 20px !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
+    #result-screen .pdf-page { width: 100% !important; max-width: 794px; height: auto !important; min-height: auto !important; padding: 20px !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px;  max-height: none !important; overflow: visible !important;}
     .pdf-header-title { font-size: 1.35em; font-weight: 800; color: #1b2a4a; margin: 0 0 12px 0; }
     .pdf-score-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; gap: 15px; flex-wrap: wrap; }
     .pdf-student-info { font-size: 0.95em; color: #1e293b; line-height: 1.5; }
@@ -136,9 +136,9 @@
     #result-screen #promo-code-result { box-sizing:border-box; width:100%; max-width:650px; }
     @media (max-width: 640px) {
       #result-screen { padding:14px 10px !important; font-size:14px !important; }
-      #result-screen .pdf-page { width:100% !important; max-width:100% !important; padding:14px !important; box-sizing:border-box !important; overflow-wrap:anywhere; }
+      #result-screen .pdf-page { width:100% !important; max-width:100% !important; padding:14px !important; box-sizing:border-box !important; overflow-wrap:anywhere;  height: auto !important; min-height: auto !important; max-height: none !important; overflow: visible !important;}
       #result-screen .pdf-topics-container { display:flex !important; flex-direction:column !important; gap:10px !important; }
-      #result-screen .pdf-topics-box { width:100% !important; min-width:0 !important; box-sizing:border-box !important; overflow-wrap:anywhere; }
+      #result-screen .pdf-topics-box { width:100% !important; min-width:0 !important; box-sizing:border-box !important; overflow-wrap:anywhere;  height: auto !important; max-height: none !important; overflow: visible !important;}
       #result-screen .pdf-topics-box ol { column-count:1 !important; padding-left:20px; }
       .result-actions { display:grid; grid-template-columns:1fr; gap:9px; }
       .result-actions > button { width:100%; }
@@ -277,7 +277,7 @@
       const request = transaction.objectStore("reports").get(token);
       request.onsuccess = () => {
         const entry = request.result;
-        if (entry && entry.version === 9 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
+        if (entry && entry.version === 10 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
         if (entry) {
           try { db.transaction("reports", "readwrite").objectStore("reports").delete(token); } catch (_) {}
         }
@@ -297,7 +297,7 @@
       let transaction;
       try { transaction = db.transaction("reports", "readwrite"); }
       catch (_) { db.close(); return resolve(false); }
-      transaction.objectStore("reports").put({ token, blob, version: 9, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+      transaction.objectStore("reports").put({ token, blob, version: 10, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
       transaction.oncomplete = () => { db.close(); resolve(true); };
       transaction.onerror = () => { db.close(); resolve(false); };
       transaction.onabort = () => { db.close(); resolve(false); };
@@ -1685,8 +1685,7 @@
           const cardHtml = `
             <div class="pdf-card ${statusClass}">
               <div class="pdf-q">${qIndex}. ${formatQuestionContent(qDef.q)}</div>
-              <div class="pdf-card-footer"><div class="pdf-ans">
-                ${isSkipped ? "" : "<b>Итоговый ответ:</b> " + escapeHtml(finalAnswer) + "<br>"}                <b>Введенных ответов:</b> ${checkCountVal} | <b>Ответы:</b> ${checkCountVal ? escapeHtml(attemptsList) : (isSkipped ? (qDef.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")}<br>
+              <div class="pdf-card-footer"><div class="pdf-ans">                <b>Введенных ответов:</b> ${checkCountVal} | <b>Ответы:</b> ${checkCountVal ? escapeHtml(attemptsList) : (isSkipped ? (qDef.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")}<br>
                 <b>Правильный ответ:</b> ${formatMathText(qDef.correctText)}
               </div><span class="badge ${badgeClass}">${badgeStatus}</span></div>
             </div>
