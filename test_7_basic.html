@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="/logo.png?v=20261105">
   <link rel="shortcut icon" type="image/png" href="/logo.png?v=20261105">
   
-  
+  <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш номер счетчика) -->
   <script type="text/javascript" >
      (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
      m[i].l=1*new Date();
@@ -68,7 +68,7 @@
     .btn-minus-toggle:hover { background: #e2e8f0; border-color: #94a3b8; }
     .btn-minus-toggle.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
     .btn-minus-toggle:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
-    .btn-check { background: var(--primary-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 0; transition: 0.2s; }
+    .btn-check { background: var(--primary-blue); color: #fff; border: none; min-height: 42px; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 0; transition: 0.2s; }
     .btn-check:hover { background: #1d4ed8; }
     .feedback { display: inline-block; margin-left: 15px; font-weight: bold; font-size: 1.05em; }
     .btn-final { display: block; width: 100%; padding: 16px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.2s; }
@@ -91,7 +91,7 @@
     .pdf-first-page-content { transform-origin: top left; }
     .pdf-card { box-sizing: border-box; break-inside: avoid; page-break-inside: avoid; overflow-wrap: anywhere; }
     .pdf-q, .pdf-ans { overflow-wrap: anywhere; min-width: 0; }
-    #result-screen .pdf-page { width: 100% !important; max-width: 794px; height: auto !important; min-height: auto !important; padding: 20px !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px;  max-height: none !important; overflow: visible !important;}
+    #result-screen .pdf-page { width: 100% !important; max-width: 794px; height: auto !important; min-height: auto !important; max-height: none !important; overflow: visible !important; padding: 20px !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
     .pdf-header-title { font-size: 1.35em; font-weight: 800; color: #1b2a4a; margin: 0 0 12px 0; }
     .pdf-score-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; gap: 15px; flex-wrap: wrap; }
     .pdf-student-info { font-size: 0.95em; color: #1e293b; line-height: 1.5; }
@@ -102,6 +102,9 @@
     .pdf-analytics-title { font-size: 1em; font-weight: 700; color: #1b365d; margin-bottom: 6px; border-bottom: 2px solid #2563eb; padding-bottom: 3px; }
     .pdf-progress-row { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
     .pdf-progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; font-weight: 700; color: #1e293b; margin-bottom: 6px; gap: 15px; }
+    #result-screen .pdf-progress-header { display:grid; grid-template-columns:minmax(0,1fr) 64px; align-items:center; gap:12px; }
+    #result-screen .pdf-progress-header > span:first-child { min-width:0; overflow-wrap:anywhere; }
+    #result-screen .pdf-progress-header > span:last-child { display:block; width:100%; min-width:64px; white-space:nowrap; text-align:center; justify-self:center; }
     .pdf-progress-track { height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
     .pdf-progress-fill { height: 100%; border-radius: 6px; }
     .bg-green { background-color: #22c55e; }
@@ -117,28 +120,34 @@
     .pdf-topics-box li { margin-bottom: 3px; break-inside: avoid; }
     .pdf-topics-box { font-size: 0.78em; line-height: 1.3; }
     .detail-section-title { margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); border-bottom: 2px solid #2563eb; padding-bottom: 5px; font-size: 1.05em; }
-    .pdf-card { background: #ffffff; border-left: 4px solid #cbd5e1; border-radius: 5px; padding: 8px 12px; margin-bottom: 7px; position: relative; font-family: Arial, sans-serif; }
+    .pdf-card { background: #ffffff; border-left: 4px solid #cbd5e1; border-radius: 5px; padding: 10px 14px; margin-bottom: 10px; position: relative; }
     .pdf-card.correct { border-left-color: #16a34a; background: #f0fdf4; }
     .pdf-card.incorrect { border-left-color: #eab308; background: #fefce8; }
     .pdf-card.skipped { border-left-color: #dc2626; background: #fef2f2; }
-    .pdf-q { font-weight: 600; margin-bottom: 3px; color: #1e293b; font-size: 0.84em; line-height: 1.28; font-family: Arial, sans-serif; }
-    .pdf-ans { font-size: 0.77em; color: #475569; line-height: 1.25; padding-right: 95px; font-family: Arial, sans-serif; }
+    .pdf-q { font-weight: 600; margin-bottom: 4px; color: #1e293b; font-size: 0.9em; line-height: 1.35; }
+    .pdf-ans { font-size: 0.85em; color: #475569; line-height: 1.4; padding-right: 95px; }
     .badge { position: absolute; bottom: 10px; right: 12px; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; white-space: nowrap; }
     .badge-ok { background: #dcfce7; color: #15803d; }
     .badge-err { background: #fef9c3; color: #a16207; }
     .badge-skip { background: #fee2e2; color: #b91c1c; }
+    /* Единая типографика и безопасная высота карточек в отчёте */
+    .pdf-card { font-family:Arial,Helvetica,sans-serif !important; box-sizing:border-box; height:auto; min-height:0; overflow:visible; break-inside:avoid; page-break-inside:avoid; }
+    .pdf-card .pdf-q, .pdf-card .pdf-ans, .pdf-card .badge { font-family:Arial, Helvetica, sans-serif !important; }
+    .pdf-card .pdf-q, .pdf-card .pdf-ans { min-width:0; white-space:normal; overflow-wrap:anywhere; word-break:normal; }
+    .pdf-card-footer { display:flex; align-items:flex-end; gap:12px; width:100%; }
+    .pdf-card .pdf-ans { flex:1 1 auto; min-width:0; padding-right:0 !important; }
+    .pdf-card .badge { position:static !important; display:inline-flex; align-items:center; flex:0 0 auto; align-self:flex-end; margin:0 0 0 auto; white-space:nowrap; }
     .page-footer { position: absolute; bottom: 10px; left: 40px; right: 40px; text-align: center; font-size: 0.72em; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; }
-      .question-title svg { display:block; max-width:100%; height:auto; }
-
+  
     .result-actions { display:flex; justify-content:center; align-items:stretch; flex-wrap:wrap; gap:10px; margin:24px auto 18px; width:100%; }
     .result-actions > button { flex:1 1 190px; min-width:0; }
     .result-action-secondary { padding:13px 16px; border:1px solid #c7d2fe; border-radius:10px; background:#eef2ff; color:#312e81; font-weight:700; cursor:pointer; }
-    #result-screen #promo-code-result { box-sizing:border-box; width:100%; max-width:650px; }
+    #result-screen #promo-code-result { box-sizing:border-box; width:100%; max-width:794px; }
     @media (max-width: 640px) {
       #result-screen { padding:14px 10px !important; font-size:14px !important; }
       #result-screen .pdf-page { width:100% !important; max-width:100% !important; padding:14px !important; box-sizing:border-box !important; overflow-wrap:anywhere;  height: auto !important; min-height: auto !important; max-height: none !important; overflow: visible !important;}
       #result-screen .pdf-topics-container { display:flex !important; flex-direction:column !important; gap:10px !important; }
-      #result-screen .pdf-topics-box { width:100% !important; min-width:0 !important; box-sizing:border-box !important; overflow-wrap:anywhere;  height: auto !important; max-height: none !important; overflow: visible !important;}
+      #result-screen .pdf-topics-box { width:100% !important; min-width:0 !important; max-height: none !important; height: auto !important; overflow: visible !important; box-sizing:border-box !important; overflow-wrap:anywhere; }
       #result-screen .pdf-topics-box ol { column-count:1 !important; padding-left:20px; }
       .result-actions { display:grid; grid-template-columns:1fr; gap:9px; }
       .result-actions > button { width:100%; }
@@ -163,8 +172,8 @@
     .question-nav-item.marked::after { content:""; position:absolute; width:8px; height:8px; border-radius:50%; background:#facc15; border:1px solid #854d0e; top:-3px; right:-3px; }
     .question-nav-item:focus-visible,.question-flag:focus-visible,.question-nav-toggle:focus-visible { outline:3px solid #fbbf24; outline-offset:2px; }
     .question-action-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:12px; }
-    .question-flag { display:inline-flex; align-items:center; justify-content:center; flex:0 0 42px; width:42px; height:42px; margin:0; padding:0; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#64748b; font-size:23px; line-height:1; cursor:pointer; }
-    .question-flag.active { background:#fef3c7; border-color:#f59e0b; color:#92400e; }
+    .question-flag { display:inline-flex; align-items:center; justify-content:center; flex:0 0 42px; width:42px; min-height:42px; height:42px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:#64748b; font-size:23px; line-height:1; cursor:pointer; }
+    .question-flag.active { background:transparent; border-color:transparent; color:#d97706; }
     .question-action-row .feedback { margin-left:0; }
     @media (max-width: 768px) { input, select, textarea { font-size:16px !important; } }
     @media (max-width:640px) {
@@ -184,7 +193,7 @@
     .question-nav-toggle { min-height:32px; }
   
   
-    .pdf-card-footer { display:flex !important; align-items:center !important; gap:10px; width:100%; }
+    .pdf-card-footer { display:flex !important; align-items:flex-end !important; gap:12px; width:100%; }
     .pdf-card .pdf-ans { flex:1 1 auto !important; min-width:0 !important; padding-right:0 !important; }
     .pdf-card .badge { position:static !important; display:inline-flex !important; align-items:center; flex:0 0 auto; align-self:flex-end; margin:0 0 0 auto !important; white-space:nowrap; }
 
@@ -259,7 +268,7 @@
       <ul>
         <li>Решайте задания самостоятельно и внимательно проверяйте свои ответы.</li>
         <li>Если сомневаетесь в задании и хотите вернуться к нему позже, поставьте флажок рядом с кнопкой «Проверить».</li>
-        <li>Вводите только числовой ответ, без единиц измерения. Для десятичной дроби используйте запятую (например, <strong>2,5</strong>).</li>
+        <li>Если в ответе получается десятичная дробь, используйте запятую (например, <strong>2,5</strong>).</li>
         <li>Чтобы ввести отрицательное число, нажмите на кнопку <strong>«±»</strong> рядом с полем ввода.</li>
                 <li>Ответы и прогресс автоматически сохраняются по вашей ссылке. Можно продолжить диагностику, открыв эту же ссылку в другом браузере или на другом устройстве.</li>
         <li><strong>Важно:</strong> ссылка на диагностику действует 7 дней с момента оплаты. Завершите прохождение до истечения этого срока.</li>
@@ -1428,6 +1437,7 @@
     }
 ];
 
+
   function formatInteractiveQuestionContent(value, type) {
     const source = String(value ?? "");
     const plain = source
@@ -1443,10 +1453,6 @@
       ? (expressionOnly ? "Вычислите: " : "Найдите ответ: ")
       : "";
     return instruction + formatMathText(source);
-  }
-
-  function formatQuestionContent(value) {
-    return formatMathText(value);
   }
 
   async function renderQuiz() {
@@ -1479,7 +1485,7 @@
             html += `</div>`;
           } else {
             html += `<div class="input-row">`;
-            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Число" onfocus="moveAnswerCaretToEnd(this)" oninput="sanitizeAnswerInput(this, /[^0-9,.\\-\\/]/g); updateMinusBtnState('${qId}'); saveQuizProgress();">`;
+            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Введите ответ" onfocus="moveAnswerCaretToEnd(this)" oninput="sanitizeAnswerInput(this, /[^0-9,.\\-\\+\\*\\/]/g); updateMinusBtnState('${qId}'); saveQuizProgress();">`;
             html += `<button type="button" class="btn-minus-toggle" id="btn_toggle_${qId}" onpointerdown="event.preventDefault(); document.getElementById('${qId}').focus({preventScroll:true})" onclick="toggleMinus('${qId}')" title="Изменить знак (+/−)">±</button>`;
             html += `</div>`;
           }
@@ -1524,7 +1530,7 @@
       const inputEl = document.getElementById(qId);
       userAns = inputEl ? inputEl.value.trim().replace(/\s+/g, "").replace(/,/g, ".") : "";
       formattedUserAns = (userAns !== "") ? userAns.replace(/\./g, ",") : "Не введено";
-      qDef.correctText = String(qDef.a).replace(/\./g, ",");
+      qDef.correctText = qDef.a;
     }
 
     if (!silent && userAns !== "") {
@@ -1561,7 +1567,7 @@
     const userNumeric = parseNumericAnswer(userAns);
     const expectedNumeric = parseNumericAnswer(expectedAnswer);
     const isRight = (qDef.type === "radio")
-      ? (parseInt(userAns, 10) === Number(qDef.a))
+      ? (parseInt(userAns, 10) === qDef.a)
       : (userAns !== "" && Number.isFinite(userNumeric) && Number.isFinite(expectedNumeric)
           ? Math.abs(userNumeric - expectedNumeric) < 1e-9
           : userAns === expectedAnswer);
@@ -1626,6 +1632,38 @@
       }
     }, 1000);
   }
+  async function retryReportEmail() {
+    const status = document.getElementById('report-email-status');
+    if (!generatedPdfBlob || !currentToken || !status) return;
+    status.textContent = 'Повторно отправляем письмо…';
+    try {
+      const formData = new FormData();
+      formData.append('token', currentToken);
+      formData.append('forceEmail', 'true');
+      formData.append('email', studentData.email || '');
+      formData.append('name', studentData.fullName || 'Ученик');
+      formData.append('score', String(window.__lastReportScore || 0));
+      formData.append('total', String(window.__lastReportTotal || 1));
+      formData.append('document', generatedPdfBlob, `Отчет_${studentData.fullName || 'Ученик'}.pdf`);
+      const snapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {} };
+      questionNavigation.forEach(item => {
+        const answer = getQuestionAnswer(item.id, item.qDef);
+        if (answer) snapshot.answers[item.id] = answer;
+        snapshot.stats[item.id] = { checkCount: item.qDef.checkCount || 0, attemptsHistory: item.qDef.attemptsHistory || [] };
+      });
+      formData.append('answersSnapshot', JSON.stringify(snapshot));
+      const response = await fetch('/api/send-report', { method: 'POST', body: formData });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) throw new Error(result.message || 'Не удалось отправить письмо.');
+      status.textContent = (result.emailSent ? 'Почтовый сервис принял письмо с PDF. Проверьте входящие, «Спам» и «Промоакции».' : (result.emailError ? 'Не удалось отправить PDF: ' + result.emailError : 'Почтовый сервис не подтвердил отправку PDF.')) + (result.emailId ? ' Идентификатор отправки: ' + result.emailId + '.' : '');
+      if (result.emailSent) showReportEmailSentPopup(studentData.email);
+      status.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Отправить ещё раз</button>';
+    } catch (error) {
+      status.textContent = error.message || 'Ошибка отправки.';
+      status.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Повторить отправку</button>';
+    }
+  }
+
   function copyPromoCode() {
     const code = document.getElementById("promo-code-result-value")?.textContent || "";
     if (!code || !navigator.clipboard || !navigator.clipboard.writeText) return;
@@ -1770,6 +1808,15 @@
 
         theme.questions.forEach((qDef, qIdx) => {
           checkSingle(bIdx, tIdx, qIdx, true);
+          if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано" && !(qDef.checkCount > 0)) {
+            qDef.checkCount = 1;
+          }
+          if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано") {
+            if (!qDef.attemptsHistory || qDef.attemptsHistory.length === 0) {
+              qDef.attemptsHistory = [qDef.userText];
+            }
+          }
+
           const isSkipped = (qDef.userText === "Не введено" || qDef.userText === "Не выбрано");
           const distinctRadioAnswers = new Set([...(qDef.attemptsHistory || []), qDef.userText]
             .filter(answer => answer && answer !== "Не выбрано")
@@ -1809,8 +1856,9 @@
 
           const cardHtml = `
             <div class="pdf-card ${statusClass}">
-              <div class="pdf-q">${qIndex}. ${formatQuestionContent(qDef.q)}</div>
-              <div class="pdf-card-footer"><div class="pdf-ans">                <b>Введенных ответов:</b> ${checkCountVal} | <b>Ответы:</b> ${checkCountVal ? escapeHtml(attemptsList) : (isSkipped ? (qDef.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")}<br>
+              <div class="pdf-q">${qIndex}. ${formatMathText(qDef.q)}</div>
+              <div class="pdf-card-footer"><div class="pdf-ans">
+                <b>Введенных ответов:</b> ${checkCountVal} | <b>Ответы:</b> ${checkCountVal ? escapeHtml(attemptsList) : (isSkipped ? (qDef.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")}<br>
                 <b>Правильный ответ:</b> ${formatMathText(qDef.correctText)}
               </div><span class="badge ${badgeClass}">${badgeStatus}</span></div>
             </div>
@@ -2039,6 +2087,8 @@
         });
         formData.append('answersSnapshot', JSON.stringify(answersSnapshot));
 
+        window.__lastReportScore = totalCorrect;
+        window.__lastReportTotal = totalQuestions;
                 let reportResponse = null;
         let reportResult = {};
         try {
