@@ -209,6 +209,43 @@
 }
 
   </style>
+
+  /* Единое оформление настоящих таблиц в заданиях, на итоговом экране и в PDF-карточках. */
+  .question-data-table {
+    display: table !important;
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    margin: 12px 0;
+    background: #ffffff;
+    color: #1e293b;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .question-data-table th,
+  .question-data-table td {
+    border: 1px solid #cbd5e1;
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+  }
+  .question-data-table th {
+    background: #eff6ff;
+    color: #1e3a8a;
+    font-weight: 700;
+  }
+  .question-data-table th:last-child,
+  .question-data-table td:last-child { text-align: center; }
+  #result-screen .question-data-table,
+  #result-pdf .question-data-table { box-sizing: border-box; }
+  @media (max-width: 640px) {
+    .question-data-table { font-size: 13px; }
+    .question-data-table th,
+    .question-data-table td { padding: 7px 8px; }
+  }
+
 </head>
 <body>
 
@@ -1476,7 +1513,7 @@
             {
               "type": "text",
               "a": "2",
-              "q": "По таблице частот: значение 1 встречается 1 раз, значение 2 — 2 раза, значение 3 — 1 раз. Найдите среднее арифметическое всех значений."
+              "q": "По таблице частот найдите среднее арифметическое всех значений.<table class='question-data-table'><tr><th>Значение</th><th>Частота</th></tr><tr><td>1</td><td>1</td></tr><tr><td>2</td><td>2</td></tr><tr><td>3</td><td>1</td></tr></table>"
             }
           ]
         },
