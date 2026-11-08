@@ -1,5 +1,5 @@
 import { getOrderExpirationTtl } from "../_lib/telegram-payment.js";
-import { syncOrderToGoogleSheets } from "../_lib/google-sheets.js";
+import { scheduleOrderSync } from "../_lib/google-sheets.js";
 export async function onRequestPost(context) {
   const { request, env } = context;
   let createdToken = null;
@@ -14,7 +14,7 @@ export async function onRequestPost(context) {
         if (pendingRaw) {
           const pendingOrder = JSON.parse(pendingRaw);
           pendingOrder.paymentCreationFailed = true;
-          await syncOrderToGoogleSheets({ env, token: createdToken, order: pendingOrder, event: "payment_creation_failed" });
+          scheduleOrderSync(context, { env, token: createdToken, order: pendingOrder, event: "payment_creation_failed" });
         }
         await env.TEST_TOKENS.delete(createdToken);
       } catch (error) {
@@ -151,7 +151,7 @@ export async function onRequestPost(context) {
       displayAmount: discountedDisplayPrice
     };
     await env.TEST_TOKENS.put(token, JSON.stringify(orderData), { expirationTtl: getOrderExpirationTtl({ createdAt: orderCreatedAt }) });
-    await syncOrderToGoogleSheets({ env, token, order: orderData, event: "order_created" });
+    scheduleOrderSync(context, { env, token, order: orderData, event: "order_created" });
     // Отдельная запись подтверждения согласия нужна для доказуемости факта и версии документов.
     await env.TEST_TOKENS.put("consent:" + token, JSON.stringify({
       ...consentRecord,
@@ -217,7 +217,7 @@ export async function onRequestPost(context) {
       const latestTokenData = JSON.parse(latestTokenRaw);
       latestTokenData.paymentId = payment.id;
       await env.TEST_TOKENS.put(createdToken, JSON.stringify(latestTokenData), { expirationTtl: getOrderExpirationTtl(latestTokenData) });
-      await syncOrderToGoogleSheets({ env, token: createdToken, order: latestTokenData, event: "payment_created" });
+      scheduleOrderSync(context, { env, token: createdToken, order: latestTokenData, event: "payment_created" });
     }
 
     return new Response(JSON.stringify({
