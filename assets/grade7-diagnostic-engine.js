@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.7.1";
+  const VERSION = "7.8.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -78,7 +78,7 @@
     const assessed = independent.filter(item => item.outcome === "CORRECT" || item.outcome === "INCORRECT");
     const correct = assessed.filter(item => item.outcome === "CORRECT").length;
     const incorrect = assessed.length - correct;
-    const evidenceLevel = assessed.length === 0 ? "E0" : assessed.length === 1 ? "E1" : assessed.length === 2 ? "E2" : "E3";
+    const evidenceLevel = assessed.length === 0 ? "E0" : assessed.length === 1 ? "E1" : "E2";
     let status = "Недостаточно данных";
     let reason = independent.some(item => item.outcome === "CONTRADICTORY")
       ? "В составном задании получены разные результаты. Для оценки навыка нужна отдельная проверка."
@@ -98,23 +98,18 @@
         reason = "Два задания выполнены верно; устойчивость в других форматах и контекстах не подтверждена.";
       } else if (incorrect === 2) {
         status = "Требует развития";
-        reason = "Два независимых наблюдения указывают на повторяющееся затруднение; его причина не установлена.";
+        reason = "Два повторных наблюдения указывают на затруднение в этом типе задания; его причина не установлена.";
       } else {
         status = "Формируется";
         reason = "Результаты различаются. Нужна дополнительная проверка в другом формате или контексте.";
       }
     } else if (assessed.length >= 3) {
-      const evidenceTypeCount = new Set(observations
-        .filter(item => item.outcome === "CORRECT" || item.outcome === "INCORRECT")
-        .map(item => item.evidenceType)).size;
       if (correct === assessed.length) {
-        status = evidenceTypeCount >= 2 ? "Сформировано" : "В основном сформировано";
-        reason = evidenceTypeCount >= 2
-          ? "Все независимые задания выполнены верно в разных типах свидетельств. Вывод ограничен представленными заданиями."
-          : "Все независимые задания выполнены верно, но разнообразие типов свидетельств ограничено.";
+        status = "В основном сформировано";
+        reason = "Все повторные задания этого типа выполнены верно. Устойчивость навыка в других контекстах и форматах отдельно не проверена.";
       } else if (incorrect >= 2 && incorrect > correct) {
         status = "Требует развития";
-        reason = "Большинство независимых наблюдений содержит ошибки. Причину затруднения нужно проверять отдельно.";
+        reason = "Большинство повторных наблюдений содержит ошибки. Причину затруднения нужно проверять отдельно.";
       } else {
         status = "Формируется";
         reason = "Есть как успешные, так и ошибочные выполнения; результат пока нестабилен.";
@@ -275,7 +270,7 @@
     const repeatedHtml = repeatedSkills.length
       ? "<ul style='margin:8px 0 0;padding-left:20px;'>" + repeatedSkills.map(skill =>
           "<li style='margin:4px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
-          (skill.evidenceCount > 0 ? " (" + skill.correctCount + " из " + skill.evidenceCount + " независимых наблюдений верно). " : ". ") +
+          (skill.evidenceCount > 0 ? " (" + skill.correctCount + " из " + skill.evidenceCount + " повторных наблюдений верно). " : ". ") +
           escapeHtml(skill.reason) + "</li>"
         ).join("") + "</ul>"
       : "<p style='margin:8px 0 0;color:#475569;'>В текущем наборе пока недостаточно повторных независимых наблюдений для устойчивых выводов по отдельным навыкам.</p>";
