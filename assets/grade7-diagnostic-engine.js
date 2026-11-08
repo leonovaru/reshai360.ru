@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.6.0";
+  const VERSION = "7.7.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -32,7 +32,7 @@
     "N01","N02","D03","F01","F02","DF01","P01","Z01","Z05","A01",
     "G01","G02","G03","G06","G07","G08","G09","G16","G18","G19"
   ]);
-  const TRANSFER_TOPICS = new Set(["T10","S05"]);
+  const TRANSFER_TOPICS = new Set(["T10"]);
   // Разные действия внутри одной темы не объединяем в один навык.
   const SPLIT_QUESTION_TOPICS = new Set([
     "N05","DF05","Z08","F03","DF07","P07","P08","Z09","A07","T06","S01","S02","S05"
