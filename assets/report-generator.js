@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 8;
+  const VERSION = 9;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -264,11 +264,13 @@
           });
           clonedPage.querySelectorAll("mjx-container").forEach(node => {
             node.style.display = "inline-block";
+            node.style.fontSize = "100%";
             node.style.maxWidth = "100%";
             node.style.overflow = "visible";
             node.style.verticalAlign = "middle";
           });
           clonedPage.querySelectorAll("mjx-container svg").forEach(svg => {
+            svg.style.fontSize = "100%";
             svg.style.maxWidth = "100%";
             svg.style.height = "auto";
             svg.style.overflow = "visible";
