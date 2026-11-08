@@ -36,7 +36,7 @@
   <!-- Библиотеки генерации PDF из canvas (html2canvas + jsPDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="/assets/report-generator.js?v=5"></script>
+  <script src="/assets/report-generator.js?v=6"></script>
 
   <style>
     :root {
@@ -46,6 +46,7 @@
       --card-bg: #ffffff;
     }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: var(--bg-light); color: #333; margin: 0; padding: 0; }
+    #main-container { visibility: hidden; }
     .container { max-width: 900px; margin: 40px auto; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     .top-instruction { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 15px 20px; margin-bottom: 25px; color: #334155; font-size: 0.95em; line-height: 1.6; }
     .top-instruction-title { font-weight: 700; color: var(--primary-dark); margin-bottom: 4px; }
@@ -275,7 +276,7 @@
       const request = transaction.objectStore("reports").get(token);
       request.onsuccess = () => {
         const entry = request.result;
-        if (entry && entry.version === 5 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
+        if (entry && entry.version === 6 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
         if (entry) {
           try { db.transaction("reports", "readwrite").objectStore("reports").delete(token); } catch (_) {}
         }
@@ -295,7 +296,7 @@
       let transaction;
       try { transaction = db.transaction("reports", "readwrite"); }
       catch (_) { db.close(); return resolve(false); }
-      transaction.objectStore("reports").put({ token, blob, version: 5, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+      transaction.objectStore("reports").put({ token, blob, version: 6, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
       transaction.oncomplete = () => { db.close(); resolve(true); };
       transaction.onerror = () => { db.close(); resolve(false); };
       transaction.onabort = () => { db.close(); resolve(false); };
@@ -363,6 +364,7 @@
       try { localStorage.setItem(progressStorageKey, JSON.stringify({ version: 1, ...completedSnapshot, savedAt: Date.now() })); } catch (_) {}
     }
     await renderQuiz();
+    if (!wasCompleted) document.getElementById("main-container").style.visibility = "visible";
     // После восстановления локального черновика сразу отправляем его на сервер,
     // чтобы уже введённые ответы стали доступны на другом устройстве.
     if (!wasCompleted) {
@@ -1651,9 +1653,9 @@
           const distinctRadioAnswers = new Set([...(qDef.attemptsHistory || []), qDef.userText]
             .filter(answer => answer && answer !== "Не выбрано")
             .map(answer => String(answer)));
-          const isGuessedByBruteForce = (qDef.type === 'radio' && distinctRadioAnswers.size > 1);
+          const isGuessedByBruteForce = (qDef.type === 'radio' && qDef.options.length === 4 && distinctRadioAnswers.size === 4);
 
-          if (qDef.isCorrect && !isGuessedByBruteForce) themeCorrect++;
+          if (qDef.isCorrect) themeCorrect++;
 
           let statusClass = "incorrect";
           let badgeStatus = "Ошибка ⚠️";
