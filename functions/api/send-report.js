@@ -147,13 +147,18 @@ export async function onRequestPost(context) {
 
     const scoreNumber = Number(score);
     const totalNumber = Number(total);
+    const evaluatedRaw = formData.get("evaluated");
+    const evaluatedNumber = evaluatedRaw == null || evaluatedRaw === "" ? totalNumber : Number(evaluatedRaw);
 
     if (
       !Number.isFinite(scoreNumber) ||
       !Number.isFinite(totalNumber) ||
+      !Number.isFinite(evaluatedNumber) ||
       totalNumber <= 0 ||
+      evaluatedNumber < 0 ||
+      evaluatedNumber > totalNumber ||
       scoreNumber < 0 ||
-      scoreNumber > totalNumber
+      scoreNumber > evaluatedNumber
     ) {
       return Response.json(
         { success: false, message: "Некорректный результат теста" },
@@ -161,7 +166,10 @@ export async function onRequestPost(context) {
       );
     }
 
-    const percent = Math.round((scoreNumber / totalNumber) * 100);
+    const percent = evaluatedNumber > 0 ? Math.round((scoreNumber / evaluatedNumber) * 100) : null;
+    const resultSummary = evaluatedNumber > 0
+      ? scoreNumber + " из " + evaluatedNumber + " оценённых ответов (" + percent + "%)"
+      : "нет оценённых ответов";
     const safeName = String(name || "Ученик").replace(/[\\/:*?"<>|]/g, "_");
     const safeNameHtml = String(name || "ученик").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/\x27/g, "&#39;");
 
@@ -277,7 +285,7 @@ export async function onRequestPost(context) {
           'Имя: ' + (name || 'Не указано'),
           'Email: ' + (email || 'Не указан'),
           'Открыть диагностику или итоговые результаты: ' + testUrl,
-          'Результат: ' + scoreNumber + ' из ' + totalNumber + ' (' + percent + '%)',
+          'Результат: ' + resultSummary + '; всего заданий: ' + totalNumber,
           'Новый промокод: ' + (promoCode || 'не выдан'),
           'Скидка: ' + (issuedPromo ? Number(issuedPromo.discountPercent || 10) + '%' : '—'),
           'Действует до: ' + expiresText
@@ -422,7 +430,8 @@ export async function onRequestPost(context) {
                         <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#475569;">Спасибо, что прошли диагностику на платформе Решай360. Ваш персональный PDF-отчёт с результатами и рекомендациями прикреплён к этому письму.</p>
                         <div style="padding:16px 18px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;">
                           <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Ваш результат</div>
-                          <div style="margin-top:6px;font-size:24px;font-weight:800;color:#312e81;">${scoreNumber} из ${totalNumber} · ${percent}%</div>
+                          <div style="margin-top:6px;font-size:24px;font-weight:800;color:#312e81;">${resultSummary}</div>
+                          <div style="margin-top:4px;font-size:12px;color:#64748b;">Всего заданий: ${totalNumber}; без ответа: ${totalNumber - evaluatedNumber}</div>
                         </div>
                         ${promoCode ? `
                         <div style="margin-top:18px;padding:20px;border-radius:16px;background:#eef2ff;border:1px solid #c7d2fe;">
