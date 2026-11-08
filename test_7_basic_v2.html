@@ -993,6 +993,22 @@
     if (!isCompletedView) safeTypeset(quizContainer);
   }
 
+  function isExactReducedFractionAnswer(value, expected) {
+    const parseReduced = input => {
+      const match = String(input == null ? "" : input).trim().replace(/\s+/g, "").match(/^([+-]?\d+)\/(\d+)$/);
+      if (!match) return null;
+      const numerator = Number(match[1]);
+      const denominator = Number(match[2]);
+      if (!Number.isSafeInteger(numerator) || !Number.isSafeInteger(denominator) || denominator <= 0) return null;
+      let a = Math.abs(numerator), b = denominator;
+      while (b) { const remainder = a % b; a = b; b = remainder; }
+      return a === 1 ? [numerator, denominator] : null;
+    };
+    const actual = parseReduced(value);
+    const target = parseReduced(expected);
+    return !!actual && !!target && actual[0] === target[0] && actual[1] === target[1];
+  }
+
   function checkSingle(bIdx, tIdx, qIdx, silent = false) {
     const qDef = quizData[bIdx].themes[tIdx].questions[qIdx];
     const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
@@ -1046,11 +1062,13 @@
     };
     const userNumeric = parseNumericAnswer(userAns);
     const expectedNumeric = parseNumericAnswer(expectedAnswer);
-    qDef.isCorrect = qDef.type === "radio"
-      ? parseInt(userAns, 10) === qDef.a
-      : (Number.isFinite(userNumeric) && Number.isFinite(expectedNumeric)
-          ? Math.abs(userNumeric - expectedNumeric) < 1e-9
-          : userAns === expectedAnswer);
+    qDef.isCorrect = qDef.answerMode === "exact_reduced_fraction"
+      ? isExactReducedFractionAnswer(userAns, expectedAnswer)
+      : (qDef.type === "radio"
+          ? parseInt(userAns, 10) === qDef.a
+          : (Number.isFinite(userNumeric) && Number.isFinite(expectedNumeric)
+              ? Math.abs(userNumeric - expectedNumeric) < 1e-9
+              : userAns === expectedAnswer));
   }
 
   function downloadPDF() {
