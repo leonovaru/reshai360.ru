@@ -61,18 +61,25 @@
             try {
                 let result = null;
                 let lastStatus = 0;
-                // Сначала сервер проверяет статус напрямую в ЮKassa; повторяем коротко,
-                // если платёжный статус ещё обновляется.
-                for (let attempt = 0; attempt < 20; attempt++) {
-                    const response = await fetch('/api/verify-token', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ token })
-                    });
-                    lastStatus = response.status;
-                    result = await response.json();
-                    if (result.valid || lastStatus !== 402) break;
-                    if (attempt < 19) await new Promise(resolve => setTimeout(resolve, 500));
+                let lastCheckError = null;
+                // Банковские приложения могут возвращать пользователя с задержкой.
+                // Повторяем проверку дольше и переживаем временные сетевые ошибки.
+                for (let attempt = 0; attempt < 60; attempt++) {
+                    try {
+                        const response = await fetch('/api/verify-token', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            cache: 'no-store',
+                            body: JSON.stringify({ token })
+                        });
+                        lastStatus = response.status;
+                        result = await response.json();
+                        lastCheckError = null;
+                        if (result.valid || (lastStatus !== 402 && lastStatus < 500)) break;
+                    } catch (checkError) {
+                        lastCheckError = checkError;
+                    }
+                    if (attempt < 59) await new Promise(resolve => setTimeout(resolve, Math.min(2500, 1000 + attempt * 50)));
                 }
 
                 if (result.valid && result.data) {
@@ -117,8 +124,9 @@
             } catch (err) {
                 console.error(err);
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('status-title').innerText = "Ошибка соединения";
-                document.getElementById('status-desc').innerText = "Не удалось проверить статус оплаты.";
+                document.getElementById('status-title').innerText = "Не удалось проверить статус автоматически";
+                document.getElementById('status-desc').innerText = "Это не означает, что платёж не прошёл. Не оплачивайте повторно. Проверьте статус ещё раз или обратитесь в поддержку.";
+                document.getElementById('retry-payment-check').classList.remove('hidden');
             }
         });
     </script>
