@@ -285,7 +285,7 @@
       const request = transaction.objectStore("reports").get(token);
       request.onsuccess = () => {
         const entry = request.result;
-        if (entry && entry.version === 2 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
+        if (entry && entry.version === 5 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
         if (entry) {
           try { db.transaction("reports", "readwrite").objectStore("reports").delete(token); } catch (_) {}
         }
@@ -305,7 +305,7 @@
       let transaction;
       try { transaction = db.transaction("reports", "readwrite"); }
       catch (_) { db.close(); return resolve(false); }
-      transaction.objectStore("reports").put({ token, blob, version: 2, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+      transaction.objectStore("reports").put({ token, blob, version: 5, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
       transaction.oncomplete = () => { db.close(); resolve(true); };
       transaction.onerror = () => { db.close(); resolve(false); };
       transaction.onabort = () => { db.close(); resolve(false); };
@@ -389,6 +389,27 @@
 
   function escapeHtml(text) {
     return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function sanitizeAnswerInput(input, invalidPattern) {
+    if (!input) return;
+    const original = input.value;
+    const caret = input.selectionStart == null ? original.length : input.selectionStart;
+    const clean = original.replace(invalidPattern, "");
+    if (clean === original) return;
+    const cleanCaret = original.slice(0, caret).replace(invalidPattern, "").length;
+    input.value = clean;
+    try { input.setSelectionRange(cleanCaret, cleanCaret); } catch (_) {}
+  }
+
+  function moveAnswerCaretToEnd(input) {
+    if (!input) return;
+    const placeCaret = () => {
+      if (document.activeElement !== input) return;
+      const end = input.value.length;
+      try { input.setSelectionRange(end, end); } catch (_) {}
+    };
+    requestAnimationFrame(placeCaret);
   }
 
   function toggleMinus(qId) {
@@ -1130,7 +1151,7 @@
             html += `</div>`;
           } else {
             html += `<div class="input-row">`;
-            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Введите ответ" oninput="this.value = this.value.replace(/[^0-9,.\\-\\+\\*\\/]/g, ''); updateMinusBtnState('${qId}'); saveQuizProgress();">`;
+            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Введите ответ" onfocus="moveAnswerCaretToEnd(this)" oninput="sanitizeAnswerInput(this, /[^0-9,.\\-\\+\\*\\/]/g); updateMinusBtnState('${qId}'); saveQuizProgress();">`;
             html += `<button type="button" class="btn-minus-toggle" id="btn_toggle_${qId}" onpointerdown="event.preventDefault(); document.getElementById('${qId}').focus({preventScroll:true})" onclick="toggleMinus('${qId}')" title="Изменить знак (+/−)">±</button>`;
             html += `</div>`;
           }
@@ -1458,8 +1479,8 @@
             <div class="pdf-card ${statusClass}">
               <div class="pdf-q">${qIndex}. ${formatMathText(qDef.q)}</div>
               <div class="pdf-card-footer"><div class="pdf-ans">
-                <b>Итоговый ответ:</b> ${escapeHtml(finalAnswer)}<br>
-                <b>Введенных ответов:</b> ${checkCountVal}${checkCountVal ? " | <b>Ответы:</b> " + escapeHtml(attemptsList) : ""}<br>
+                ${checkCountVal ? "<b>Итоговый ответ:</b> " + escapeHtml(finalAnswer) + "<br>" : ""}
+                <b>Введенных ответов:</b> ${checkCountVal} | <b>Ответы:</b> ${checkCountVal ? escapeHtml(attemptsList) : "Не введено"}<br>
                 <b>Правильный ответ:</b> ${formatMathText(qDef.correctText)}
               </div><span class="badge ${badgeClass}">${badgeStatus}</span></div>
             </div>
