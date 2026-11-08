@@ -108,7 +108,7 @@
         <div class="pdf-q">${number}. ${questionHtml}</div>
         <div class="pdf-card-footer">
           <div class="pdf-ans">
-            <b>Введенных ответов:</b> ${result.checkCount} | <b>Ответы:</b> ${result.checkCount ? escapeHtml(result.attemptsText) : (result.isSkipped ? (question.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")}<br>
+            <b>Ответ участника:</b> ${escapeHtml(result.finalAnswer)}<br>
             <b>Правильный ответ:</b> ${correctHtml}
           </div>
           <span class="badge ${result.badgeClass}">${result.badgeText}</span>
@@ -127,8 +127,12 @@
   }
 
   function makeFirstPage(model) {
-    const { grade, levelLabel, studentName, dateText, score, total, blockRows, repeatTopics, studyTopics, diagnosticProfile } = model;
-    const percent = total ? Math.round(score / total * 100) : 0;
+    const { grade, levelLabel, studentName, dateText, score, total, evaluated, unanswered, blockRows, repeatTopics, studyTopics, diagnosticProfile } = model;
+    const percent = evaluated ? Math.round(score / evaluated * 100) : 0;
+    const scoreLabel = grade === "7" ? "Доля правильных ответов среди оценённых" : "Итоговый результат";
+    const scoreText = grade === "7"
+      ? score + " из " + evaluated + " (" + percent + "%)"
+      : score + " из " + total + " (" + percent + "%)";
     const topicLimit = 12;
     const repeatVisible = repeatTopics.slice(0, topicLimit);
     const studyVisible = studyTopics.slice(0, topicLimit);
@@ -172,8 +176,9 @@
             Дата прохождения: ${escapeHtml(dateText)}
           </div>
           <div class="pdf-score-right">
-            <div class="pdf-score-label">Итоговый результат</div>
-            <div class="pdf-score-main">${score} из ${total} (${percent}%)</div>
+            <div class="pdf-score-label">${scoreLabel}</div>
+            <div class="pdf-score-main">${scoreText}</div>
+            ${grade === "7" ? "<div class='pdf-score-label'>Всего заданий: " + total + "; без ответа: " + unanswered + "</div>" : ""}
           </div>
         </div>
         <div class="pdf-analytics-title">${blockHeading}</div>
@@ -322,6 +327,7 @@
     const dateText = new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
     let score = 0;
     let total = 0;
+    let evaluated = 0;
     let blockRows = "";
     const repeatTopics = new Set();
     const studyTopics = new Set();
@@ -331,6 +337,7 @@
     quizData.forEach((block, blockIndex) => {
       let blockCorrect = 0;
       let blockTotal = 0;
+      let blockEvaluated = 0;
       (block.themes || []).forEach((theme, themeIndex) => {
         const themeName = String(theme.theme || "").replace(/^\d+\.\s*/, "");
         (theme.questions || []).forEach((question, questionIndex) => {
@@ -339,18 +346,21 @@
           const result = evaluateQuestion(question, id, answersSnapshot, statsSnapshot, formatMath);
           if (result.isCorrect) blockCorrect++;
           blockTotal++;
+          if (!result.isSkipped) blockEvaluated++;
           if (result.isSkipped) studyTopics.add(themeName);
           else if (!result.isCorrect || result.guessedByBruteForce) repeatTopics.add(themeName);
           cards.push(makeQuestionCard(question, questionNumber, result, formatMath));
         });
       });
-      const blockPercent = blockTotal ? Math.round(blockCorrect / blockTotal * 100) : 0;
-      const fillClass = blockPercent < 50 ? "bg-red" : (blockPercent < 70 ? "bg-yellow" : "bg-green");
+      const blockPercent = blockEvaluated ? Math.round(blockCorrect / blockEvaluated * 100) : null;
+      const fillClass = blockPercent === null ? "" : (blockPercent < 50 ? "bg-red" : (blockPercent < 70 ? "bg-yellow" : "bg-green"));
+      const blockValue = blockPercent === null ? "нет данных" : blockCorrect + " / " + blockEvaluated + " (" + blockPercent + "%)";
       blockRows += '<div class="pdf-progress-row"><div class="pdf-progress-header"><span>' +
-        escapeHtml(block.block) + '</span><span>' + blockPercent + '%</span></div><div class="pdf-progress-track">' +
-        '<div class="pdf-progress-fill ' + fillClass + '" style="width:' + blockPercent + '%"></div></div></div>';
+        escapeHtml(block.block) + '</span><span>' + blockValue + '</span></div><div class="pdf-progress-track">' +
+        '<div class="pdf-progress-fill ' + fillClass + '" style="width:' + (blockPercent === null ? 0 : blockPercent) + '%"></div></div></div>';
       score += blockCorrect;
       total += blockTotal;
+      evaluated += blockEvaluated;
     });
 
     const model = {
@@ -361,6 +371,8 @@
       dateText,
       score,
       total,
+      evaluated,
+      unanswered: total - evaluated,
       blockRows,
       repeatTopics: Array.from(repeatTopics),
       studyTopics: Array.from(studyTopics),
