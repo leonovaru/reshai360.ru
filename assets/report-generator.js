@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 12;
+  const VERSION = 13;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -131,14 +131,16 @@
     const percent = evaluated ? Math.round(score / evaluated * 100) : 0;
     const scoreLabel = grade === "7" ? "Доля правильных ответов среди оценённых" : "Итоговый результат";
     const scoreText = grade === "7"
-      ? score + " из " + evaluated + " (" + percent + "%)"
+      ? (evaluated > 0 ? score + " из " + evaluated + " (" + percent + "%)" : "Нет оценённых ответов")
       : score + " из " + total + " (" + percent + "%)";
     const topicLimit = 12;
     const repeatVisible = repeatTopics.slice(0, topicLimit);
     const studyVisible = studyTopics.slice(0, topicLimit);
     const repeatHtml = repeatTopics.length
       ? "<ol>" + repeatVisible.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>" + (repeatTopics.length > topicLimit ? '<p style="margin:4px 0 0;">И ещё ' + (repeatTopics.length - topicLimit) + ' тем — см. задания в подробной части отчёта.</p>' : "")
-      : '<p style="margin:0;">Ошибок в решённых заданиях нет.</p>';
+      : (grade === "7" && diagnosticProfile && diagnosticProfile.evaluated === 0
+          ? '<p style="margin:0;">Нет оценённых ответов.</p>'
+          : '<p style="margin:0;">Неверных ответов среди оценённых заданий нет.</p>');
     const studyHtml = studyTopics.length
       ? "<ol>" + studyVisible.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>" + (studyTopics.length > topicLimit ? '<p style="margin:4px 0 0;">И ещё ' + (studyTopics.length - topicLimit) + ' тем — см. задания в подробной части отчёта.</p>' : "")
       : '<p style="margin:0;">Пропущенных заданий нет.</p>';
@@ -154,7 +156,7 @@
     const diagnosticSummaryHtml = grade === "7" && diagnosticProfile
       ? "<div class='pdf-analytics-title'>Диагностическая интерпретация</div>" +
         "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Единичное выполнение описывает ответ на конкретное задание, но не подтверждает устойчивое владение навыком. Процент правильных ответов не является уровнем сформированности.</p>" +
-        "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Единичные наблюдения: <b>" + (evidence.E1 || 0) +
+        "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Диагностические единицы с единичным наблюдением: <b>" + (evidence.E1 || 0) +
         "</b>; повторные наблюдения: <b>" + ((evidence.E2 || 0) + (evidence.E3 || 0)) +
         "</b>; без оценённых наблюдений: <b>" + (evidence.E0 || 0) + "</b>.</p>" +
         "<table style='width:100%;border-collapse:collapse;font-size:.72em;margin-bottom:8px;'><thead><tr><th style='text-align:left;padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Компетенция</th><th style='padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Данные</th><th style='padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Повтор.</th></tr></thead><tbody>" +
