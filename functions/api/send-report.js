@@ -180,7 +180,11 @@ export async function onRequestPost(context) {
     let feedbackPrefillToken = null;
     {
         tokenData.isCompleted = true;
-        if (answersSnapshot) tokenData.answersSnapshot = answersSnapshot;
+        if (answersSnapshot) {
+          const isGrade7V2 = tokenData.productKey === "7_basic_v2" || tokenData.productKey === "7_advanced_v2";
+          // Для новой диагностики сохраняем первый завершённый снимок неизменным.
+          if (!isGrade7V2 || !tokenData.answersSnapshot) tokenData.answersSnapshot = answersSnapshot;
+        }
         tokenData.completedAt = tokenData.completedAt || new Date().toISOString();
 
         // Один промокод на завершённую диагностику; повторный запрос отчёта не создаёт новый.
