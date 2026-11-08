@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.1.0";
+  const VERSION = "7.2.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -276,7 +276,7 @@
     const repeatedHtml = repeatedSkills.length
       ? "<ul style='margin:8px 0 0;padding-left:20px;'>" + repeatedSkills.map(skill =>
           "<li style='margin:4px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
-          " (" + skill.correctCount + " из " + skill.evidenceCount + " независимых наблюдений верно). " +
+          (skill.evidenceCount > 0 ? " (" + skill.correctCount + " из " + skill.evidenceCount + " независимых наблюдений верно). " : ". ") +
           escapeHtml(skill.reason) + "</li>"
         ).join("") + "</ul>"
       : "<p style='margin:8px 0 0;color:#475569;'>В текущем наборе пока недостаточно повторных независимых наблюдений для устойчивых выводов по отдельным навыкам.</p>";
