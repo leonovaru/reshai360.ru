@@ -18,7 +18,7 @@
   };
 
   const TOPIC_GROUPS = {
-    M01: ["N01","N02","N03","N04","DF01","DF02","DF03","DF04","Z01","Z02","Z03","Z05","P01","P07"],
+    M01: ["N01","N02","N03","N04","F01","F02","Z09","DF01","DF02","DF03","DF04","Z01","Z02","Z03","Z05","P01","P07"],
     M02: ["N05","N06","N07","N10","N11","D01","D04","D05","D06","D07","F03","F04","F05","F06","F07","F08","F09","F10","F11","F12","DF05","DF06","DF07","Z04","Z06","Z07","Z08","A03","A05","A06"],
     M03: ["A01","A02","A04"],
     M04: ["P02","P03","P04","P05","P06","A07"],
@@ -60,7 +60,21 @@
   }
 
   function getSkillStatus(observations) {
-    const assessed = observations.filter(item => item.outcome === "CORRECT" || item.outcome === "INCORRECT");
+    const groups = new Map();
+    observations.forEach(item => {
+      if (!groups.has(item.independenceGroup)) groups.set(item.independenceGroup, []);
+      groups.get(item.independenceGroup).push(item);
+    });
+    const independent = Array.from(groups.values()).map(items => {
+      const outcomes = new Set(items.map(item => item.outcome));
+      const outcome = outcomes.size > 1 && (outcomes.has("CORRECT") || outcomes.has("INCORRECT"))
+        ? "CONTRADICTORY"
+        : outcomes.has("CORRECT") ? "CORRECT"
+        : outcomes.has("INCORRECT") ? "INCORRECT"
+        : "UNANSWERED";
+      return { outcome };
+    });
+    const assessed = independent.filter(item => item.outcome === "CORRECT" || item.outcome === "INCORRECT");
     const correct = assessed.filter(item => item.outcome === "CORRECT").length;
     const incorrect = assessed.length - correct;
     const evidenceLevel = assessed.length === 0 ? "E0" : assessed.length === 1 ? "E1" : assessed.length === 2 ? "E2" : "E3";
@@ -103,7 +117,7 @@
       correctCount: correct,
       incorrectCount: incorrect,
       unansweredCount: observations.filter(item => item.outcome === "UNANSWERED").length,
-      contradictory: correct > 0 && incorrect > 0
+      contradictory: correct > 0 && incorrect > 0 || independent.some(item => item.outcome === "CONTRADICTORY")
     };
   }
 
@@ -136,7 +150,7 @@
             partialCreditRule: "NOT_AVAILABLE_FINAL_ANSWER_ONLY",
             outcome,
             diagnosticLimit: "Система видит только выбранный или введённый ответ; ход решения и причина ошибки не установлены.",
-            independenceGroup: "G7-" + level + "-" + topicId + "-" + (questionIndex + 1)
+            independenceGroup: (topicId === "N06" || topicId === "N07") ? ("G7-" + level + "-" + topicId + "-" + (questionIndex + 1)) : ("G7-" + level + "-" + topicId)
           });
         });
       });
