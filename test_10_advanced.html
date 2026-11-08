@@ -187,6 +187,27 @@
     .pdf-card .pdf-ans { flex:1 1 auto !important; min-width:0 !important; padding-right:0 !important; }
     .pdf-card .badge { position:static !important; display:inline-flex !important; align-items:center; flex:0 0 auto; align-self:flex-end; margin:0 0 0 auto !important; white-space:nowrap; }
 
+  
+/* Единый стандарт отображения карточек заданий — эталон test_11_advanced */
+#quiz-container .card { box-sizing:border-box; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:20px; margin-bottom:15px; min-width:0; }
+#quiz-container .question-title { display:block; min-width:0; font-weight:600; font-size:1.05em; line-height:1.5; margin:0 0 12px; overflow-wrap:anywhere; }
+#quiz-container .question-title mjx-container[jax="SVG"] { display:inline-block !important; vertical-align:middle; max-width:100%; }
+#quiz-container .options { display:flex; flex-direction:column; gap:8px; margin-top:10px; min-width:0; }
+#quiz-container .option-label { display:flex; align-items:flex-start; gap:10px; box-sizing:border-box; min-width:0; background:#fff; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; line-height:1.4; }
+#quiz-container .option-label input[type="radio"] { flex:0 0 auto; margin-top:3px; }
+#quiz-container .option-label span { flex:1 1 auto; min-width:0; overflow-wrap:anywhere; word-break:normal; }
+#quiz-container .input-row { display:flex; align-items:center; gap:8px; width:100%; max-width:350px; margin-top:10px; }
+#quiz-container .text-input { width:100%; min-width:0; box-sizing:border-box; padding:10px; margin-top:0; border:1px solid #cbd5e1; border-radius:6px; font-size:16px; }
+#quiz-container .question-action-row { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-top:12px; min-width:0; }
+#quiz-container .question-flag { display:inline-flex; align-items:center; justify-content:center; flex:0 0 42px; width:42px; min-height:42px; height:42px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:#64748b; font-size:23px; line-height:1; cursor:pointer; }
+#quiz-container .question-flag.active { background:transparent; border-color:transparent; color:#d97706; }
+#quiz-container .question-action-row .feedback { margin-left:0; min-width:0; overflow-wrap:anywhere; }
+@media (max-width:640px) {
+  #quiz-container .card { padding:16px; }
+  #quiz-container .question-title { font-size:1em; line-height:1.5; }
+  #quiz-container .input-row { max-width:100%; }
+}
+
   </style>
 </head>
 <body>
@@ -235,7 +256,7 @@
         <button id="resend-report-email" type="button" onclick="sendReportToUpdatedEmail()" style="padding:10px 14px; border:0; border-radius:8px; background:#4338ca; color:#fff; font-weight:700; cursor:pointer;">Отправить письмо на почту</button>
       </div>
     </div>
-    <div style="margin-top:14px; padding-top:14px; border-top:1px solid #c7d2fe;"><p style="font-size:.9em; font-weight:800; margin:0 0 8px;">Есть вопросы по тесту или отчёту? Свяжитесь с нами:</p><div style="display:flex; flex-wrap:wrap; gap:10px 16px; font-size:.88em;"><a href="mailto:support@reshai360.ru" style="color:#4338ca; text-decoration:underline;">✉ support@reshai360.ru</a><a href="tel:+789044766535" style="color:#4338ca; text-decoration:underline;">☎ 8 (904) 476-65-35</a><a href="https://t.me/reshai360_support_bot" target="_blank" rel="noopener noreferrer" style="color:#4338ca; text-decoration:underline;">Telegram</a><a href="https://vk.me/reshai360" target="_blank" rel="noopener noreferrer" style="color:#4338ca; text-decoration:underline;">ВКонтакте</a></div></div>
+    <div style="margin-top:14px; padding-top:14px; border-top:1px solid #c7d2fe;"><p style="font-size:.9em; font-weight:800; margin:0 0 8px;">Есть вопросы по тесту или отчёту? Свяжитесь с нами:</p><div style="display:flex; flex-wrap:wrap; gap:10px 16px; font-size:.88em;"><a href="mailto:support@reshai360.ru" style="color:#4338ca; text-decoration:underline;">✉ support@reshai360.ru</a><a href="https://t.me/reshai360_support_bot" target="_blank" rel="noopener noreferrer" style="color:#4338ca; text-decoration:underline;">Telegram</a><a href="https://vk.me/reshai360" target="_blank" rel="noopener noreferrer" style="color:#4338ca; text-decoration:underline;">ВКонтакте</a></div></div>
   </div>
 </div>
 
@@ -1479,6 +1500,24 @@
   ];
 
 
+
+  function formatInteractiveQuestionContent(value, type) {
+    const source = String(value ?? "");
+    const plain = source
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\\\(([\s\S]*?)\\\)/g, " MATH ")
+      .replace(/\\\[([\s\S]*?)\\\]/g, " MATH ")
+      .replace(/\s+/g, " ")
+      .trim();
+    const normalized = plain.toLocaleLowerCase("ru-RU");
+    const hasInstruction = /^(найдите|вычислите|решите|определите|посчитайте|укажите|сравните|постройте|докажите|запишите|округлите|выберите|ответьте)\b/.test(normalized);
+    const expressionOnly = plain.length > 0 && !/[a-zа-яё]/i.test(plain);
+    const instruction = type === "text" && !hasInstruction
+      ? (expressionOnly ? "Вычислите: " : "Найдите ответ: ")
+      : "";
+    return instruction + formatMathText(source);
+  }
+
   async function renderQuiz() {
     questionNavigation = [];
     let html = "";
@@ -1494,7 +1533,7 @@
           const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
           questionNavigation.push({ id: qId, number: qIndex, qDef });
           html += `<div class="card" id="card_${qId}">`;
-          html += `<div class="question-title">${qIndex}. ${formatMathText(qDef.q)}</div>`;
+          html += `<div class="question-title">${qIndex}. ${formatInteractiveQuestionContent(qDef.q, qDef.type)}</div>`;
 
           if (qDef.type === "radio") {
             html += `<div class="options" id="opt_${qId}">`;
@@ -1900,6 +1939,7 @@
         throw new Error(completionResult.message || 'Не удалось зафиксировать завершение диагностики.');
       }
       isCompletedView = true;
+      document.getElementById('progress-save-control')?.remove();
       if (progressSyncTimer) {
         clearInterval(progressSyncTimer);
         progressSyncTimer = null;
