@@ -273,7 +273,7 @@
           (skill.evidenceCount > 0 ? " (" + skill.correctCount + " из " + skill.evidenceCount + " повторных наблюдений верно). " : ". ") +
           escapeHtml(skill.reason) + "</li>"
         ).join("") + "</ul>"
-      : "<p style='margin:8px 0 0;color:#475569;'>В текущем наборе пока недостаточно повторных независимых наблюдений для устойчивых выводов по отдельным навыкам.</p>";
+      : "<p style='margin:8px 0 0;color:#475569;'>В текущем наборе пока недостаточно повторных наблюдений для устойчивых выводов по отдельным навыкам.</p>";
     return '<section class="g7-diagnostic-summary" style="margin:24px 0;padding:18px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#1e293b;">' +
       '<h3 style="margin:0 0 8px;color:#1b365d;font-size:1.15em;">Диагностическая интерпретация</h3>' +
       '<p style="margin:0 0 8px;color:#64748b;font-size:.82em;">Методика ' + escapeHtml(profile.version) + ' · банк заданий ' + escapeHtml(profile.bankVersion) + '</p>' +
@@ -282,7 +282,7 @@
       '<p style="margin:0 0 10px;line-height:1.5;">Диагностические единицы с единичным наблюдением: <b>' + (profile.evidenceSummary.E1 || 0) +
       '</b>; с повторными наблюдениями: <b>' + ((profile.evidenceSummary.E2 || 0) + (profile.evidenceSummary.E3 || 0)) +
       '</b>; без оценённых наблюдений: <b>' + (profile.evidenceSummary.E0 || 0) + '</b>.</p>' +
-      '<p style="margin:0 0 10px;line-height:1.5;">Повторяющиеся затруднения по независимым заданиям (H2): <b>' + (profile.errorHypothesisSummary.H2 || 0) +
+      '<p style="margin:0 0 10px;line-height:1.5;">Повторяющиеся затруднения по повторным наблюдениям (H2): <b>' + (profile.errorHypothesisSummary.H2 || 0) +
       '</b>; диагностические единицы с противоречивыми результатами: <b>' + (profile.contradictorySkillCount || 0) + '</b>.</p>' +
       '<p style="margin:0 0 12px;line-height:1.5;color:#475569;">Единичный ответ не подтверждает устойчивое владение навыком. Процент правильных ответов — описательный показатель, а не уровень сформированности.</p>' +
       '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.92em;"><thead><tr><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Компетенция</th><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Темы с данными</th><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Повторные наблюдения</th></tr></thead><tbody>' +
