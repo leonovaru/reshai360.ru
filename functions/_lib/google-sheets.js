@@ -2,7 +2,6 @@ export async function syncOrderToGoogleSheets({ env, token, order, event }) {
   const endpoint = String(env.GOOGLE_SHEETS_WEBHOOK_URL || "").trim();
   const secret = String(env.GOOGLE_SHEETS_WEBHOOK_SECRET || "").trim();
 
-  // Интеграция необязательна до настройки Apps Script и секретов Cloudflare.
   if (!endpoint || !secret || !token || !order) {
     return { sent: false, configured: false };
   }
@@ -10,6 +9,7 @@ export async function syncOrderToGoogleSheets({ env, token, order, event }) {
   try {
     const response = await fetch(endpoint, {
       method: "POST",
+      redirect: "follow",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         secret,
@@ -19,21 +19,37 @@ export async function syncOrderToGoogleSheets({ env, token, order, event }) {
       })
     });
 
-    if (!response.ok) {
-      console.error("Google Sheets sync failed:", response.status);
-      return { sent: false, configured: true };
-    }
+    const responseText = await response.text();
+    let result = null;
+    try { result = JSON.parse(responseText); } catch (_) {}
 
-    const result = await response.json().catch(() => null);
-    if (!result || result.success !== true) {
-      console.error("Google Sheets rejected order sync.");
+    if (!response.ok || !result || result.success !== true) {
+      console.error("Google Sheets sync failed:", {
+        status: response.status,
+        event: String(event || "order_updated"),
+        response: responseText.slice(0, 1000)
+      });
       return { sent: false, configured: true };
     }
 
     return { sent: true, configured: true };
   } catch (error) {
-    // Сбой таблицы не должен блокировать создание заказа, оплату или выдачу отчёта.
-    console.error("Google Sheets sync error:", error);
+    // Ошибка таблицы не должна блокировать создание заказа, оплату или выдачу отчёта.
+    console.error("Google Sheets sync error:", {
+      event: String(event || "order_updated"),
+      message: String(error && error.message || error)
+    });
     return { sent: false, configured: true };
   }
+}
+
+// В Cloudflare Pages синхронизация выполняется после ответа клиенту,
+// чтобы медленный Apps Script не прерывал завершение диагностики.
+export function scheduleOrderSync(context, payload) {
+  const task = syncOrderToGoogleSheets(payload);
+  if (context && typeof context.waitUntil === "function") {
+    context.waitUntil(task);
+    return;
+  }
+  return task;
 }
