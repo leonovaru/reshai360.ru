@@ -23,7 +23,7 @@
     M03: ["A01","A02","A04"],
     M04: ["P02","P03","P04","P05","P06","A07"],
     M05: ["T01","T02","T03","T04","T05","T06","T07","T08","T09","T10","P08"],
-    M06: ["N08","N09","N12","D02","D03","D08","A06"],
+    M06: ["N08","N09","N12","D02","D03","D08"],
     M07: ["G01","G02","G03","G04","G05","G06","G07","G08","G09","G10","G11","G12","G13","G14","G15","G16","G17","G18","G19","G20"],
     M08: ["S01","S02","S03","S04","S05"]
   };
@@ -38,6 +38,12 @@
     "P05","P08","T01","T02","T03","T04","T05","T06","T07","T08","T09","T10",
     "G14","G17","G20","S03","S04","S05"
   ]);
+  // Разные действия внутри одной темы не объединяем в один навык.
+  const SPLIT_QUESTION_TOPICS = new Set([
+    "N05","DF05","Z08","F03","DF07","P07","P08","Z09","A07","T06","S01","S02","S05"
+  ]);
+  // Повторные задания одного типа действия могут давать повторное свидетельство.
+  const REPEATED_SAME_SKILL_TOPICS = new Set(["N04","N06","N07","A05"]);
 
   const TOPIC_COMPETENCY = Object.create(null);
   Object.keys(TOPIC_GROUPS).forEach(competencyId => {
@@ -134,14 +140,19 @@
           const topicId = String(theme.id || ("BLOCK" + blockIndex + "_TOPIC" + themeIndex));
           const outcome = getOutcome(question);
           const competencyId = TOPIC_COMPETENCY[topicId] || "UNMAPPED";
+          const taskId = "G7-" + level + "-" + topicId + "-" + (questionIndex + 1);
+          const skillId = "G7." + topicId + (SPLIT_QUESTION_TOPICS.has(topicId) ? "." + (questionIndex + 1) : "");
+          const independenceGroup = SPLIT_QUESTION_TOPICS.has(topicId) || REPEATED_SAME_SKILL_TOPICS.has(topicId)
+            ? taskId
+            : "G7-" + level + "-" + topicId;
           observations.push({
-            taskId: "G7-" + level + "-" + topicId + "-" + (questionIndex + 1),
+            taskId,
             topicId,
             topicName: String(theme.theme || topicId),
             blockName: String(block.block || ""),
             questionNumber,
             questionIndex,
-            skillId: "G7." + topicId,
+            skillId,
             primaryCompetency: competencyId,
             competencyName: COMPETENCIES[competencyId] || "Компетенция не размечена",
             evidenceType: KNOWLEDGE_TOPICS.has(topicId) ? "KNOWLEDGE" : TRANSFER_TOPICS.has(topicId) ? "TRANSFER" : "EXECUTION",
@@ -150,7 +161,7 @@
             partialCreditRule: "NOT_AVAILABLE_FINAL_ANSWER_ONLY",
             outcome,
             diagnosticLimit: "Система видит только выбранный или введённый ответ; ход решения и причина ошибки не установлены.",
-            independenceGroup: (topicId === "N06" || topicId === "N07") ? ("G7-" + level + "-" + topicId + "-" + (questionIndex + 1)) : ("G7-" + level + "-" + topicId)
+            independenceGroup
           });
         });
       });
@@ -177,15 +188,20 @@
     });
 
     const competencies = Object.keys(COMPETENCIES).map(competencyId => {
-      const related = skills.filter(skill => skill.competencyId === competencyId);
+      const relatedTopics = new Map();
+      skills.filter(skill => skill.competencyId === competencyId).forEach(skill => {
+        if (!relatedTopics.has(skill.topicId)) relatedTopics.set(skill.topicId, []);
+        relatedTopics.get(skill.topicId).push(skill);
+      });
+      const topicProfiles = Array.from(relatedTopics.values());
       return {
         competencyId,
         name: COMPETENCIES[competencyId],
         registeredTopics: TOPIC_GROUPS[competencyId].length,
-        presentedTopics: related.length,
-        topicsWithEvidence: related.filter(skill => skill.evidenceCount > 0).length,
-        topicsWithRepeatedEvidence: related.filter(skill => skill.evidenceCount >= 2).length,
-        topicsInsufficientData: related.filter(skill => skill.evidenceCount < 2).length
+        presentedTopics: topicProfiles.length,
+        topicsWithEvidence: topicProfiles.filter(units => units.some(skill => skill.evidenceCount > 0)).length,
+        topicsWithRepeatedEvidence: topicProfiles.filter(units => units.some(skill => skill.evidenceCount >= 2)).length,
+        topicsInsufficientData: topicProfiles.filter(units => units.every(skill => skill.evidenceCount < 2)).length
       };
     });
 
@@ -239,7 +255,7 @@
       '<h3 style="margin:0 0 8px;color:#1b365d;font-size:1.15em;">Диагностическая интерпретация</h3>' +
       '<p style="margin:0 0 10px;line-height:1.5;">Проверено заданий: <b>' + profile.totalPresented +
       '</b>; оценено ответов: <b>' + profile.evaluated + '</b>; без ответа: <b>' + profile.unanswered + '</b>.</p>' +
-      '<p style="margin:0 0 10px;line-height:1.5;">Навыки с единичным наблюдением: <b>' + (profile.evidenceSummary.E1 || 0) +
+      '<p style="margin:0 0 10px;line-height:1.5;">Диагностические единицы с единичным наблюдением: <b>' + (profile.evidenceSummary.E1 || 0) +
       '</b>; с повторными наблюдениями: <b>' + ((profile.evidenceSummary.E2 || 0) + (profile.evidenceSummary.E3 || 0)) +
       '</b>; без оценённых наблюдений: <b>' + (profile.evidenceSummary.E0 || 0) + '</b>.</p>' +
       '<p style="margin:0 0 12px;line-height:1.5;color:#475569;">Единичный ответ не подтверждает устойчивое владение навыком. Процент правильных ответов — описательный показатель, а не уровень сформированности.</p>' +
