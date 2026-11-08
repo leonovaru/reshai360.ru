@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 4;
+  const VERSION = 5;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 930;
@@ -108,8 +108,8 @@
         <div class="pdf-q">${number}. ${questionHtml}</div>
         <div class="pdf-card-footer">
           <div class="pdf-ans">
-            <b>Итоговый ответ:</b> ${escapeHtml(result.finalAnswer)}<br>
-            <b>Введенных ответов:</b> ${result.checkCount}${result.checkCount ? " | <b>Ответы:</b> " + escapeHtml(result.attemptsText) : ""}<br>
+            ${result.checkCount ? "<b>Итоговый ответ:</b> " + escapeHtml(result.finalAnswer) + "<br>" : ""}
+            <b>Введенных ответов:</b> ${result.checkCount} | <b>Ответы:</b> ${result.checkCount ? escapeHtml(result.attemptsText) : "Не введено"}<br>
             <b>Правильный ответ:</b> ${correctHtml}
           </div>
           <span class="badge ${result.badgeClass}">${result.badgeText}</span>
@@ -172,10 +172,12 @@
     const detailPages = [];
     let current = [];
     for (const card of cards) {
-      measure.innerHTML = '<h3 class="detail-section-title">Результаты выполнения заданий</h3>' + current.concat(card).join("");
+      // Сначала очищаем реестр MathJax для старого DOM, и только затем
+      // заменяем содержимое измерительного контейнера.
       if (global.MathJax && global.MathJax.typesetClear) {
         try { global.MathJax.typesetClear([measure]); } catch (_) {}
       }
+      measure.innerHTML = '<h3 class="detail-section-title">Результаты выполнения заданий</h3>' + current.concat(card).join("");
       await typeset(measure);
       const height = Math.max(measure.scrollHeight, measure.offsetHeight);
       if (height > PAGE_CONTENT_HEIGHT && current.length) {
