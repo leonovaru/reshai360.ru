@@ -1,5 +1,6 @@
 import { sendPaymentTelegramNotification, ensurePaidOrderLinkExpiry, getOrderExpirationTtl, ORDER_ACCESS_TTL_MS } from "../_lib/telegram-payment.js";
 import { sendDiagnosticLinkEmail } from "../_lib/diagnostic-link-email.js";
+import { scheduleOrderSync } from "../_lib/google-sheets.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -133,6 +134,11 @@ export async function onRequestPost(context) {
     // и покажет результат, не начиная новую диагностику.
     if (!tokenData.isCompleted) { tokenData.isUsed = true; orderDataChanged = true; }
     if (orderDataChanged) await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
+
+    // Повторно синхронизируем подтверждённый заказ при каждом успешном открытии:
+    // это восстанавливает строку таблицы, если webhook не дошёл или его sync завершился ошибкой.
+    scheduleOrderSync(context, { env, token, order: tokenData, event: "payment_verified" });
+
     return Response.json({ valid: true, data: { ...tokenData, progressSnapshot }, completed: tokenData.isCompleted === true });
   } catch (err) {
     console.error('Verify token error:', err);
