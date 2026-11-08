@@ -835,7 +835,7 @@
       return key;
     });
     const protectedHtml = [];
-    source = source.replace(/<[^>]+>/g, tag => { const key = "\\uE200" + protectedHtml.length + "\\uE201"; protectedHtml.push(tag); return key; });
+    source = source.replace(/<[^>]+>/g, tag => { const key = "\uE200" + protectedHtml.length + "\uE201"; protectedHtml.push(tag); return key; });
     const protectedParts = [];
     const hold = value => {
       const key = "\uE100" + protectedParts.length + "\uE101";
@@ -880,7 +880,7 @@
     source = source.replace(/√\s*(\d+(?:[.,]\d+)?)/g, (_, number) =>
       "\\(\\displaystyle \\sqrt{" + number + "}\\)");
 
-    protectedHtml.forEach((tag, index) => { source = source.replace("\\uE200" + index + "\\uE201", tag); });
+    protectedHtml.forEach((tag, index) => { source = source.replace("\uE200" + index + "\uE201", tag); });
     protectedParts.forEach((part, index) => {
       source = source.replace("\uE100" + index + "\uE101", part);
     });
