@@ -7,7 +7,8 @@ window.CONFIG = {
         offer: "offer.html",
         charityTelegram: "https://t.me/sobachiy_mir_krsk",
         supportTelegram: "https://t.me/reshai360_support_bot",
-        supportVk: "https://vk.me/reshai360"
+        supportVk: "https://vk.me/reshai360",
+        supportInstagram: "https://www.instagram.com/reshai360.ru/"
     },
     media: {
         demoVideo: "demo_mobile.mp4",
