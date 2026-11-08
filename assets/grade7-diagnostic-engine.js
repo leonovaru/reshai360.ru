@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.8.0";
+  const VERSION = "7.8.1";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -63,10 +63,10 @@
   function getSkillStatus(observations) {
     const groups = new Map();
     observations.forEach(item => {
-      if (!groups.has(item.independenceGroup)) groups.set(item.independenceGroup, []);
-      groups.get(item.independenceGroup).push(item);
+      if (!groups.has(item.observationGroup)) groups.set(item.observationGroup, []);
+      groups.get(item.observationGroup).push(item);
     });
-    const independent = Array.from(groups.values()).map(items => {
+    const groupedResults = Array.from(groups.values()).map(items => {
       const outcomes = new Set(items.map(item => item.outcome));
       const outcome = outcomes.size > 1 && (outcomes.has("CORRECT") || outcomes.has("INCORRECT"))
         ? "CONTRADICTORY"
@@ -75,15 +75,15 @@
         : "UNANSWERED";
       return { outcome };
     });
-    const assessed = independent.filter(item => item.outcome === "CORRECT" || item.outcome === "INCORRECT");
+    const assessed = groupedResults.filter(item => item.outcome === "CORRECT" || item.outcome === "INCORRECT");
     const correct = assessed.filter(item => item.outcome === "CORRECT").length;
     const incorrect = assessed.length - correct;
     const evidenceLevel = assessed.length === 0 ? "E0" : assessed.length === 1 ? "E1" : "E2";
     let status = "Недостаточно данных";
-    let reason = independent.some(item => item.outcome === "CONTRADICTORY")
+    let reason = groupedResults.some(item => item.outcome === "CONTRADICTORY")
       ? "В составном задании получены разные результаты. Для оценки навыка нужна отдельная проверка."
       : "Нет ответов, которые позволяют оценить это действие.";
-    const hasContradictoryGroup = independent.some(item => item.outcome === "CONTRADICTORY");
+    const hasContradictoryGroup = groupedResults.some(item => item.outcome === "CONTRADICTORY");
     let errorHypothesisLevel = incorrect === 0 && !hasContradictoryGroup
       ? "H0"
       : (incorrect >= 2 && correct === 0 && !hasContradictoryGroup ? "H2" : "H1");
@@ -125,7 +125,7 @@
       correctCount: correct,
       incorrectCount: incorrect,
       unansweredCount: observations.filter(item => item.outcome === "UNANSWERED").length,
-      contradictory: correct > 0 && incorrect > 0 || independent.some(item => item.outcome === "CONTRADICTORY")
+      contradictory: correct > 0 && incorrect > 0 || groupedResults.some(item => item.outcome === "CONTRADICTORY")
     };
   }
 
@@ -144,7 +144,7 @@
           const competencyId = TOPIC_COMPETENCY[topicId] || "UNMAPPED";
           const taskId = "G7-" + level + "-" + topicId + "-" + (questionIndex + 1);
           const skillId = "G7." + topicId + (SPLIT_QUESTION_TOPICS.has(topicId) ? "." + level + "." + (questionIndex + 1) : "");
-          const independenceGroup = SPLIT_QUESTION_TOPICS.has(topicId) || REPEATED_SAME_SKILL_TOPICS.has(topicId)
+          const observationGroup = SPLIT_QUESTION_TOPICS.has(topicId) || REPEATED_SAME_SKILL_TOPICS.has(topicId)
             ? taskId
             : "G7-" + level + "-" + topicId;
           observations.push({
@@ -167,7 +167,7 @@
             partialCreditRule: "NOT_AVAILABLE_FINAL_ANSWER_ONLY",
             outcome,
             diagnosticLimit: "Система видит только выбранный или введённый ответ; ход решения и причина ошибки не установлены.",
-            independenceGroup
+            observationGroup
           });
         });
       });
