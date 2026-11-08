@@ -1844,11 +1844,31 @@
 
     const downloadBtn = document.getElementById("downloadPdfBtn");
     try {
-      const cachedPdfBlob = await getCachedDiagnosticPdf(currentToken);
-      if (cachedPdfBlob) {
-        generatedPdfBlob = cachedPdfBlob;
+      let savedServerPdfBlob = null;
+      if (isCompletedView && currentToken) {
+        try {
+          const savedReportResponse = await fetch('/api/get-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: currentToken })
+          });
+          if (savedReportResponse.ok) {
+            const savedBlob = await savedReportResponse.blob();
+            if (savedBlob.type === 'application/pdf' && savedBlob.size > 0) savedServerPdfBlob = savedBlob;
+          }
+        } catch (savedReportError) {
+          console.warn('Не удалось получить сохранённый PDF с сервера:', savedReportError);
+        }
+      }
+
+      if (savedServerPdfBlob) {
+        generatedPdfBlob = savedServerPdfBlob;
       } else {
-        let savedReportSnapshot = null;
+        const cachedPdfBlob = await getCachedDiagnosticPdf(currentToken);
+        if (cachedPdfBlob) {
+          generatedPdfBlob = cachedPdfBlob;
+        } else {
+          let savedReportSnapshot = null;
         try { savedReportSnapshot = JSON.parse(localStorage.getItem(progressStorageKey) || "null"); } catch (_) {}
         generatedPdfBlob = await window.Reshai360ReportGenerator.generate({
           quizData,
@@ -1857,7 +1877,8 @@
           formatMath: formatMathText,
           resultContainer: document.getElementById("result-pdf")
         });
-        if (currentToken) await saveCachedDiagnosticPdf(currentToken, generatedPdfBlob);
+          if (currentToken) await saveCachedDiagnosticPdf(currentToken, generatedPdfBlob);
+        }
       }
       if (pdfCountdownTimer) { clearInterval(pdfCountdownTimer); pdfCountdownTimer = null; }
       if (downloadBtn) { downloadBtn.disabled = false; downloadBtn.innerText = "📄 Скачать PDF-отчёт"; }
