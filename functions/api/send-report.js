@@ -264,7 +264,7 @@ export async function onRequestPost(context) {
         const promoRaw = promoCode ? await env.TEST_TOKENS.get("promo:" + promoCode) : null;
         const issuedPromo = promoRaw ? JSON.parse(promoRaw) : null;
         const expiresText = issuedPromo?.expiresAt
-          ? new Date(issuedPromo.expiresAt).toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" })
+          ? new Date(issuedPromo.expiresAt).toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Moscow" })
           : "не указан";
         const tgFormData = new FormData();
         tgFormData.append("chat_id", env.TG_CHAT_ID);
@@ -285,17 +285,36 @@ export async function onRequestPost(context) {
         );
         const tgResult = await tgResponse.json().catch(() => ({}));
         if (!tgResponse.ok || tgResult.ok !== true) {
+          tokenData.resultsTelegramStatus = "Ошибка";
+          tokenData.resultsTelegramError = JSON.stringify(tgResult).slice(0, 700);
+          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
+          scheduleOrderSync(context, { env, token, order: tokenData, event: "report_telegram_failed" });
           console.error("Telegram results notification error:", JSON.stringify(tgResult).slice(0, 1000));
         } else {
           const sentDocument = tgResult.result && tgResult.result.document ? tgResult.result.document : {};
+          const sentMessage = tgResult.result || {};
+          const sentChat = sentMessage.chat || {};
           tokenData.resultsTelegramSentAt = new Date().toISOString();
+          tokenData.resultsTelegramStatus = "Отправлен";
+          tokenData.resultsTelegramError = null;
           tokenData.resultsTelegramReportVersion = RESULTS_REPORT_VERSION;
           if (sentDocument.file_id) tokenData.resultsTelegramFileId = sentDocument.file_id;
           if (sentDocument.file_unique_id) tokenData.resultsTelegramFileUniqueId = sentDocument.file_unique_id;
+          if (sentMessage.message_id) tokenData.resultsTelegramMessageId = sentMessage.message_id;
+          if (sentChat.id !== undefined) tokenData.resultsTelegramChatId = String(sentChat.id);
+          if (sentChat.username && sentMessage.message_id) {
+            tokenData.resultsTelegramMessageLink = "https://t.me/" + sentChat.username + "/" + sentMessage.message_id;
+          } else if (String(sentChat.id || "").startsWith("-100") && sentMessage.message_id) {
+            tokenData.resultsTelegramMessageLink = "https://t.me/c/" + String(sentChat.id).slice(4) + "/" + sentMessage.message_id;
+          }
           await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
           scheduleOrderSync(context, { env, token, order: tokenData, event: "report_sent" });
         }
       } catch (tgErr) {
+        tokenData.resultsTelegramStatus = "Ошибка";
+        tokenData.resultsTelegramError = String(tgErr && tgErr.message || tgErr).slice(0, 700);
+        await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
+        scheduleOrderSync(context, { env, token, order: tokenData, event: "report_telegram_failed" });
         console.error("Telegram results notification error:", tgErr);
       }
     }
@@ -352,7 +371,16 @@ export async function onRequestPost(context) {
     if (!env.RESEND_API_KEY) emailError = "На сервере не настроен ключ почтового сервиса.";
     else if (!email) emailError = "В заказе не указан адрес электронной почты.";
 
+    if (emailError) {
+      tokenData.reportEmailStatus = "Ошибка";
+      tokenData.reportEmailError = emailError;
+    }
+
     if (env.RESEND_API_KEY && email && (!tokenData.reportEmailSentAt || forceEmail)) {
+      tokenData.reportEmailStatus = "Ожидает отправки";
+      tokenData.reportEmailAttemptAt = new Date().toISOString();
+      tokenData.reportEmailError = null;
+      await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
       try {
         const bytes = new Uint8Array(await pdfFile.arrayBuffer());
         let binary = "";
@@ -422,21 +450,40 @@ export async function onRequestPost(context) {
 
         if (!emailResponse.ok) {
           emailError = (await emailResponse.text()).slice(0, 700);
+          tokenData.reportEmailStatus = "Ошибка";
+          tokenData.reportEmailError = emailError || ("HTTP " + emailResponse.status);
+          await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
           console.error("Resend API error:", emailError);
         } else {
           const resendResult = await emailResponse.json().catch(() => ({}));
           emailId = resendResult.id || null;
           emailSent = true;
           tokenData.reportEmailSentAt = new Date().toISOString();
+          tokenData.reportEmailStatus = "Отправлено";
+          tokenData.reportEmailError = null;
           tokenData.email = email;
           if (emailId) tokenData.reportEmailId = emailId;
           await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
         }
       } catch (resendErr) {
         emailError = String(resendErr && resendErr.message || resendErr).slice(0, 500);
+        tokenData.reportEmailStatus = "Ошибка";
+        tokenData.reportEmailError = emailError;
+        await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
         console.error("Resend email error:", resendErr);
       }
+    } else if (tokenData.reportEmailSentAt) {
+      tokenData.reportEmailStatus = "Отправлено";
+      tokenData.reportEmailError = null;
     }
+
+    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
+    scheduleOrderSync(context, {
+      env,
+      token,
+      order: tokenData,
+      event: tokenData.reportEmailStatus === "Отправлено" ? "report_email_sent" : "report_email_status_updated"
+    });
 
     return Response.json({ success: true, promoCode, emailSent, emailId, feedbackUrl: feedbackPrefillToken ? `https://reshai360.ru/index.html?feedback_token=${feedbackPrefillToken}#feedback` : null, emailPreviouslyAccepted: Boolean(tokenData.reportEmailSentAt && !emailSent && !forceEmail), emailError, pdfBytes: Number(pdfFile.size || 0) });
   } catch (err) {
