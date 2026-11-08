@@ -1,4 +1,4 @@
-const RESULTS_REPORT_VERSION = 5;
+const RESULTS_REPORT_VERSION = 6;
 
 export async function onRequestPost({ request, env }) {
   try {
