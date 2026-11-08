@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 19;
+  const VERSION = 20;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -162,10 +162,10 @@
       ? "<ul style='font-size:.86em;line-height:1.4;margin:0;padding-left:20px;'>" +
         repeated.map(skill =>
           "<li style='margin:5px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
-          (skill.evidenceCount > 0 ? " (" + skill.correctCount + " из " + skill.evidenceCount + " независимых наблюдений верно)." : ".") +
+          (skill.evidenceCount > 0 ? " (" + skill.correctCount + " из " + skill.evidenceCount + " повторных наблюдений верно)." : ".") +
           " " + escapeHtml(skill.reason) + "</li>"
         ).join("") + "</ul>"
-      : "<p style='font-size:.86em;line-height:1.4;margin:0;'>Пока недостаточно повторных независимых наблюдений для устойчивых выводов по отдельным навыкам.</p>";
+      : "<p style='font-size:.86em;line-height:1.4;margin:0;'>Пока недостаточно повторных наблюдений для устойчивых выводов по отдельным навыкам.</p>";
     const limitations = (profile.limitations || []).map(item => "<li>" + escapeHtml(item) + "</li>").join("");
     return "<div class='pdf-first-page-content'>" +
       "<h1 class='pdf-header-title'>Карта компетенций и свидетельств</h1>" +
