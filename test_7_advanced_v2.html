@@ -376,17 +376,27 @@
   // Проверка токена при загрузке страницы (защита от пересылки и повторного прохождения)
   window.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
+    const isPreviewMode = location.hostname.endsWith(".pages.dev") && location.hostname !== "reshai360-ru.pages.dev";
     currentToken = params.get('token') || localStorage.getItem('testToken');
-
-    if (!currentToken) {
-      alert("Доступ запрещен. Требуется оплата диагностики.");
-      window.location.href = "index.html";
-      return;
-    }
 
     let completedSnapshot = null;
     let wasCompleted = false;
-    try {
+    if (isPreviewMode) {
+      // Изолированный просмотр на уникальном Cloudflare Preview-домене: без токена и серверных операций.
+      currentToken = "preview_7_advanced_v2_" + location.hostname;
+      studentData.fullName = localStorage.getItem('studentName') || "Тестовый ученик";
+      studentData.email = "";
+      const banner = document.createElement("div");
+      banner.textContent = "РЕЖИМ ПРЕДПРОСМОТРА — ответы и PDF доступны, оплаты и отправки не выполняются";
+      banner.style.cssText = "position:sticky;top:0;z-index:1000;padding:10px 14px;background:#fff7d6;color:#713f12;text-align:center;font-weight:700;border-bottom:1px solid #facc15;font-size:13px;";
+      document.body.prepend(banner);
+    } else {
+      if (!currentToken) {
+        alert("Доступ запрещен. Требуется оплата диагностики.");
+        window.location.href = "index.html";
+        return;
+      }
+      try {
       const response = await fetch('/api/verify-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -419,11 +429,12 @@
         serverCompletedSnapshot = completedSnapshot;
         serverProgressSnapshot = result.data.progressSnapshot || null;
       }
-    } catch (err) {
-      console.error("Ошибка проверки токена:", err);
-      alert("Не удалось проверить доступ к тесту. Проверьте подключение к интернету и попробуйте открыть ссылку ещё раз.");
-      window.location.href = "index.html";
-      return;
+      } catch (err) {
+        console.error("Ошибка проверки токена:", err);
+        alert("Не удалось проверить доступ к тесту. Проверьте подключение к интернету и попробуйте открыть ссылку ещё раз.");
+        window.location.href = "index.html";
+        return;
+      }
     }
 
     progressStorageKey = "reshai360_progress_7_advanced_v2_" + currentToken;
@@ -541,6 +552,7 @@
       localProgressDirty = true;
       const saveToServer = () => {
         const send = async () => {
+          if (isPreviewMode) { localProgressDirty = false; return true; }
           try {
             const response = await fetch('/api/save-progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: currentToken, snapshot }), keepalive: true });
             const result = await response.json().catch(() => ({}));
@@ -673,7 +685,7 @@
 
 
   async function syncProgressFromServer() {
-    if (!currentToken || !progressStorageKey || isCompletedView || progressSyncInFlight || document.visibilityState === "hidden") return;
+    if (isPreviewMode || !currentToken || !progressStorageKey || isCompletedView || progressSyncInFlight || document.visibilityState === "hidden") return;
     progressSyncInFlight = true;
     try {
       const response = await fetch("/api/get-progress?token=" + encodeURIComponent(currentToken), {
@@ -1107,6 +1119,7 @@
   }
   async function retryReportEmail() {
     const status = document.getElementById('report-email-status');
+    if (isPreviewMode) { if (status) status.textContent = "В режиме предпросмотра отправка писем отключена."; return; }
     if (!generatedPdfBlob || !currentToken || !status) return;
     status.textContent = 'Повторно отправляем письмо…';
     try {
@@ -1191,6 +1204,7 @@
     const button = document.getElementById("resend-report-email");
     const status = document.getElementById("report-email-status");
     const email = String(input?.value || "").trim();
+    if (isPreviewMode) { if (status) status.textContent = "В режиме предпросмотра отправка писем отключена."; return; }
     if (!input || !input.checkValidity() || !email) {
       if (input) input.reportValidity();
       return;
@@ -1379,6 +1393,11 @@
       };
     });
     try {
+      if (isPreviewMode) {
+        isCompletedView = true;
+        document.getElementById('progress-save-control')?.remove();
+        if (progressSyncTimer) { clearInterval(progressSyncTimer); progressSyncTimer = null; }
+      } else {
       const completionController = new AbortController();
       const completionTimeout = setTimeout(() => completionController.abort(), 30000);
       let completionResponse;
@@ -1400,6 +1419,7 @@
       if (progressSyncTimer) {
         clearInterval(progressSyncTimer);
         progressSyncTimer = null;
+      }
       }
     } catch (completionError) {
       console.error('Ошибка фиксации завершения диагностики:', completionError);
@@ -1500,7 +1520,7 @@
     const downloadBtn = document.getElementById("downloadPdfBtn");
     try {
       let savedServerPdfBlob = null;
-      if (isCompletedView && currentToken) {
+      if (isCompletedView && currentToken && !isPreviewMode) {
         try {
           const savedReportResponse = await fetch('/api/get-report', {
             method: 'POST',
@@ -1539,7 +1559,7 @@
       if (downloadBtn) { downloadBtn.disabled = false; downloadBtn.innerText = "📄 Скачать PDF-отчёт"; }
 
       // Фиксируем цель Яндекс.Метрики: Тест решен до конца
-      if (typeof ym !== 'undefined') {
+      if (!isPreviewMode && typeof ym !== 'undefined') {
         ym(113852589, 'reachGoal', 'test_completed');
       }
 
