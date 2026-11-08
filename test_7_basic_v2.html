@@ -1391,7 +1391,7 @@
       alert(errorMessage); return;
     }
 
-    let repeatBoxHtml = topicsToRepeat.length > 0 ? `<ol>${topicsToRepeat.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Ошибок в решенных заданиях нет.</p>`;
+    let repeatBoxHtml = topicsToRepeat.length > 0 ? `<ol>${topicsToRepeat.map(t => `<li>${t}</li>`).join('')}</ol>` : (totalEvaluated > 0 ? `<p style="margin: 0;">Неверных ответов среди оценённых заданий нет.</p>` : `<p style="margin: 0;">Нет оценённых ответов.</p>`);
     let studyBoxHtml = topicsToStudy.length > 0 ? `<ol>${topicsToStudy.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Пропущенных заданий нет.</p>`;
 
     const pdfTopicsSplitHtml = `
@@ -1421,7 +1421,7 @@
         </div>
         <div class="pdf-score-right">
           <div class="pdf-score-label">Доля правильных ответов среди оценённых</div>
-          <div class="pdf-score-main">${totalCorrect} из ${totalEvaluated} (${percent}%)</div>
+          <div class="pdf-score-main">${totalEvaluated > 0 ? totalCorrect + " из " + totalEvaluated + " (" + percent + "%)" : "Нет оценённых ответов"}</div>
           <div class="pdf-score-label">Всего заданий: ${totalQuestions}; без ответа: ${totalQuestions - totalEvaluated}</div>
         </div>
       </div>
