@@ -108,8 +108,8 @@
         <div class="pdf-q">${number}. ${questionHtml}</div>
         <div class="pdf-card-footer">
           <div class="pdf-ans">
-            ${result.checkCount ? "<b>Итоговый ответ:</b> " + escapeHtml(result.finalAnswer) + "<br>" : ""}
-            <b>Введенных ответов:</b> ${result.checkCount} | <b>Ответы:</b> ${result.checkCount ? escapeHtml(result.attemptsText) : "Не введено"}<br>
+            ${result.isSkipped ? "" : "<b>Итоговый ответ:</b> " + escapeHtml(result.finalAnswer) + "<br>"}
+            <b>Введенных ответов:</b> ${result.checkCount} | <b>Ответы:</b> ${result.checkCount ? escapeHtml(result.attemptsText) : (result.isSkipped ? (question.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")}<br>
             <b>Правильный ответ:</b> ${correctHtml}
           </div>
           <span class="badge ${result.badgeClass}">${result.badgeText}</span>
