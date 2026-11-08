@@ -1,4 +1,5 @@
 import { sendPaymentTelegramNotification, ensurePaidOrderLinkExpiry, getOrderExpirationTtl, ORDER_ACCESS_TTL_MS } from "../_lib/telegram-payment.js";
+import { sendDiagnosticLinkEmail } from "../_lib/diagnostic-link-email.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -86,6 +87,13 @@ export async function onRequestPost(context) {
         return Response.json({ valid: false, message: 'Платёж отменён банком. Можно безопасно попробовать оплатить ещё раз.' }, { status: 409 });
       }
       return Response.json({ valid: false, message: 'Платёж ещё подтверждается.' }, { status: 402 });
+    }
+
+    // Если webhook не сработал или письмо не удалось отправить раньше,
+    // повторяем отправку ссылки. Ошибка почты не блокирует доступ к оплаченной диагностике.
+    const diagnosticEmailResult = await sendDiagnosticLinkEmail({ env, token, tokenData });
+    if (!diagnosticEmailResult.sent) {
+      console.error("Payment was verified, but diagnostic link email is pending a retry.");
     }
 
     // Если оплату подтвердили резервной проверкой или webhook ещё не успел отправить уведомление,
