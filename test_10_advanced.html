@@ -1769,7 +1769,7 @@
           const distinctRadioAnswers = new Set([...(qDef.attemptsHistory || []), qDef.userText]
             .filter(answer => answer && answer !== "Не выбрано")
             .map(answer => String(answer)));
-          const isGuessedByBruteForce = (qDef.type === 'radio' && qDef.options.length === 4 && distinctRadioAnswers.size === 4);
+          const isGuessedByBruteForce = (qDef.type === 'radio' && qDef.options.length > 0 && distinctRadioAnswers.size >= qDef.options.length);
 
           if (qDef.isCorrect) themeCorrect++;
 
