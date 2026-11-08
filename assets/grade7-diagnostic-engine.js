@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.3.0";
+  const VERSION = "7.4.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -236,6 +236,7 @@
 
     return {
       version: VERSION,
+      bankVersion: global.GRADE7_DIAGNOSTIC_DATA && global.GRADE7_DIAGNOSTIC_DATA.version || "unknown",
       methodologyStatus: "PROVISIONAL_MAPPING",
       methodologyNote: "Привязка заданий к навыкам и компетенциям является рабочей версией и требует независимой экспертной проверки.",
       level,
@@ -285,6 +286,7 @@
       : "<p style='margin:8px 0 0;color:#475569;'>В текущем наборе пока недостаточно повторных независимых наблюдений для устойчивых выводов по отдельным навыкам.</p>";
     return '<section class="g7-diagnostic-summary" style="margin:24px 0;padding:18px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#1e293b;">' +
       '<h3 style="margin:0 0 8px;color:#1b365d;font-size:1.15em;">Диагностическая интерпретация</h3>' +
+      '<p style="margin:0 0 8px;color:#64748b;font-size:.82em;">Методика ' + escapeHtml(profile.version) + ' · банк заданий ' + escapeHtml(profile.bankVersion) + '</p>' +
       '<p style="margin:0 0 10px;line-height:1.5;">Проверено заданий: <b>' + profile.totalPresented +
       '</b>; оценено ответов: <b>' + profile.evaluated + '</b>; без ответа: <b>' + profile.unanswered + '</b>.</p>' +
       '<p style="margin:0 0 10px;line-height:1.5;">Диагностические единицы с единичным наблюдением: <b>' + (profile.evidenceSummary.E1 || 0) +
