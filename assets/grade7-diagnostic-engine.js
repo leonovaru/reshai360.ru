@@ -85,7 +85,10 @@
     const incorrect = assessed.length - correct;
     const evidenceLevel = assessed.length === 0 ? "E0" : assessed.length === 1 ? "E1" : assessed.length === 2 ? "E2" : "E3";
     let status = "Недостаточно данных";
-    let reason = "Нет ответов, которые позволяют оценить это действие.";
+    let reason = independent.some(item => item.outcome === "CONTRADICTORY")
+      ? "В составном задании получены разные результаты. Для оценки навыка нужна отдельная проверка."
+      : "Нет ответов, которые позволяют оценить это действие.";
+    let errorHypothesisLevel = incorrect === 0 ? "H0" : incorrect === 1 ? "H1" : (correct === 0 && !independent.some(item => item.outcome === "CONTRADICTORY") ? "H2" : "H1");
 
     if (assessed.length === 1) {
       reason = assessed[0].outcome === "CORRECT"
@@ -103,9 +106,14 @@
         reason = "Результаты различаются. Нужна дополнительная проверка в другом формате или контексте.";
       }
     } else if (assessed.length >= 3) {
+      const evidenceTypeCount = new Set(observations
+        .filter(item => item.outcome === "CORRECT" || item.outcome === "INCORRECT")
+        .map(item => item.evidenceType)).size;
       if (correct === assessed.length) {
-        status = "Сформировано";
-        reason = "Все доступные независимые задания выполнены верно. Вывод ограничен представленными заданиями.";
+        status = evidenceTypeCount >= 2 ? "Сформировано" : "В основном сформировано";
+        reason = evidenceTypeCount >= 2
+          ? "Все независимые задания выполнены верно в разных типах свидетельств. Вывод ограничен представленными заданиями."
+          : "Все независимые задания выполнены верно, но разнообразие типов свидетельств ограничено.";
       } else if (incorrect >= 2 && incorrect > correct) {
         status = "Требует развития";
         reason = "Большинство независимых наблюдений содержит ошибки. Причину затруднения нужно проверять отдельно.";
@@ -119,6 +127,7 @@
       status,
       reason,
       evidenceLevel,
+      errorHypothesisLevel,
       evidenceCount: assessed.length,
       correctCount: correct,
       incorrectCount: incorrect,
