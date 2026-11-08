@@ -159,6 +159,8 @@
         "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Диагностические единицы с единичным наблюдением: <b>" + (evidence.E1 || 0) +
         "</b>; повторные наблюдения: <b>" + ((evidence.E2 || 0) + (evidence.E3 || 0)) +
         "</b>; без оценённых наблюдений: <b>" + (evidence.E0 || 0) + "</b>.</p>" +
+        "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Повторяющиеся затруднения (H2): <b>" + ((diagnosticProfile.errorHypothesisSummary || {}).H2 || 0) +
+        "</b>; противоречивые диагностические единицы: <b>" + (diagnosticProfile.contradictorySkillCount || 0) + "</b>.</p>" +
         "<table style='width:100%;border-collapse:collapse;font-size:.72em;margin-bottom:8px;'><thead><tr><th style='text-align:left;padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Компетенция</th><th style='padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Данные</th><th style='padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Повтор.</th></tr></thead><tbody>" +
         competencyRows + "</tbody></table>"
       : "";
