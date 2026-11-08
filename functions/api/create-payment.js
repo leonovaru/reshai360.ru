@@ -71,6 +71,8 @@ export async function onRequestPost(context) {
       '7': { title: 'Диагностика — 7 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_7_basic.html' },
       '7_basic': { title: 'Диагностика — 7 класс, Лёгкий старт', price: 1, displayPrice: 790, file: 'test_7_basic.html' },
       '7_advanced': { title: 'Диагностика — 7 класс, Полная диагностика', price: 1, displayPrice: 990, file: 'test_7_advanced.html' },
+      '7_basic_v2': { title: 'Диагностика — 7 класс, Фундамент', price: 1, displayPrice: 790, file: 'test_7_basic_v2.html' },
+      '7_advanced_v2': { title: 'Диагностика — 7 класс, Применение', price: 1, displayPrice: 990, file: 'test_7_advanced_v2.html' },
       '8': { title: 'Диагностика — 8 класс (старый заказ)', price: 1, displayPrice: 790, file: 'test_8_basic.html' },
       '8_basic': { title: 'Диагностика — 8 класс, Лёгкий старт', price: 1, displayPrice: 790, file: 'test_8_basic.html' },
       '8_advanced': { title: 'Диагностика — 8 класс, Полная диагностика', price: 1, displayPrice: 990, file: 'test_8_advanced.html' },
