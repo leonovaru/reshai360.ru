@@ -1,5 +1,5 @@
 import { ensurePaidOrderLinkExpiry, getOrderExpirationTtl } from "../_lib/telegram-payment.js";
-import { syncOrderToGoogleSheets } from "../_lib/google-sheets.js";
+import { scheduleOrderSync } from "../_lib/google-sheets.js";
 
 const RESULTS_REPORT_VERSION = 5;
 
@@ -79,7 +79,8 @@ function normalizedEmailForSupport(email) {
   return String(email || "").trim().toLowerCase();
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   try {
     const formData = await request.formData();
 
@@ -246,7 +247,7 @@ export async function onRequestPost({ request, env }) {
           reportReady: true,
           promoCodeIssued: promoCode || previousArchive.promoCodeIssued || null
         }), { expirationTtl: 3888000 });
-        await syncOrderToGoogleSheets({ env, token, order: tokenData, event: "diagnostic_completed" });
+        scheduleOrderSync(context, { env, token, order: tokenData, event: "diagnostic_completed" });
     }
 
     // Отдельный бот результатов получает PDF и ссылку на сохранённую диагностику.
@@ -292,7 +293,7 @@ export async function onRequestPost({ request, env }) {
           if (sentDocument.file_id) tokenData.resultsTelegramFileId = sentDocument.file_id;
           if (sentDocument.file_unique_id) tokenData.resultsTelegramFileUniqueId = sentDocument.file_unique_id;
           await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
-          await syncOrderToGoogleSheets({ env, token, order: tokenData, event: "report_sent" });
+          scheduleOrderSync(context, { env, token, order: tokenData, event: "report_sent" });
         }
       } catch (tgErr) {
         console.error("Telegram results notification error:", tgErr);
