@@ -1,3 +1,4 @@
+import { getOrderExpirationTtl } from "./telegram-payment.js";
 const TEST_FILES = {
   "7": "test_7_basic.html", "7_basic": "test_7_basic.html", "7_advanced": "test_7_advanced.html",
   "8": "test_8_basic.html", "8_basic": "test_8_basic.html", "8_advanced": "test_8_advanced.html",
@@ -65,4 +66,3 @@ export async function sendDiagnosticLinkEmail({ env, token, tokenData }) {
   }
 }
 
-import { getOrderExpirationTtl } from "./telegram-payment.js";
