@@ -36,7 +36,7 @@
   <!-- Библиотеки генерации PDF из canvas (html2canvas + jsPDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="/assets/report-generator.js?v=12"></script>
+  <script src="/assets/report-generator.js?v=13"></script>
   <script src="/assets/grade7-diagnostic-data.js?v=1"></script>
   <script src="/assets/grade7-diagnostic-engine.js?v=1"></script>
 
@@ -346,7 +346,7 @@
       const request = transaction.objectStore("reports").get(token);
       request.onsuccess = () => {
         const entry = request.result;
-        if (entry && entry.version === 10 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
+        if (entry && entry.version === 11 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
         if (entry) {
           try { db.transaction("reports", "readwrite").objectStore("reports").delete(token); } catch (_) {}
         }
@@ -366,7 +366,7 @@
       let transaction;
       try { transaction = db.transaction("reports", "readwrite"); }
       catch (_) { db.close(); return resolve(false); }
-      transaction.objectStore("reports").put({ token, blob, version: 10, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+      transaction.objectStore("reports").put({ token, blob, version: 11, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
       transaction.oncomplete = () => { db.close(); resolve(true); };
       transaction.onerror = () => { db.close(); resolve(false); };
       transaction.onabort = () => { db.close(); resolve(false); };
@@ -417,7 +417,7 @@
       }
 
       if (result.data) {
-        if (result.data.productKey !== '7_advanced') {
+        if (result.data.productKey !== '7_advanced_v2') {
           alert("Эта ссылка не соответствует выбранному уровню диагностики.");
           window.location.href = "index.html";
           return;
@@ -654,31 +654,13 @@
             updateMinusBtnState(item.id);
           }
         }
-        const stat = saved.stats && saved.stats[item.id];
-        if (stat) {
-          item.qDef.checkCount = Number(stat.checkCount) || 0;
-          item.qDef.attemptsHistory = Array.isArray(stat.attemptsHistory) ? stat.attemptsHistory.filter((answer, index, history) => index === 0 || answer !== history[index - 1]) : [];
-          item.qDef.checkCount = Math.min(item.qDef.checkCount, item.qDef.attemptsHistory.length);
-          if (typeof stat.isCorrect === "boolean") {
-            item.qDef.isCorrect = stat.isCorrect;
-            const feedEl = document.getElementById(`feed_${item.id}`);
-            const btnEl = document.getElementById(`btn_${item.id}`);
-            if (stat.isCorrect) {
-              if (feedEl) feedEl.innerHTML = "<span style='color: #16a34a'>Верно! ✅</span>";
-              if (item.qDef.type === "radio") {
-                Array.from(document.getElementsByName(item.id)).forEach(el => el.disabled = true);
-              } else {
-                const inputEl = document.getElementById(item.id);
-                if (inputEl) inputEl.disabled = true;
-                const toggleBtn = document.getElementById(`btn_toggle_${item.id}`);
-                if (toggleBtn) toggleBtn.disabled = true;
-              }
-              if (btnEl) btnEl.style.display = "none";
-            } else if (feedEl) {
-              feedEl.innerHTML = "<span style='color: #dc2626'>Неверно ❌</span>";
-            }
-          }
-        }
+        // Старые checkCount/isCorrect отражали режим с проверкой до завершения.
+        // В новой диагностике сохраняем ответ, но не восстанавливаем подсказки о правильности.
+        item.qDef.checkCount = 0;
+        item.qDef.attemptsHistory = [];
+        item.qDef.isCorrect = null;
+        const feedback = document.getElementById('feed_' + item.id);
+        if (feedback) feedback.textContent = "";
       });
     } catch (error) {
       console.warn("Не удалось восстановить прогресс диагностики:", error);
@@ -1255,6 +1237,7 @@
     showCompletionStatus();
     let totalCorrect = 0;
     let totalQuestions = 0;
+    let totalEvaluated = 0;
     let pdfAnalyticsRowsHtml = "";
     let screenCardsHtml = "";
     let topicsToRepeatSet = new Set();
@@ -1264,6 +1247,7 @@
     quizData.forEach((block, bIdx) => {
       let blockCorrect = 0;
       let blockTotal = 0;
+      let blockEvaluated = 0;
 
       block.themes.forEach((theme, tIdx) => {
         let themeCorrect = 0;
@@ -1277,6 +1261,7 @@
           qDef.attemptsHistory = hasFinalAnswer ? [qDef.userText] : [];
 
           const isSkipped = (qDef.userText === "Не введено" || qDef.userText === "Не выбрано");
+          if (!isSkipped) blockEvaluated++;
           const distinctRadioAnswers = new Set([...(qDef.attemptsHistory || []), qDef.userText]
             .filter(answer => answer && answer !== "Не выбрано")
             .map(answer => String(answer)));
@@ -1310,14 +1295,12 @@
           }
 
           const finalAnswer = qDef.userText || (isSkipped ? "Ответ не введён" : "Ответ не проверялся");
-          const attemptsList = qDef.attemptsHistory && qDef.attemptsHistory.length > 0 ? qDef.attemptsHistory.join(" ➔ ") : "Проверок ещё не было";
-          const checkCountVal = qDef.checkCount || 0;
 
           const cardHtml = `
             <div class="pdf-card ${statusClass}">
               <div class="pdf-q">${qIndex}. ${formatMathText(qDef.q)}</div>
               <div class="pdf-card-footer"><div class="pdf-ans">
-                <b>Введенных ответов:</b> ${checkCountVal} | <b>Ответы:</b> ${checkCountVal ? escapeHtml(attemptsList) : (isSkipped ? (qDef.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")}<br>
+                <b>Ответ участника:</b> ${escapeHtml(finalAnswer)}<br>
                 <b>Правильный ответ:</b> ${formatMathText(qDef.correctText)}
               </div><span class="badge ${badgeClass}">${badgeStatus}</span></div>
             </div>
@@ -1329,29 +1312,30 @@
         blockTotal += themeTotal;
       });
 
-      const blockPercent = Math.round((blockCorrect / blockTotal) * 100);
-      let fillClass = blockPercent < 50 ? "bg-red" : (blockPercent < 70 ? "bg-yellow" : "bg-green");
+      const blockPercent = blockEvaluated ? Math.round((blockCorrect / blockEvaluated) * 100) : null;
+      let fillClass = blockPercent === null ? "" : (blockPercent < 50 ? "bg-red" : (blockPercent < 70 ? "bg-yellow" : "bg-green"));
 
       pdfAnalyticsRowsHtml += `
         <div class="pdf-progress-row">
           <div class="pdf-progress-header">
             <span>${block.block}</span>
-            <span>${blockPercent}%</span>
+            <span>${blockPercent === null ? "нет данных" : blockCorrect + " / " + blockEvaluated + " (" + blockPercent + "%)"}</span>
           </div>
           <div class="pdf-progress-track">
-            <div class="pdf-progress-fill ${fillClass}" style="width: ${blockPercent}%"></div>
+            <div class="pdf-progress-fill ${fillClass}" style="width: ${blockPercent === null ? 0 : blockPercent}%"></div>
           </div>
         </div>
       `;
       totalCorrect += blockCorrect;
+      totalEvaluated += blockEvaluated;
       totalQuestions += blockTotal;
     });
 
-    const percent = Math.round((totalCorrect / totalQuestions) * 100);
+    const percent = totalEvaluated ? Math.round((totalCorrect / totalEvaluated) * 100) : 0;
     const diagnosticLevel = location.pathname.includes("basic_v2") ? "fundament" : "primenenie";
     const diagnosticProfile = window.Reshai360Grade7Diagnostic.evaluate({ quizData, level: diagnosticLevel });
     window.__lastReportScore = totalCorrect;
-    window.__lastReportTotal = totalQuestions;
+    window.__lastReportTotal = totalEvaluated;
     const topicsToRepeat = Array.from(topicsToRepeatSet);
     const topicsToStudy = Array.from(topicsToStudySet);
 
@@ -1366,6 +1350,10 @@
         attemptsHistory: item.qDef.attemptsHistory || []
       };
     });
+    try {
+      const localSnapshot = JSON.parse(localStorage.getItem(progressStorageKey) || "{}");
+      localStorage.setItem(progressStorageKey, JSON.stringify({ ...localSnapshot, diagnosticProfile, savedAt: Date.now() }));
+    } catch (_) {}
     try {
       if (isPreviewMode) {
         isCompletedView = true;
@@ -1409,7 +1397,7 @@
     const pdfTopicsSplitHtml = `
       <div class="pdf-topics-container">
         <div class="pdf-topics-box repeat">
-          <h4>⚠️ Темы для повторения (ошибки / перебор):</h4>
+          <h4>Темы с неверными итоговыми ответами:</h4>
           ${repeatBoxHtml}
         </div>
         <div class="pdf-topics-box study">
@@ -1432,11 +1420,12 @@
           Дата прохождения: ${testDateStr}
         </div>
         <div class="pdf-score-right">
-          <div class="pdf-score-label">Итоговый результат</div>
-          <div class="pdf-score-main">${totalCorrect} из ${totalQuestions} (${percent}%)</div>
+          <div class="pdf-score-label">Доля правильных ответов среди оценённых</div>
+          <div class="pdf-score-main">${totalCorrect} из ${totalEvaluated} (${percent}%)</div>
+          <div class="pdf-score-label">Всего заданий: ${totalQuestions}; без ответа: ${totalQuestions - totalEvaluated}</div>
         </div>
       </div>
-      <div class="pdf-analytics-title">Результат диагностики</div>
+      <div class="pdf-analytics-title">Доля правильных ответов по блокам (описательный показатель)</div>
       <div>${pdfAnalyticsRowsHtml}</div>
       ${pdfTopicsSplitHtml}
       </div>
@@ -1547,6 +1536,7 @@
         formData.append('name', studentData.fullName);
         formData.append('score', totalCorrect);
         formData.append('total', totalQuestions);
+        formData.append('evaluated', totalEvaluated);
         formData.append('document', generatedPdfBlob, `Отчет_${studentData.fullName}.pdf`);
         const answersSnapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {}, diagnosticProfile };
         questionNavigation.forEach(item => {
