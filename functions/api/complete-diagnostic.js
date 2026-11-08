@@ -48,6 +48,30 @@ export async function onRequestPost(context) {
       changed = true;
     }
 
+    // Бонусный промокод создаётся сразу при завершении диагностики, независимо от PDF и email.
+    if (!tokenData.promoCodeIssued) {
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let promoCode = null;
+      for (let attempt = 0; attempt < 8 && !promoCode; attempt++) {
+        const bytes = new Uint8Array(10);
+        crypto.getRandomValues(bytes);
+        const candidate = "R360-" + Array.from(bytes, byte => alphabet[byte % alphabet.length]).join("");
+        if (!await env.TEST_TOKENS.get("promo:" + candidate)) promoCode = candidate;
+      }
+      if (!promoCode) throw new Error("Не удалось сгенерировать промокод");
+      await env.TEST_TOKENS.put("promo:" + promoCode, JSON.stringify({
+        code: promoCode,
+        discountPercent: 10,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 45 * 24 * 60 * 60 * 1000,
+        used: false,
+        reservedBy: null,
+        reservedUntil: null
+      }), { expirationTtl: 45 * 24 * 60 * 60 });
+      tokenData.promoCodeIssued = promoCode;
+      changed = true;
+    }
+
     const previousLinkExpiry = Number(tokenData.linkExpiresAt) || null;
     const linkExpiresAt = ensurePaidOrderLinkExpiry(tokenData);
     if (linkExpiresAt <= Date.now()) return Response.json({ success: false, message: "Срок действия ссылки на диагностику истёк." }, { status: 403 });
@@ -73,7 +97,7 @@ export async function onRequestPost(context) {
     }), { expirationTtl: 3888000 });
     scheduleOrderSync(context, { env, token, order: tokenData, event: "diagnostic_completed" });
 
-    return Response.json({ success: true, completed: true, completedAt: tokenData.completedAt || null });
+    return Response.json({ success: true, completed: true, completedAt: tokenData.completedAt || null, promoCode: tokenData.promoCodeIssued || null });
   } catch (error) {
     console.error("Complete diagnostic error:", error);
     return Response.json({ success: false, message: "Не удалось сохранить завершение диагностики. Попробуйте ещё раз." }, { status: 500 });
