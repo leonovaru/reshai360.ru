@@ -829,8 +829,8 @@
     if (value === null || value === undefined) return "";
     let source = String(value);
     const protectedBlocks = [];
-    source = source.replace(/<(svg|table)\\b[\\s\\S]*?<\\/\\1>/gi, block => {
-      const key = "\\uE300" + protectedBlocks.length + "\\uE301";
+    source = source.replace(/<(svg|table)\b[\s\S]*?<\/\1>/gi, block => {
+      const key = "\uE300" + protectedBlocks.length + "\uE301";
       protectedBlocks.push(block);
       return key;
     });
