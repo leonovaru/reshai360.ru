@@ -19,7 +19,10 @@ export async function onRequestPost(context) {
     const snapshot = {
       answers: input.answers,
       marked: Array.isArray(input.marked) ? input.marked : [],
-      stats: input.stats && typeof input.stats === "object" && !Array.isArray(input.stats) ? input.stats : {}
+      stats: input.stats && typeof input.stats === "object" && !Array.isArray(input.stats) ? input.stats : {},
+      diagnosticProfile: input.diagnosticProfile && typeof input.diagnosticProfile === "object" && !Array.isArray(input.diagnosticProfile)
+        ? input.diagnosticProfile
+        : null
     };
 
     if (JSON.stringify(snapshot).length > 512000) {
