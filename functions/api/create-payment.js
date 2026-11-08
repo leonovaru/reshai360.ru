@@ -1,4 +1,5 @@
 import { getOrderExpirationTtl } from "../_lib/telegram-payment.js";
+import { syncOrderToGoogleSheets } from "../_lib/google-sheets.js";
 export async function onRequestPost(context) {
   const { request, env } = context;
   let createdToken = null;
@@ -8,7 +9,15 @@ export async function onRequestPost(context) {
   // Освобождаем резерв промокода и удаляем незавершённый заказ при ошибке создания платежа.
   async function rollbackPendingOrder() {
     if (createdToken && env.TEST_TOKENS) {
-      try { await env.TEST_TOKENS.delete(createdToken); } catch (error) {
+      try {
+        const pendingRaw = await env.TEST_TOKENS.get(createdToken);
+        if (pendingRaw) {
+          const pendingOrder = JSON.parse(pendingRaw);
+          pendingOrder.paymentCreationFailed = true;
+          await syncOrderToGoogleSheets({ env, token: createdToken, order: pendingOrder, event: "payment_creation_failed" });
+        }
+        await env.TEST_TOKENS.delete(createdToken);
+      } catch (error) {
         console.error('Не удалось удалить незавершённый заказ:', error);
       }
     }
@@ -123,7 +132,7 @@ export async function onRequestPost(context) {
 
     // Сохраняем заказ в KV-хранилище (срок жизни 7 дней с момента создания).
     const orderCreatedAt = new Date().toISOString();
-    await env.TEST_TOKENS.put(token, JSON.stringify({
+    const orderData = {
       studentName,
       email,
       productKey,
@@ -140,7 +149,9 @@ export async function onRequestPost(context) {
       discountAmount,
       discountPercent,
       displayAmount: discountedDisplayPrice
-    }), { expirationTtl: getOrderExpirationTtl({ createdAt: orderCreatedAt }) });
+    });
+    await env.TEST_TOKENS.put(token, JSON.stringify(orderData), { expirationTtl: getOrderExpirationTtl({ createdAt: orderCreatedAt }) });
+    await syncOrderToGoogleSheets({ env, token, order: orderData, event: "order_created" });
     // Отдельная запись подтверждения согласия нужна для доказуемости факта и версии документов.
     await env.TEST_TOKENS.put("consent:" + token, JSON.stringify({
       ...consentRecord,
@@ -206,6 +217,7 @@ export async function onRequestPost(context) {
       const latestTokenData = JSON.parse(latestTokenRaw);
       latestTokenData.paymentId = payment.id;
       await env.TEST_TOKENS.put(createdToken, JSON.stringify(latestTokenData), { expirationTtl: getOrderExpirationTtl(latestTokenData) });
+      await syncOrderToGoogleSheets({ env, token: createdToken, order: latestTokenData, event: "payment_created" });
     }
 
     return new Response(JSON.stringify({
