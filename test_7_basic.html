@@ -1409,6 +1409,10 @@
     return instruction + formatMathText(source);
   }
 
+  function formatQuestionContent(value) {
+    return formatMathText(value);
+  }
+
   async function renderQuiz() {
     questionNavigation = [];
     let html = "";
