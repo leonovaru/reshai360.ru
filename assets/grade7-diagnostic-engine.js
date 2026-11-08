@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.5.0";
+  const VERSION = "7.6.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -148,7 +148,7 @@
           const outcome = getOutcome(question);
           const competencyId = TOPIC_COMPETENCY[topicId] || "UNMAPPED";
           const taskId = "G7-" + level + "-" + topicId + "-" + (questionIndex + 1);
-          const skillId = "G7." + topicId + (SPLIT_QUESTION_TOPICS.has(topicId) ? "." + (questionIndex + 1) : "");
+          const skillId = "G7." + topicId + (SPLIT_QUESTION_TOPICS.has(topicId) ? "." + level + "." + (questionIndex + 1) : "");
           const independenceGroup = SPLIT_QUESTION_TOPICS.has(topicId) || REPEATED_SAME_SKILL_TOPICS.has(topicId)
             ? taskId
             : "G7-" + level + "-" + topicId;
