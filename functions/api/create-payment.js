@@ -149,7 +149,7 @@ export async function onRequestPost(context) {
       discountAmount,
       discountPercent,
       displayAmount: discountedDisplayPrice
-    });
+    };
     await env.TEST_TOKENS.put(token, JSON.stringify(orderData), { expirationTtl: getOrderExpirationTtl({ createdAt: orderCreatedAt }) });
     await syncOrderToGoogleSheets({ env, token, order: orderData, event: "order_created" });
     // Отдельная запись подтверждения согласия нужна для доказуемости факта и версии документов.
