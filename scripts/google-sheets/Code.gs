@@ -116,11 +116,27 @@ function doPost(e) {
         targetRow = sheet.getLastRow();
       }
 
-      // Все даты в таблице отображаются по московскому времени (UTC+3).
-      [1, 15, 17, 21, 24, 29].forEach(column => {
-        sheet.getRange(2, column, Math.max(sheet.getLastRow() - 1, 1), 1)
-          .setNumberFormat("dd.MM.yyyy HH:mm:ss");
-      });
+      // Преобразуем ранее записанные ISO-строки в даты, чтобы вся история
+      // отображалась по часовому поясу таблицы Europe/Moscow, а не как UTC-текст.
+      const dataRows = Math.max(sheet.getLastRow() - 1, 0);
+      if (dataRows > 0) {
+        [1, 15, 17, 24, 29].forEach(column => {
+          const range = sheet.getRange(2, column, dataRows, 1);
+          const values = range.getValues();
+          let changed = false;
+          const converted = values.map(([value]) => {
+            if (typeof value !== "string" || !value.trim()) return [value];
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return [value];
+            changed = true;
+            return [date];
+          });
+          if (changed) range.setValues(converted);
+        });
+        [1, 15, 17, 21, 24, 29].forEach(column => {
+          sheet.getRange(2, column, dataRows, 1).setNumberFormat("dd.MM.yyyy HH:mm:ss");
+        });
+      }
     } finally {
       lock.releaseLock();
     }
