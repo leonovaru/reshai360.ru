@@ -449,6 +449,7 @@
   let localProgressRevision = 0;
   let localProgressDirty = false;
   let progressSaveQueue = Promise.resolve();
+  let progressSaveStatusTimer = null;
 
   function getQuestionAnswer(qId, qDef) {
     if (qDef.type === "radio") {
@@ -496,10 +497,14 @@
       return Promise.resolve(true);
     } catch (error) { console.warn("Не удалось сохранить прогресс диагностики:", error); return Promise.resolve(false); }
   }
-  function updateProgressSaveStatus(message, isError = false) {
+  function updateProgressSaveStatus(message, isError = false, autoHide = false) {
     const status = document.getElementById('progress-save-status');
     if (!status) return;
+    clearTimeout(progressSaveStatusTimer);
     status.textContent = message; status.style.color = isError ? '#fecaca' : '#dbeafe'; status.style.opacity = '1';
+    if (autoHide && !isError) {
+      progressSaveStatusTimer = setTimeout(() => { status.style.opacity = '0'; }, 4000);
+    }
   }
   function createProgressSaveControl() {
     if (document.getElementById('progress-save-control') || isCompletedView) return;
@@ -510,7 +515,7 @@
     status.id = 'progress-save-status'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
     status.style.cssText = 'max-width:220px;padding:7px 11px;border-radius:12px;background:rgba(15,23,42,.94);color:#dbeafe;font-size:12px;line-height:1.35;box-shadow:0 4px 16px rgba(0,0,0,.22);opacity:0;transition:opacity .2s;';
     const button = document.createElement('button');
-    button.type = 'button'; button.id = 'progress-save-button'; button.textContent = '☁'; button.title = 'Сохранить прогресс';
+    button.type = 'button'; button.id = 'progress-save-button'; button.textContent = '💾'; button.title = 'Сохранить прогресс';
     button.setAttribute('aria-label', 'Сохранить прогресс и продолжить на другом устройстве');
     button.style.cssText = 'width:52px;height:52px;border:0;border-radius:50%;background:linear-gradient(135deg,#7165f5,#27a9dc);color:#fff;font-size:25px;line-height:1;box-shadow:0 5px 18px rgba(40,80,180,.35);cursor:pointer;';
     button.addEventListener('click', async () => {
@@ -518,7 +523,7 @@
       button.disabled = true; button.style.opacity = '.7'; updateProgressSaveStatus('Сохраняем прогресс…');
       const saved = await saveQuizProgress(true);
       button.disabled = false; button.style.opacity = '1';
-      updateProgressSaveStatus(saved && !localProgressDirty ? 'Прогресс сохранён. Можно продолжить на другом устройстве.' : 'Сохранение не подтверждено. Проверьте интернет и попробуйте ещё раз.', !(saved && !localProgressDirty));
+      updateProgressSaveStatus(saved && !localProgressDirty ? 'Прогресс сохранён. Можно продолжить на другом устройстве.' : 'Сохранение не подтверждено. Проверьте интернет и попробуйте ещё раз.', !(saved && !localProgressDirty), saved && !localProgressDirty);
     });
     wrapper.append(status, button); document.body.appendChild(wrapper);
   }
