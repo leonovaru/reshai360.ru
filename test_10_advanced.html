@@ -1731,6 +1731,48 @@
     if (!code || !navigator.clipboard || !navigator.clipboard.writeText) return;
     navigator.clipboard.writeText(code).then(() => { const note = document.getElementById("promo-code-result-note"); if (note) note.textContent = "Промокод скопирован."; }).catch(() => {});
   }
+  function showReportEmailSentPopup(email) {
+    if (!email) return;
+    document.getElementById("report-email-sent-modal")?.remove();
+    const overlay = document.createElement("div");
+    overlay.id = "report-email-sent-modal";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(3,7,18,.76);backdrop-filter:blur(5px);";
+    const dialog = document.createElement("div");
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.setAttribute("aria-labelledby", "report-email-sent-title");
+    dialog.style.cssText = "position:relative;width:100%;max-width:440px;padding:28px 24px 24px;border:1px solid rgba(129,140,248,.45);border-radius:22px;background:linear-gradient(145deg,#111827,#1e1b4b 58%,#172554);box-shadow:0 24px 80px rgba(0,0,0,.45);color:#fff;text-align:center;";
+    const close = document.createElement("button");
+    close.type = "button";
+    close.setAttribute("aria-label", "Закрыть уведомление");
+    close.textContent = "×";
+    close.style.cssText = "position:absolute;top:10px;right:14px;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;font-size:26px;line-height:1;cursor:pointer;";
+    close.addEventListener("click", () => overlay.remove());
+    const mark = document.createElement("div");
+    mark.textContent = "✓";
+    mark.style.cssText = "display:flex;align-items:center;justify-content:center;width:54px;height:54px;margin:0 auto 14px;border-radius:50%;background:rgba(52,211,153,.16);color:#6ee7b7;font-size:30px;font-weight:800;";
+    const title = document.createElement("h2");
+    title.id = "report-email-sent-title";
+    title.textContent = "Письмо отправлено";
+    title.style.cssText = "margin:0 0 12px;font-size:22px;font-weight:800;";
+    const message = document.createElement("p");
+    message.textContent = "Письмо с PDF отправлено на " + email + ".";
+    message.style.cssText = "margin:0 0 10px;color:#e2e8f0;font-size:15px;line-height:1.6;overflow-wrap:anywhere;";
+    const hint = document.createElement("p");
+    hint.textContent = "Проверьте входящие, а если письма нет — папки «Спам» и «Промоакции».";
+    hint.style.cssText = "margin:0 0 22px;color:#cbd5e1;font-size:14px;line-height:1.6;";
+    const ok = document.createElement("button");
+    ok.type = "button";
+    ok.textContent = "Понятно";
+    ok.style.cssText = "width:100%;padding:12px 18px;border:0;border-radius:12px;background:linear-gradient(100deg,#6366f1,#0ea5e9);color:#fff;font-size:15px;font-weight:800;cursor:pointer;";
+    ok.addEventListener("click", () => overlay.remove());
+    overlay.addEventListener("click", event => { if (event.target === overlay) overlay.remove(); });
+    dialog.append(close, mark, title, message, hint, ok);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    close.focus();
+  }
+
   async function sendReportToUpdatedEmail() {
     const input = document.getElementById("corrected-report-email");
     const button = document.getElementById("resend-report-email");
@@ -1770,6 +1812,7 @@
       }
       studentData.email = email;
       status.textContent = "Почтовый сервис принял письмо с PDF на " + email + ". Если письма нет во входящих, проверьте «Спам» и «Промоакции» — ниже можно отправить его ещё раз.";
+      showReportEmailSentPopup(email);
       if (result.feedbackUrl) {
         const feedbackLink = document.getElementById("feedback-form-link");
         if (feedbackLink) feedbackLink.href = result.feedbackUrl;
@@ -1935,6 +1978,7 @@
         });
       } finally { clearTimeout(completionTimeout); }
       const completionResult = await completionResponse.json().catch(() => ({}));
+      existingPromoCode = completionResult.promoCode || existingPromoCode;
       if (!completionResponse.ok || !completionResult.success) {
         throw new Error(completionResult.message || 'Не удалось зафиксировать завершение диагностики.');
       }
@@ -1997,7 +2041,7 @@
       </div>
       <div class="result-actions">
         <button id="downloadPdfBtn" class="btn-pdf" disabled onclick="downloadPDF()">⏳ Подготовка PDF: 60 сек</button>
-        <button type="button" class="result-action-secondary" onclick="const p=document.getElementById('promo-code-result'); const n=document.getElementById('promo-code-result-note'); if(p){p.style.display='block'; if(n && !n.textContent) n.textContent='Промокод формируется и появится здесь после обработки отчёта.'; p.scrollIntoView({behavior:'smooth',block:'center'});}">🎁 Забрать промокод</button>
+        <button type="button" class="result-action-secondary" onclick="const p=document.getElementById('promo-code-result'); if(p){p.style.display='block'; p.scrollIntoView({behavior:'smooth',block:'center'});}">🎁 Забрать промокод</button>
         <button type="button" class="result-action-secondary" onclick="document.querySelector('#result-screen .screen-section-title')?.scrollIntoView({behavior:'smooth',block:'start'})">Посмотреть задания с ответами</button>
       </div>
       <h3 class="screen-section-title">Детализация ответов</h3>
@@ -2015,9 +2059,6 @@
       const promoNote = document.getElementById("promo-code-result-note");
       if (promoValue) promoValue.textContent = existingPromoCode;
       if (promoNote) promoNote.textContent = "Ваш промокод сохранён. Его можно использовать при следующем заказе.";
-    } else {
-      const promoNote = document.getElementById("promo-code-result-note");
-      if (promoNote) promoNote.textContent = "Промокод формируется и появится здесь после обработки отчёта.";
     }
     startPdfCountdown();
 
@@ -2122,6 +2163,7 @@
             emailStatus.textContent = accepted
               ? 'Письмо с PDF отправлено на ' + studentData.email + '. Проверьте входящие, а если письма нет — папки «Спам» и «Промоакции».'
               : 'Не удалось отправить письмо на ' + studentData.email + '. Причина: ' + (reportResult.emailError || 'почтовый сервис не подтвердил отправку.') + ' Проверьте правильность адреса и введите актуальную почту ниже для повторной отправки.';
+            if (accepted) showReportEmailSentPopup(studentData.email);
           } else {
             emailStatus.textContent = 'PDF-отчёт сформирован. Адрес электронной почты не указан — введите актуальную почту ниже, чтобы получить письмо.';
           }
@@ -2130,7 +2172,7 @@
             if (feedbackLink) feedbackLink.href = reportResult.feedbackUrl;
           }
         } else {
-          document.getElementById('promo-code-result-note').textContent = 'Не удалось подтвердить отправку данных отчёта. Сам PDF уже сформирован и доступен для просмотра. Если письмо не пришло, проверьте причину ниже и укажите актуальный адрес.';
+          document.getElementById('promo-code-result-note').textContent = 'Ваш промокод сохранён. Его можно использовать при следующем заказе.';
           document.getElementById('promo-code-result').style.display = 'block';
           if (emailStatus) {
             emailStatus.textContent = 'Не удалось подтвердить отправку письма' + (studentData.email ? ' на ' + studentData.email : '') + '. Причина: ' + (reportResult.emailError || reportResult.message || 'нет ответа от сервера отправки почты') + '. Проверьте адрес и введите актуальную почту ниже.';
