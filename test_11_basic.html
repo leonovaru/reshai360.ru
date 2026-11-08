@@ -1178,7 +1178,9 @@
       if (button) { button.classList.toggle("active", active); button.textContent = "⚑"; button.setAttribute("aria-label", active ? "Задание отмечено для возврата" : "Отметить задание, чтобы вернуться позже"); button.title = active ? "Отмечено для возврата" : "Вернуться к заданию позже"; button.setAttribute("aria-pressed", String(active)); }
     });
     updateQuestionNavigator();
-    await safeTypeset(quizContainer);
+    // Не задерживаем показ всех заданий ожиданием MathJax: текст появляется сразу,
+    // математические формулы дорисовываются асинхронно после отображения страницы.
+    if (!isCompletedView) safeTypeset(quizContainer);
   }
 
   function checkSingle(bIdx, tIdx, qIdx, silent = false) {
@@ -1280,32 +1282,23 @@
 
   let pdfCountdownTimer = null;
   let pdfCountdownRemaining = 60;
-  let pdfCountdownDeadline = 0;
   function startPdfCountdown() {
     const button = document.getElementById("downloadPdfBtn");
     if (!button) return;
     pdfCountdownRemaining = 60;
-    pdfCountdownDeadline = Date.now() + 60000;
     button.innerText = "⏳ Подготовка PDF: 60 сек";
     if (pdfCountdownTimer) clearInterval(pdfCountdownTimer);
-    const updateCountdown = () => {
+    pdfCountdownTimer = setInterval(() => {
+      pdfCountdownRemaining = Math.max(0, pdfCountdownRemaining - 1);
       const currentButton = document.getElementById("downloadPdfBtn");
-      if (!currentButton || !currentButton.disabled) {
-        clearInterval(pdfCountdownTimer);
-        pdfCountdownTimer = null;
-        return;
+      if (currentButton && currentButton.disabled) {
+        currentButton.innerText = "⏳ Подготовка PDF: " + pdfCountdownRemaining + " сек";
       }
-      pdfCountdownRemaining = Math.max(0, Math.ceil((pdfCountdownDeadline - Date.now()) / 1000));
-      currentButton.innerText = pdfCountdownRemaining > 0
-        ? "⏳ Подготовка PDF: " + pdfCountdownRemaining + " сек"
-        : "⏳ PDF ещё формируется…";
-      if (pdfCountdownRemaining <= 0) {
+      if (pdfCountdownRemaining === 0) {
         clearInterval(pdfCountdownTimer);
         pdfCountdownTimer = null;
       }
-    };
-    updateCountdown();
-    pdfCountdownTimer = setInterval(updateCountdown, 250);
+    }, 1000);
   }
   async function retryReportEmail() {
     const status = document.getElementById('report-email-status');
