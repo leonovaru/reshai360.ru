@@ -65,6 +65,11 @@ export async function onRequestPost(context) {
             tokenData.paymentId = payment.id;
             tokenData.paidAt = payment.captured_at || payment.created_at || new Date().toISOString();
             tokenData.linkExpiresAt = Date.parse(tokenData.paidAt) + ORDER_ACCESS_TTL_MS;
+            tokenData.paymentCanceled = false;
+            orderDataChanged = true;
+            await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
+          } else if (payment.status === 'canceled' && paymentMatchesOrder) {
+            tokenData.paymentCanceled = true;
             orderDataChanged = true;
             await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
           }
@@ -77,6 +82,9 @@ export async function onRequestPost(context) {
     }
 
     if (tokenData.isPaid !== true) {
+      if (tokenData.paymentCanceled === true) {
+        return Response.json({ valid: false, message: 'Платёж отменён банком. Можно безопасно попробовать оплатить ещё раз.' }, { status: 409 });
+      }
       return Response.json({ valid: false, message: 'Платёж ещё подтверждается.' }, { status: 402 });
     }
 
