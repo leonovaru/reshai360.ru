@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 10;
+  const VERSION = 11;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -127,20 +127,23 @@
   }
 
   function makeFirstPage(model) {
-    const { grade, studentName, dateText, score, total, blockRows, repeatTopics, studyTopics } = model;
+    const { grade, levelLabel, studentName, dateText, score, total, blockRows, repeatTopics, studyTopics } = model;
     const percent = total ? Math.round(score / total * 100) : 0;
+    const topicLimit = 12;
+    const repeatVisible = repeatTopics.slice(0, topicLimit);
+    const studyVisible = studyTopics.slice(0, topicLimit);
     const repeatHtml = repeatTopics.length
-      ? "<ol>" + repeatTopics.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>"
+      ? "<ol>" + repeatVisible.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>" + (repeatTopics.length > topicLimit ? '<p style="margin:4px 0 0;">И ещё ' + (repeatTopics.length - topicLimit) + ' тем — см. задания в подробной части отчёта.</p>' : "")
       : '<p style="margin:0;">Ошибок в решённых заданиях нет.</p>';
     const studyHtml = studyTopics.length
-      ? "<ol>" + studyTopics.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>"
+      ? "<ol>" + studyVisible.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>" + (studyTopics.length > topicLimit ? '<p style="margin:4px 0 0;">И ещё ' + (studyTopics.length - topicLimit) + ' тем — см. задания в подробной части отчёта.</p>' : "")
       : '<p style="margin:0;">Пропущенных заданий нет.</p>';
     return `
       <div class="pdf-first-page-content">
         <h1 class="pdf-header-title">Диагностическая карта знаний</h1>
         <div class="pdf-score-card">
           <div class="pdf-student-info">
-            ${escapeHtml(grade)} класс<br>
+            ${escapeHtml(grade)} класс · ${escapeHtml(levelLabel || "")}<br>
             <strong>Ученик:</strong> ${escapeHtml(studentName)}<br>
             Дата прохождения: ${escapeHtml(dateText)}
           </div>
@@ -289,6 +292,7 @@
     const match = String(global.location && global.location.pathname || "").match(/test_(\d+)_(basic|advanced)/i);
     const grade = match ? match[1] : "";
     const level = match ? match[2] : "basic";
+    const levelLabel = grade === "7" ? (level === "basic" ? "Фундамент" : "Применение") : (level === "basic" ? "Лёгкий старт" : "Полная диагностика");
     const dateText = new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
     let score = 0;
     let total = 0;
@@ -326,6 +330,7 @@
     const model = {
       grade,
       level,
+      levelLabel,
       studentName: studentName || "Ученик",
       dateText,
       score,
