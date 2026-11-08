@@ -1,4 +1,5 @@
 import { ensurePaidOrderLinkExpiry, getOrderExpirationTtl } from "../_lib/telegram-payment.js";
+import { syncOrderToGoogleSheets } from "../_lib/google-sheets.js";
 export async function onRequestPost({ request, env }) {
   try {
     if (!env.TEST_TOKENS) {
@@ -69,6 +70,7 @@ export async function onRequestPost({ request, env }) {
       reportReady: previousArchive.reportReady === true,
       promoCodeIssued: tokenData.promoCodeIssued || previousArchive.promoCodeIssued || null
     }), { expirationTtl: 3888000 });
+    await syncOrderToGoogleSheets({ env, token, order: tokenData, event: "diagnostic_completed" });
 
     return Response.json({ success: true, completed: true, completedAt: tokenData.completedAt || null });
   } catch (error) {
