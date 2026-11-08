@@ -314,6 +314,7 @@
 <script>
   let studentData = { fullName: "Ученик", email: "" };
   let currentToken = "";
+  let isPreviewMode = false;
   let generatedPdfBlob = null;
 
   // Готовый PDF хранится в IndexedDB этого браузера до окончания 24-часового доступа.
@@ -376,7 +377,7 @@
   // Проверка токена при загрузке страницы (защита от пересылки и повторного прохождения)
   window.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
-    const isPreviewMode = location.hostname.endsWith(".pages.dev") && location.hostname !== "reshai360-ru.pages.dev";
+    isPreviewMode = location.hostname.endsWith(".pages.dev") && location.hostname !== "reshai360-ru.pages.dev";
     currentToken = params.get('token') || localStorage.getItem('testToken');
 
     let completedSnapshot = null;
