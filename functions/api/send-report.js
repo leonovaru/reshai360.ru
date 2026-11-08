@@ -1,6 +1,8 @@
 import { ensurePaidOrderLinkExpiry, getOrderExpirationTtl } from "../_lib/telegram-payment.js";
 import { syncOrderToGoogleSheets } from "../_lib/google-sheets.js";
 
+const RESULTS_REPORT_VERSION = 5;
+
 async function getPromoRecordsForEmail(env, email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
   if (!normalizedEmail) return [];
@@ -248,7 +250,7 @@ export async function onRequestPost({ request, env }) {
     }
 
     // Отдельный бот результатов получает PDF и ссылку на сохранённую диагностику.
-    if (env.TELEGRAM_RESULTS_BOT_TOKEN && env.TG_CHAT_ID && !tokenData.resultsTelegramSentAt) {
+    if (env.TELEGRAM_RESULTS_BOT_TOKEN && env.TG_CHAT_ID && (!tokenData.resultsTelegramSentAt || Number(tokenData.resultsTelegramReportVersion || 0) < RESULTS_REPORT_VERSION)) {
       try {
         const testFiles = {
           '7': 'test_7_basic.html', '7_basic': 'test_7_basic.html', '7_advanced': 'test_7_advanced.html',
@@ -286,6 +288,7 @@ export async function onRequestPost({ request, env }) {
         } else {
           const sentDocument = tgResult.result && tgResult.result.document ? tgResult.result.document : {};
           tokenData.resultsTelegramSentAt = new Date().toISOString();
+          tokenData.resultsTelegramReportVersion = RESULTS_REPORT_VERSION;
           if (sentDocument.file_id) tokenData.resultsTelegramFileId = sentDocument.file_id;
           if (sentDocument.file_unique_id) tokenData.resultsTelegramFileUniqueId = sentDocument.file_unique_id;
           await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
