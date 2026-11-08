@@ -5,10 +5,10 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 5;
+  const VERSION = 6;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
-  const PAGE_CONTENT_HEIGHT = 930;
+  const PAGE_CONTENT_HEIGHT = 1030;
 
   function escapeHtml(value) {
     return String(value == null ? "" : value)
@@ -64,7 +64,7 @@
     const checkCount = Math.max(Number(stat.checkCount) || 0, history.length);
     const distinctRadioAnswers = new Set(history.filter(item => item && item !== "Не выбрано"));
     if (question.type === "radio" && finalAnswer !== "Не выбрано") distinctRadioAnswers.add(finalAnswer);
-    const guessedByBruteForce = question.type === "radio" && distinctRadioAnswers.size > 1;
+    const guessedByBruteForce = question.type === "radio" && (question.options || []).length === 4 && distinctRadioAnswers.size === 4;
 
     let statusClass = "incorrect";
     let badgeClass = "badge-err";
@@ -86,7 +86,7 @@
       finalAnswer,
       correctAnswer,
       isSkipped,
-      isCorrect: isCorrect && !guessedByBruteForce,
+      isCorrect,
       guessedByBruteForce,
       checkCount,
       attemptsText,
