@@ -88,7 +88,10 @@
     let reason = independent.some(item => item.outcome === "CONTRADICTORY")
       ? "В составном задании получены разные результаты. Для оценки навыка нужна отдельная проверка."
       : "Нет ответов, которые позволяют оценить это действие.";
-    let errorHypothesisLevel = incorrect === 0 ? "H0" : incorrect === 1 ? "H1" : (correct === 0 && !independent.some(item => item.outcome === "CONTRADICTORY") ? "H2" : "H1");
+    const hasContradictoryGroup = independent.some(item => item.outcome === "CONTRADICTORY");
+    let errorHypothesisLevel = incorrect === 0 && !hasContradictoryGroup
+      ? "H0"
+      : (incorrect >= 2 && correct === 0 && !hasContradictoryGroup ? "H2" : "H1");
 
     if (assessed.length === 1) {
       reason = assessed[0].outcome === "CORRECT"
