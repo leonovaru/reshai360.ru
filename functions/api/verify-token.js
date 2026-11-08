@@ -45,6 +45,7 @@ export async function onRequestPost(context) {
           const payment = await paymentResponse.json();
           const expectedAmountByProduct = {
             '7': '1.00', '7_basic': '1.00', '7_advanced': '1.00',
+            '7_basic_v2': '1.00', '7_advanced_v2': '1.00',
             '8': '1.00', '8_basic': '1.00', '8_advanced': '1.00',
             '9': '1.00', '9_basic': '1.00', '9_advanced': '1.00',
             '10': '1.00', '10_basic': '1.00', '10_advanced': '1.00',
