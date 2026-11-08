@@ -113,7 +113,7 @@ function doPost(e) {
 function safeText_(value) {
   if (value === null || value === undefined || value === "") return "";
   const text = String(value);
-  return /^[=+\\-@]/.test(text) ? "'" + text : text;
+  return /^[-=+@]/.test(text) ? "'" + text : text;
 }
 
 function numberOrBlank_(value) {
