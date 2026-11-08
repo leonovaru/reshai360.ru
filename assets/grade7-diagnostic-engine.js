@@ -272,7 +272,14 @@
         item.topicsWithEvidence + " из " + item.presentedTopics + "</td><td>" +
         item.topicsWithRepeatedEvidence + "</td></tr>";
     }).join("");
-    const counts = profile.statusCounts || {};
+    const repeatedSkills = profile.skills.filter(skill => skill.evidenceCount >= 2 || skill.contradictory).slice(0, 8);
+    const repeatedHtml = repeatedSkills.length
+      ? "<ul style='margin:8px 0 0;padding-left:20px;'>" + repeatedSkills.map(skill =>
+          "<li style='margin:4px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
+          " (" + skill.correctCount + " из " + skill.evidenceCount + " независимых наблюдений верно). " +
+          escapeHtml(skill.reason) + "</li>"
+        ).join("") + "</ul>"
+      : "<p style='margin:8px 0 0;color:#475569;'>В текущем наборе пока недостаточно повторных независимых наблюдений для устойчивых выводов по отдельным навыкам.</p>";
     return '<section class="g7-diagnostic-summary" style="margin:24px 0;padding:18px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#1e293b;">' +
       '<h3 style="margin:0 0 8px;color:#1b365d;font-size:1.15em;">Диагностическая интерпретация</h3>' +
       '<p style="margin:0 0 10px;line-height:1.5;">Проверено заданий: <b>' + profile.totalPresented +
@@ -285,6 +292,7 @@
       '<p style="margin:0 0 12px;line-height:1.5;color:#475569;">Единичный ответ не подтверждает устойчивое владение навыком. Процент правильных ответов — описательный показатель, а не уровень сформированности.</p>'
       '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.92em;"><thead><tr><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Компетенция</th><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Темы с данными</th><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Повторные наблюдения</th></tr></thead><tbody>' +
       rows + '</tbody></table></div>' +
+      '<h4 style="margin:14px 0 4px;font-size:1em;">Навыки с повторными наблюдениями</h4>' + repeatedHtml +
       '<details style="margin-top:12px;"><summary style="cursor:pointer;font-weight:700;">Ограничения интерпретации</summary><ul style="margin:8px 0 0;padding-left:20px;">' +
       profile.limitations.map(item => "<li>" + escapeHtml(item) + "</li>").join("") +
       '</ul></details></section>';
