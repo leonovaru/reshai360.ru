@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 7;
+  const VERSION = 8;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -233,24 +233,30 @@
       if (i) pdf.addPage();
       const canvas = await global.html2canvas(page, {
         scale: 2,
+        width: PAGE_WIDTH,
+        height: PAGE_HEIGHT,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
+        // Всегда рендерим в фиксированном «компьютерном» viewport A4,
+        // независимо от реального экрана устройства.
         windowWidth: PAGE_WIDTH,
         windowHeight: PAGE_HEIGHT,
         scrollX: 0,
         scrollY: 0,
         onclone: clonedDocument => {
+          // Изолируем PDF от мобильного viewport и автоматического увеличения текста
+          // браузерами iOS/Android. Макет всегда остаётся 794 × 1122 px.
+          clonedDocument.documentElement.style.cssText += ";width:794px!important;min-width:794px!important;max-width:794px!important;-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important;";
+          clonedDocument.body.style.cssText += ";width:794px!important;min-width:794px!important;max-width:794px!important;-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important;";
           const exportContainer = clonedDocument.getElementById("pdf-export-container");
           if (exportContainer) {
-            exportContainer.style.opacity = "1";
-            exportContainer.style.visibility = "visible";
-            exportContainer.style.zIndex = "auto";
+            exportContainer.style.cssText += ";position:absolute!important;left:0!important;top:0!important;width:794px!important;min-width:794px!important;max-width:794px!important;opacity:1!important;visibility:visible!important;z-index:auto!important;transform:none!important;";
           }
           const clonedPages = clonedDocument.querySelectorAll("#result-pdf .pdf-page");
           const clonedPage = clonedPages[i];
           if (!clonedPage) return;
-          clonedPage.style.cssText += ";width:794px;height:1122px;min-height:1122px;max-height:1122px;max-width:none;overflow:hidden;box-sizing:border-box;background:#fff;opacity:1;visibility:visible;";
+          clonedPage.style.cssText += ";width:794px!important;min-width:794px!important;max-width:794px!important;height:1122px!important;min-height:1122px!important;max-height:1122px!important;overflow:hidden!important;box-sizing:border-box!important;background:#fff!important;font-family:Arial,sans-serif!important;font-size:15px!important;line-height:normal;-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important;opacity:1!important;visibility:visible!important;transform:none!important;";
           clonedPage.querySelectorAll(".pdf-q").forEach(node => {
             node.style.textAlign = "left";
             node.style.overflowWrap = "normal";
