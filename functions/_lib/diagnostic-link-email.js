@@ -12,32 +12,51 @@ function escapeHtml(value) {
 }
 
 export async function sendDiagnosticLinkEmail({ env, token, tokenData }) {
-  if (tokenData.diagnosticLinkEmailSentAt) return { sent: true, alreadySent: true };
+  if (tokenData.diagnosticLinkEmailSentAt) {
+    tokenData.diagnosticLinkEmailStatus = "Отправлено";
+    return { sent: true, alreadySent: true, id: tokenData.diagnosticLinkEmailId || null };
+  }
 
   if (!tokenData.email || !env.RESEND_API_KEY) {
-    console.error("Diagnostic link email cannot be sent: missing customer email or RESEND_API_KEY.");
-    return { sent: false, configured: false };
+    const error = !tokenData.email ? "В заказе не указан адрес электронной почты." : "На сервере не настроен ключ почтового сервиса.";
+    tokenData.diagnosticLinkEmailStatus = "Ошибка";
+    tokenData.diagnosticLinkEmailError = error;
+    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), {
+      expirationTtl: getOrderExpirationTtl(tokenData)
+    });
+    console.error("Diagnostic link email cannot be sent:", error);
+    return { sent: false, configured: false, error };
   }
 
   const testFile = TEST_FILES[tokenData.productKey];
   if (!testFile) {
-    console.error("Diagnostic link email skipped: unknown product key", tokenData.productKey);
-    return { sent: false, configured: true };
+    const error = "Неизвестный тип диагностики: " + String(tokenData.productKey || "");
+    tokenData.diagnosticLinkEmailStatus = "Ошибка";
+    tokenData.diagnosticLinkEmailError = error;
+    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), {
+      expirationTtl: getOrderExpirationTtl(tokenData)
+    });
+    console.error("Diagnostic link email skipped:", error);
+    return { sent: false, configured: true, error };
   }
 
   const lastAttemptAt = Date.parse(tokenData.diagnosticLinkEmailAttemptAt || "");
   if (Number.isFinite(lastAttemptAt) && Date.now() - lastAttemptAt < 60 * 1000) {
+    tokenData.diagnosticLinkEmailStatus = tokenData.diagnosticLinkEmailStatus || "Ожидает отправки";
     return { sent: false, configured: true, retryDeferred: true };
   }
 
   // Не чаще одного обращения к Resend в минуту для одного заказа:
   // success.html опрашивает статус платежа несколько раз подряд.
   tokenData.diagnosticLinkEmailAttemptAt = new Date().toISOString();
+  tokenData.diagnosticLinkEmailStatus = "Ожидает отправки";
+  tokenData.diagnosticLinkEmailError = null;
+  tokenData.diagnosticUrl = "https://reshai360.ru/" + testFile + "?token=" + encodeURIComponent(token);
   await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), {
     expirationTtl: getOrderExpirationTtl(tokenData)
   });
 
-  const diagnosticUrl = "https://reshai360.ru/" + testFile + "?token=" + encodeURIComponent(token);
+  const diagnosticUrl = tokenData.diagnosticUrl;
   const studentName = String(tokenData.studentName || "").trim();
   const safeName = escapeHtml(studentName || "Здравствуйте");
   const greetingText = studentName ? "Здравствуйте, " + studentName + "!" : "Здравствуйте!";
@@ -61,20 +80,34 @@ export async function sendDiagnosticLinkEmail({ env, token, tokenData }) {
     });
 
     if (!response.ok) {
-      console.error("Diagnostic link email error:", response.status, (await response.text()).slice(0, 700));
-      return { sent: false, configured: true };
+      const error = (await response.text()).slice(0, 700) || ("HTTP " + response.status);
+      tokenData.diagnosticLinkEmailStatus = "Ошибка";
+      tokenData.diagnosticLinkEmailError = error;
+      await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), {
+        expirationTtl: getOrderExpirationTtl(tokenData)
+      });
+      console.error("Diagnostic link email error:", response.status, error);
+      return { sent: false, configured: true, error };
     }
 
     const emailResult = await response.json().catch(() => ({}));
     tokenData.diagnosticLinkEmailSentAt = new Date().toISOString();
     tokenData.diagnosticLinkEmailId = emailResult.id || null;
+    tokenData.diagnosticLinkEmailStatus = "Отправлено";
+    tokenData.diagnosticLinkEmailError = null;
     await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), {
       expirationTtl: getOrderExpirationTtl(tokenData)
     });
     return { sent: true, configured: true, id: emailResult.id || null };
   } catch (error) {
+    const message = String(error && error.message || error).slice(0, 700);
+    tokenData.diagnosticLinkEmailStatus = "Ошибка";
+    tokenData.diagnosticLinkEmailError = message;
+    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), {
+      expirationTtl: getOrderExpirationTtl(tokenData)
+    });
     console.error("Diagnostic link email error:", error);
-    return { sent: false, configured: true };
+    return { sent: false, configured: true, error: message };
   }
 }
 
