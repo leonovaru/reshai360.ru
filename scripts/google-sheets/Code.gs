@@ -116,6 +116,9 @@ function doPost(e) {
         targetRow = sheet.getLastRow();
       }
 
+      setLinkCell_(sheet, targetRow, 22, diagnosticUrl, "Открыть диагностику", "https://reshai360.ru/");
+      setLinkCell_(sheet, targetRow, 27, order.resultsTelegramMessageLink, "Открыть сообщение", "https://t.me/");
+
       // Преобразуем ранее записанные ISO-строки в даты, чтобы вся история
       // отображалась по часовому поясу таблицы Europe/Moscow, а не как UTC-текст.
       const dataRows = Math.max(sheet.getLastRow() - 1, 0);
@@ -158,6 +161,20 @@ function diagnosticUrl_(productKey, token) {
   };
   const file = files[String(productKey || "")];
   return file ? "https://reshai360.ru/" + file + "?token=" + encodeURIComponent(token) : "";
+}
+
+function setLinkCell_(sheet, row, column, url, label, allowedPrefix) {
+  const value = String(url || "").trim();
+  const cell = sheet.getRange(row, column);
+  if (value && value.startsWith(allowedPrefix)) {
+    const richText = SpreadsheetApp.newRichTextValue()
+      .setText(label)
+      .setLinkUrl(value)
+      .build();
+    cell.setRichTextValue(richText);
+  } else {
+    cell.clearContent();
+  }
 }
 
 function dateOrBlank_(value) {
