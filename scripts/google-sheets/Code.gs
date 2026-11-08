@@ -60,26 +60,26 @@ function doPost(e) {
 
       const now = new Date();
       const row = [
-        order.createdAt || "",
-        token,
-        order.studentName || "",
-        order.email || "",
-        order.productKey || "",
-        order.productTitle || "",
+        safeText_(order.createdAt),
+        safeText_(token),
+        safeText_(order.studentName),
+        safeText_(order.email),
+        safeText_(order.productKey),
+        safeText_(order.productTitle),
         numberOrBlank_(order.displayAmount),
         numberOrBlank_(order.listPrice),
         numberOrBlank_(order.discountAmount),
         numberOrBlank_(order.discountPercent),
-        order.promoCode || "",
-        order.referralCode || "",
-        order.paymentId || "",
+        safeText_(order.promoCode),
+        safeText_(order.referralCode),
+        safeText_(order.paymentId),
         order.isPaid === true ? "Оплачен" : (order.paymentCreationFailed === true ? "Ошибка создания платежа" : "Ожидает оплаты"),
-        order.paidAt || "",
+        safeText_(order.paidAt),
         order.isCompleted === true ? "Завершена" : "Не завершена",
-        order.completedAt || "",
+        safeText_(order.completedAt),
         order.resultsTelegramSentAt ? "Отправлен" : "Не отправлен",
-        order.resultsTelegramFileId || "",
-        order.resultsTelegramFileUniqueId || "",
+        safeText_(order.resultsTelegramFileId),
+        safeText_(order.resultsTelegramFileUniqueId),
         now
       ];
 
@@ -108,6 +108,12 @@ function doPost(e) {
     console.error("Order sync error:", error);
     return json_({ success: false, error: String(error && error.message || error) });
   }
+}
+
+function safeText_(value) {
+  if (value === null || value === undefined || value === "") return "";
+  const text = String(value);
+  return /^[=+\\-@]/.test(text) ? "'" + text : text;
 }
 
 function numberOrBlank_(value) {
