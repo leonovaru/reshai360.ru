@@ -38,6 +38,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="/assets/report-generator.js?v=11"></script>
   <script src="/assets/grade7-diagnostic-data.js?v=1"></script>
+  <script src="/assets/grade7-diagnostic-engine.js?v=1"></script>
 
   <style>
     :root {
@@ -977,7 +978,7 @@
           }
 
           html += `<div class="question-action-row">`;
-          html += `<button class="btn-check" id="btn_${qId}" onclick="checkSingle(${bIdx}, ${tIdx}, ${qIdx})">Проверить</button>`;
+          html += `<button class="btn-check" id="btn_${qId}" onclick="checkSingle(${bIdx}, ${tIdx}, ${qIdx})">Сохранить ответ</button>`;
           html += '<button type="button" class="question-flag" id="flag_' + qId + '" onclick="toggleQuestionFlag(\'' + qId + '\')" aria-label="Отметить задание, чтобы вернуться позже" aria-pressed="false" title="Вернуться к заданию позже">⚑</button>';
           html += `<div class="feedback" id="feed_${qId}"></div></div>`;
           html += `</div>`;
@@ -1010,80 +1011,55 @@
     if (qDef.type === "radio") {
       const els = document.getElementsByName(qId);
       for (let el of els) { if (el.checked) userAns = el.value; }
-      formattedUserAns = (userAns !== "") ? qDef.options[parseInt(userAns)] : "Не выбрано";
+      formattedUserAns = userAns !== "" ? qDef.options[parseInt(userAns, 10)] : "Не выбрано";
       qDef.correctText = qDef.options[qDef.a];
     } else {
       const inputEl = document.getElementById(qId);
-      userAns = inputEl ? inputEl.value.trim().replace(/\s+/g, "").replace(/,/g, ".") : "";
-      formattedUserAns = (userAns !== "") ? userAns.replace(/\./g, ",") : "Не введено";
+      userAns = inputEl ? inputEl.value.trim().replace(/\\s+/g, "").replace(/,/g, ".") : "";
+      formattedUserAns = userAns !== "" ? userAns.replace(/\\./g, ",") : "Не введено";
       qDef.correctText = qDef.a;
     }
 
-    if (!silent && userAns !== "") {
-      if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
-      const lastAttempt = qDef.attemptsHistory[qDef.attemptsHistory.length - 1];
-      if (lastAttempt !== formattedUserAns) {
-        qDef.checkCount = (qDef.checkCount || 0) + 1;
-        qDef.attemptsHistory.push(formattedUserAns);
-      }
-    }
-
     qDef.userText = formattedUserAns;
-    
-
     if (userAns === "") {
+      qDef.isCorrect = undefined;
       if (!silent) {
         const feedEl = document.getElementById(`feed_${qId}`);
-        if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Ответ не введен!</span>";
+        if (feedEl) feedEl.textContent = "Ответ пока не сохранён.";
+        saveQuizProgress();
+        updateQuestionNavigator();
       }
-      qDef.isCorrect = undefined;
-       if (!silent) saveQuizProgress();
-       updateQuestionNavigator();
-       return;
+      return;
     }
 
-    const expectedAnswer = qDef.type === "text" ? String(qDef.a).trim().replace(/\s+/g, "").replace(/,/g, ".") : qDef.a;
+    // Во время диагностики не показываем правильность ответа и не даём
+    // использовать повторные проверки как подсказку. Оценивание — только при завершении.
+    if (!silent) {
+      qDef.isCorrect = null;
+      const feedEl = document.getElementById(`feed_${qId}`);
+      if (feedEl) feedEl.textContent = "Ответ сохранён. Проверка будет после завершения диагностики.";
+      saveQuizProgress();
+      updateQuestionNavigator();
+      return;
+    }
+
+    const expectedAnswer = qDef.type === "text"
+      ? String(qDef.a).trim().replace(/\\s+/g, "").replace(/,/g, ".")
+      : qDef.a;
     const parseNumericAnswer = value => {
       const normalized = String(value).trim().replace(/,/g, ".");
-      if (/^[+-]?\d+(?:\.\d+)?$/.test(normalized)) return Number(normalized);
-      const fraction = normalized.match(/^([+-]?\d+)\/([+-]?\d+)$/);
+      if (/^[+-]?\\d+(?:\\.\\d+)?$/.test(normalized)) return Number(normalized);
+      const fraction = normalized.match(/^([+-]?\\d+)\\/([+-]?\\d+)$/);
       if (fraction && Number(fraction[2]) !== 0) return Number(fraction[1]) / Number(fraction[2]);
       return NaN;
     };
     const userNumeric = parseNumericAnswer(userAns);
     const expectedNumeric = parseNumericAnswer(expectedAnswer);
-    const isRight = (qDef.type === "radio")
-      ? (parseInt(userAns, 10) === qDef.a)
-      : (userAns !== "" && Number.isFinite(userNumeric) && Number.isFinite(expectedNumeric)
+    qDef.isCorrect = qDef.type === "radio"
+      ? parseInt(userAns, 10) === qDef.a
+      : (Number.isFinite(userNumeric) && Number.isFinite(expectedNumeric)
           ? Math.abs(userNumeric - expectedNumeric) < 1e-9
           : userAns === expectedAnswer);
-
-    if (isRight) {
-      qDef.isCorrect = true;
-      if (!silent) {
-        const feedEl = document.getElementById(`feed_${qId}`);
-        if (feedEl) feedEl.innerHTML = "<span style='color: #16a34a'>Верно! ✅</span>";
-        if (qDef.type === "radio") {
-          const els = document.getElementsByName(qId);
-          els.forEach(el => el.disabled = true);
-        } else {
-          const inputEl = document.getElementById(qId);
-          if (inputEl) inputEl.disabled = true;
-          const toggleBtn = document.getElementById(`btn_toggle_${qId}`);
-          if (toggleBtn) toggleBtn.disabled = true;
-        }
-        const btnEl = document.getElementById(`btn_${qId}`);
-        if (btnEl) btnEl.style.display = "none";
-      }
-    } else {
-      qDef.isCorrect = false;
-      if (!silent) {
-        const feedEl = document.getElementById(`feed_${qId}`);
-        if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Неверно ❌</span>";
-      }
-    }
-    if (!silent) saveQuizProgress();
-    updateQuestionNavigator();
   }
 
   function downloadPDF() {
@@ -1296,14 +1272,9 @@
 
         theme.questions.forEach((qDef, qIdx) => {
           checkSingle(bIdx, tIdx, qIdx, true);
-          if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано" && !(qDef.checkCount > 0)) {
-            qDef.checkCount = 1;
-          }
-          if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано") {
-            if (!qDef.attemptsHistory || qDef.attemptsHistory.length === 0) {
-              qDef.attemptsHistory = [qDef.userText];
-            }
-          }
+          const hasFinalAnswer = qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано";
+          qDef.checkCount = hasFinalAnswer ? 1 : 0;
+          qDef.attemptsHistory = hasFinalAnswer ? [qDef.userText] : [];
 
           const isSkipped = (qDef.userText === "Не введено" || qDef.userText === "Не выбрано");
           const distinctRadioAnswers = new Set([...(qDef.attemptsHistory || []), qDef.userText]
@@ -1377,6 +1348,8 @@
     });
 
     const percent = Math.round((totalCorrect / totalQuestions) * 100);
+    const diagnosticLevel = location.pathname.includes("basic_v2") ? "fundament" : "primenenie";
+    const diagnosticProfile = window.Reshai360Grade7Diagnostic.evaluate({ quizData, level: diagnosticLevel });
     window.__lastReportScore = totalCorrect;
     window.__lastReportTotal = totalQuestions;
     const topicsToRepeat = Array.from(topicsToRepeatSet);
@@ -1384,7 +1357,7 @@
 
     // Сначала фиксируем завершение и полный снимок ответов на сервере.
     // Генерация или отправка PDF больше не влияет на статус завершённой диагностики.
-    const completionSnapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {} };
+    const completionSnapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {}, diagnosticProfile };
     questionNavigation.forEach(item => {
       const answer = getQuestionAnswer(item.id, item.qDef);
       if (answer) completionSnapshot.answers[item.id] = answer;
@@ -1473,6 +1446,7 @@
       <div class="pdf-page" style="position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; margin-bottom: 25px;">
         ${firstPageHtml}
       </div>
+      ${window.Reshai360Grade7Diagnostic.renderSummary(diagnosticProfile)}
       <div class="result-actions">
         <button id="downloadPdfBtn" class="btn-pdf" disabled onclick="downloadPDF()">⏳ Подготовка PDF: 60 сек</button>
         <button type="button" class="result-action-secondary" onclick="const p=document.getElementById('promo-code-result'); if(p){p.style.display='block'; p.scrollIntoView({behavior:'smooth',block:'center'});}">🎁 Забрать промокод</button>
@@ -1551,7 +1525,8 @@
           snapshot: savedReportSnapshot,
           studentName: studentData.fullName,
           formatMath: formatMathText,
-          resultContainer: document.getElementById("result-pdf")
+          resultContainer: document.getElementById("result-pdf"),
+          diagnosticProfile
         });
           if (currentToken) await saveCachedDiagnosticPdf(currentToken, generatedPdfBlob);
         }
@@ -1573,7 +1548,7 @@
         formData.append('score', totalCorrect);
         formData.append('total', totalQuestions);
         formData.append('document', generatedPdfBlob, `Отчет_${studentData.fullName}.pdf`);
-        const answersSnapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {} };
+        const answersSnapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {}, diagnosticProfile };
         questionNavigation.forEach(item => {
           const answer = getQuestionAnswer(item.id, item.qDef);
           if (answer) answersSnapshot.answers[item.id] = answer;
