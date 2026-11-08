@@ -241,10 +241,11 @@
                 </div>
                 <div class="space-y-3">
                     <h3 class="text-center text-base font-bold text-white">Диагностика с компьютера</h3>
-                    <div class="min-h-[260px] sm:min-h-[460px] rounded-2xl border border-dashed border-slate-700 bg-slate-900/50 flex flex-col items-center justify-center text-center p-8">
-                        <i class="fa-solid fa-laptop text-4xl text-slate-500 mb-4"></i>
-                        <p class="text-sm font-semibold text-slate-300">Видео скоро появится</p>
-                        <p class="text-xs text-slate-500 mt-2">Здесь будет запись прохождения диагностики на компьютере.</p>
+                    <div class="relative w-full aspect-video min-h-[260px] sm:min-h-[360px] max-h-[460px] rounded-2xl border border-slate-700 bg-slate-950 overflow-hidden shadow-2xl">
+                        <video id="demo-desktop-video" autoplay muted loop playsinline webkit-playsinline preload="none" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen" class="w-full h-full object-contain pointer-events-none select-none" aria-label="Беззвучный зацикленный пример прохождения диагностики с компьютера">
+                            <source id="desktop-video-source" data-src="/demo_desktop.mp4?v=20261108-desktop1" type="video/mp4">
+                        </video>
+                        <p id="desktop-video-fallback" class="hidden absolute inset-x-3 bottom-3 rounded-lg bg-slate-950/90 p-2 text-center text-xs text-white">Видео временно недоступно.</p>
                     </div>
                 </div>
             </div>
@@ -776,6 +777,37 @@
                 videoSource.src = source;
                 video.load();
                 startPlayback();
+            }
+
+            // Отдельная инициализация демонстрации для компьютера; мобильное видео не меняем.
+            const desktopVideo = document.getElementById('demo-desktop-video');
+            const desktopSource = document.getElementById('desktop-video-source');
+            const desktopFallback = document.getElementById('desktop-video-fallback');
+            if (desktopVideo && desktopSource) {
+                desktopVideo.muted = true;
+                desktopVideo.defaultMuted = true;
+                desktopVideo.loop = true;
+                desktopVideo.playsInline = true;
+                desktopVideo.controls = false;
+                desktopVideo.removeAttribute('controls');
+                desktopVideo.addEventListener('contextmenu', event => event.preventDefault());
+                desktopVideo.addEventListener('error', () => {
+                    if (desktopFallback) desktopFallback.classList.remove('hidden');
+                });
+                const startDesktopPlayback = () => {
+                    desktopVideo.play().catch(() => {
+                        // Автозапуск может быть ограничен настройками браузера.
+                    });
+                };
+                desktopVideo.addEventListener('canplay', startDesktopPlayback, { once: true });
+                document.addEventListener('touchstart', startDesktopPlayback, { once: true, passive: true });
+                document.addEventListener('click', startDesktopPlayback, { once: true });
+                const desktopSrc = desktopSource.dataset.src;
+                if (desktopSrc) {
+                    desktopSource.src = desktopSrc;
+                    desktopVideo.load();
+                    startDesktopPlayback();
+                }
             }
         }
 
