@@ -1,5 +1,5 @@
 import { sendPaymentTelegramNotification, getOrderExpirationTtl, ORDER_ACCESS_TTL_MS } from "../_lib/telegram-payment.js";
-import { syncOrderToGoogleSheets } from "../_lib/google-sheets.js";
+import { scheduleOrderSync } from "../_lib/google-sheets.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -91,7 +91,7 @@ export async function onRequestPost(context) {
     tokenData.paidAt = confirmedPayment.captured_at || confirmedPayment.created_at || new Date().toISOString();
     tokenData.linkExpiresAt = Date.parse(tokenData.paidAt) + ORDER_ACCESS_TTL_MS;
     await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
-    await syncOrderToGoogleSheets({ env, token, order: tokenData, event: "payment_succeeded" });
+    scheduleOrderSync(context, { env, token, order: tokenData, event: "payment_succeeded" });
 
     // Партнёрское начисление создаётся только после серверного подтверждения оплаты.
     // Ключ основан на payment ID: повторный webhook перезаписывает ту же запись, а не создаёт новую.
