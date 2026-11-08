@@ -576,11 +576,76 @@
         let appliedPromoCode = '';
         let appliedPromoDiscount = 0;
 
+        // Сохраняем заполнение формы заказа в этом браузере, чтобы оно переживало
+        // переходы на страницы документов и платёжный шлюз.
+        const CHECKOUT_FORM_STORAGE_KEY = 'r360_checkout_form_v1';
+
+        function saveCheckoutFormState() {
+            try {
+                const state = {
+                    studentName: document.getElementById('student-name')?.value || '',
+                    email: document.getElementById('student-email')?.value || '',
+                    productKey: currentSelectedProductKey || '',
+                    promoCode: document.getElementById('promo-code')?.value.trim() || '',
+                    offerAccepted: !!document.getElementById('offer-consent')?.checked,
+                    personalDataConsent: !!document.getElementById('consent')?.checked
+                };
+                localStorage.setItem(CHECKOUT_FORM_STORAGE_KEY, JSON.stringify(state));
+            } catch (error) {
+                console.warn('Не удалось сохранить данные формы заказа:', error);
+            }
+        }
+
+        async function restoreCheckoutFormState() {
+            let state;
+            try {
+                state = JSON.parse(localStorage.getItem(CHECKOUT_FORM_STORAGE_KEY) || 'null');
+            } catch (error) {
+                console.warn('Не удалось прочитать сохранённые данные формы заказа:', error);
+                return;
+            }
+            if (!state || typeof state !== 'object') return;
+
+            const nameInput = document.getElementById('student-name');
+            const emailInput = document.getElementById('student-email');
+            const offerCheckbox = document.getElementById('offer-consent');
+            const consentCheckbox = document.getElementById('consent');
+
+            if (nameInput) nameInput.value = typeof state.studentName === 'string' ? state.studentName : '';
+            if (emailInput) emailInput.value = typeof state.email === 'string' ? state.email : '';
+            if (offerCheckbox) offerCheckbox.checked = state.offerAccepted === true;
+            if (consentCheckbox) consentCheckbox.checked = state.personalDataConsent === true;
+
+            if (typeof state.productKey === 'string' && /^(7|8|9|10|11)(_(basic|advanced))?$/.test(state.productKey)) {
+                selectOption(state.productKey);
+            }
+
+            const promoInput = document.getElementById('promo-code');
+            if (promoInput && typeof state.promoCode === 'string' && state.promoCode) {
+                promoInput.value = state.promoCode;
+                if (currentSelectedProductKey && /_(basic|advanced)$/.test(currentSelectedProductKey)) {
+                    await applyPromoCode();
+                }
+            }
+        }
+
+        function initCheckoutFormPersistence() {
+            ['student-name', 'student-email', 'promo-code', 'offer-consent', 'consent'].forEach(id => {
+                const field = document.getElementById(id);
+                if (!field) return;
+                field.addEventListener('input', saveCheckoutFormState);
+                field.addEventListener('change', saveCheckoutFormState);
+            });
+            window.addEventListener('pagehide', saveCheckoutFormState);
+            restoreCheckoutFormState();
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             initLinks();
             initVideo();
             initPdfViewer();
             selectOption('');
+            initCheckoutFormPersistence();
             syncProgramPanelHeight();
         });
 
@@ -944,6 +1009,7 @@
                 mobileProgram.classList.add('program-ready-highlight');
                 const programToggle = document.getElementById('mobile-program-toggle-top');
                 programToggle.setAttribute('aria-label', 'Посмотреть программу диагностики для ' + gradeKey + ' класса');
+                saveCheckoutFormState();
                 return;
             }
             const data = programs[key];
@@ -988,6 +1054,7 @@
             // Если пользователь уже открыл класс и свернул программу вручную — сохраняем его выбор.
             if (!gradeWasAlreadySelected) toggleMobileProgram(true);
             requestAnimationFrame(syncProgramPanelHeight);
+            saveCheckoutFormState();
         }
 
         function escapeHtml(str) {
@@ -1041,6 +1108,7 @@
                 document.getElementById('payment-button-label').textContent = 'Перейти к оплате · ' + regularPriceText;
                 const selectedLevelButton = document.getElementById('btn-' + currentSelectedProductKey);
                 if (selectedLevelButton) selectedLevelButton.querySelector('.level-price').textContent = result.finalPrice + ' ₽';
+                saveCheckoutFormState();
             } catch (error) {
                 appliedPromoCode = ''; appliedPromoDiscount = 0;
                 status.textContent = error.message || 'Не удалось проверить промокод.';
