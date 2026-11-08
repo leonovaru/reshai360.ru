@@ -112,13 +112,13 @@
                     window.location.replace(`${targetFile}?token=${encodeURIComponent(token)}`);
                 } else {
                     document.getElementById('loader').style.display = 'none';
-                    if (lastStatus === 402) {
+                    if (lastStatus === 402 || lastStatus === 0 || lastStatus >= 500) {
                         document.getElementById('status-title').innerText = "Платёж ещё подтверждается";
-                        document.getElementById('status-desc').innerText = "Банк уже мог принять оплату, но сервер ещё не получил подтверждение от ЮKassa. Подождите немного и нажмите кнопку ниже — повторно оплачивать не нужно.";
+                        document.getElementById('status-desc').innerText = "Банк уже мог принять оплату, но подтверждение ещё не получено. Не оплачивайте повторно. Нажмите кнопку ниже, чтобы проверить статус ещё раз.";
                         document.getElementById('retry-payment-check').classList.remove('hidden');
                     } else {
-                        document.getElementById('status-title').innerText = "Ошибка доступа";
-                        document.getElementById('status-desc').innerHTML = `<span class="text-rose-400">${result.message || 'Ссылка недействительна или уже использована'}</span>`;
+                        document.getElementById('status-title').innerText = "Не удалось открыть заказ";
+                        document.getElementById('status-desc').innerText = (result && result.message) || 'Ссылка недействительна или срок её действия истёк. Обратитесь в поддержку.';
                     }
                 }
             } catch (err) {
