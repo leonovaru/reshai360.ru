@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 17;
+  const VERSION = 18;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -150,6 +150,39 @@
     }
   }
 
+  function makeCompetencyPage(profile) {
+    const rows = (profile.competencies || []).map(item =>
+      "<tr><td style='padding:7px;border-bottom:1px solid #e2e8f0;'>" + escapeHtml(item.competencyId + " · " + item.name) +
+      "</td><td style='padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
+      item.topicsWithEvidence + " / " + item.presentedTopics + "</td><td style='padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
+      item.topicsWithRepeatedEvidence + "</td></tr>"
+    ).join("");
+    const repeated = (profile.skills || []).filter(skill => skill.evidenceCount >= 2 || skill.contradictory).slice(0, 10);
+    const repeatedHtml = repeated.length
+      ? "<ul style='font-size:.86em;line-height:1.4;margin:0;padding-left:20px;'>" +
+        repeated.map(skill =>
+          "<li style='margin:5px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
+          (skill.evidenceCount > 0 ? " (" + skill.correctCount + " из " + skill.evidenceCount + " независимых наблюдений верно)." : ".") +
+          " " + escapeHtml(skill.reason) + "</li>"
+        ).join("") + "</ul>"
+      : "<p style='font-size:.86em;line-height:1.4;margin:0;'>Пока недостаточно повторных независимых наблюдений для устойчивых выводов по отдельным навыкам.</p>";
+    const limitations = (profile.limitations || []).map(item => "<li>" + escapeHtml(item) + "</li>").join("");
+    return "<div class='pdf-first-page-content'>" +
+      "<h1 class='pdf-header-title'>Карта компетенций и свидетельств</h1>" +
+      "<p style='font-size:.82em;color:#64748b;margin:0 0 12px;'>Методика " + escapeHtml(profile.version || "") +
+      " · банк заданий " + escapeHtml(profile.bankVersion || "") + " · предварительная разметка</p>" +
+      "<div class='pdf-analytics-title'>Покрытие компетенций</div>" +
+      "<p style='font-size:.82em;line-height:1.4;margin:0 0 8px;'>В таблице показано, по скольким темам получены оценённые ответы. Это показатель покрытия, а не уровень сформированности компетенции.</p>" +
+      "<table style='width:100%;border-collapse:collapse;font-size:.82em;margin-bottom:16px;'><thead><tr>" +
+      "<th style='text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;'>Компетенция</th>" +
+      "<th style='padding:7px;border-bottom:1px solid #cbd5e1;'>Темы с данными</th>" +
+      "<th style='padding:7px;border-bottom:1px solid #cbd5e1;'>Повторные</th></tr></thead><tbody>" + rows + "</tbody></table>" +
+      "<div class='pdf-analytics-title'>Навыки с повторными наблюдениями</div>" + repeatedHtml +
+      "<div class='pdf-analytics-title' style='margin-top:16px;'>Ограничения интерпретации</div>" +
+      "<ul style='font-size:.8em;line-height:1.35;margin:0;padding-left:20px;'>" + limitations + "</ul>" +
+      "</div>";
+  }
+
   function makeFirstPage(model) {
     const { grade, levelLabel, studentName, dateText, score, total, evaluated, unanswered, blockRows, repeatTopics, studyTopics, diagnosticProfile } = model;
     const accuracyDenominator = grade === "7" ? evaluated : total;
@@ -172,24 +205,6 @@
       ? "<ol>" + studyVisible.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>" + (studyTopics.length > topicLimit ? '<p style="margin:4px 0 0;">И ещё ' + (studyTopics.length - topicLimit) + ' тем — см. задания в подробной части отчёта.</p>' : "")
       : '<p style="margin:0;">Пропущенных заданий нет.</p>';
     const evidence = diagnosticProfile && diagnosticProfile.evidenceSummary || {};
-    const competencyRows = diagnosticProfile && Array.isArray(diagnosticProfile.competencies)
-      ? diagnosticProfile.competencies.map(item =>
-          "<tr><td style='padding:4px 6px;border-bottom:1px solid #e2e8f0;'>" + escapeHtml(item.competencyId + " · " + item.name) +
-          "</td><td style='padding:4px 6px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
-          item.topicsWithEvidence + "/" + item.presentedTopics + "</td><td style='padding:4px 6px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
-          item.topicsWithRepeatedEvidence + "</td></tr>"
-        ).join("")
-      : "";
-    const repeatedSkillItems = diagnosticProfile && Array.isArray(diagnosticProfile.skills)
-      ? diagnosticProfile.skills.filter(skill => skill.evidenceCount >= 2 || skill.contradictory).slice(0, 6)
-      : [];
-    const repeatedSkillHtml = repeatedSkillItems.length
-      ? "<ul style='font-size:.72em;line-height:1.3;margin:0 0 8px;padding-left:18px;'>" +
-        repeatedSkillItems.map(skill =>
-          "<li style='margin:3px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
-          (skill.evidenceCount > 0 ? " (" + skill.correctCount + " из " + skill.evidenceCount + " независимых наблюдений верно)." : ".") + "</li>"
-        ).join("") + "</ul>"
-      : "<p style='font-size:.72em;line-height:1.3;margin:0 0 8px;'>Пока недостаточно повторных независимых наблюдений для устойчивых выводов по отдельным навыкам.</p>";
     const diagnosticSummaryHtml = grade === "7" && diagnosticProfile
       ? "<div class='pdf-analytics-title'>Диагностическая интерпретация</div>" +
         "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Единичное выполнение описывает ответ на конкретное задание, но не подтверждает устойчивое владение навыком. Процент правильных ответов не является уровнем сформированности. Разметка навыков и компетенций предварительная и требует экспертной проверки.</p>" +
@@ -197,10 +212,8 @@
         "</b>; повторные наблюдения: <b>" + ((evidence.E2 || 0) + (evidence.E3 || 0)) +
         "</b>; без оценённых наблюдений: <b>" + (evidence.E0 || 0) + "</b>.</p>" +
         "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Повторяющиеся затруднения (H2): <b>" + ((diagnosticProfile.errorHypothesisSummary || {}).H2 || 0) +
-        "</b>; противоречивые диагностические единицы: <b>" + (diagnosticProfile.contradictorySkillCount || 0) + "</b>.</p>" +
-        "<table style='width:100%;border-collapse:collapse;font-size:.72em;margin-bottom:8px;'><thead><tr><th style='text-align:left;padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Компетенция</th><th style='padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Данные</th><th style='padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Повтор.</th></tr></thead><tbody>" +
-        competencyRows + "</tbody></table>" +
-        "<div style='font-size:.76em;font-weight:700;margin:0 0 3px;'>Навыки с повторными наблюдениями</div>" + repeatedSkillHtml
+        "</b>; противоречивые диагностические единицы: <b>" + (diagnosticProfile.contradictorySkillCount || 0) +
+        "</b>. Подробная карта компетенций и повторных наблюдений приведена на следующей странице.</p>"
       : "";
     const blockHeading = grade === "7"
       ? "Доля правильных ответов по блокам (описательный показатель)"
@@ -270,17 +283,23 @@
     }
     measure.remove();
 
-    const totalPages = 1 + detailPages.length;
+    const hasCompetencyPage = grade === "7" && !!diagnosticProfile;
+    const totalPages = 1 + (hasCompetencyPage ? 1 : 0) + detailPages.length;
     let html = '<div class="pdf-page">' + firstPageHtml +
       '<div class="page-footer">Диагностический отчет | Страница 1 из ' + totalPages + '</div></div>';
+    if (hasCompetencyPage) {
+      html += '<div class="pdf-page">' + makeCompetencyPage(diagnosticProfile) +
+        '<div class="page-footer">Диагностический отчет | Страница 2 из ' + totalPages + '</div></div>';
+    }
     let index = 0;
     detailPages.forEach((pageCards, pageIndex) => {
       const start = index + 1;
       const end = index + pageCards.length;
       index += pageCards.length;
+      const pageNumber = pageIndex + (hasCompetencyPage ? 3 : 2);
       html += '<div class="pdf-page"><h3 class="detail-section-title">Результаты выполнения заданий (Задания ' +
         start + "–" + end + ")</h3>" + pageCards.join("") +
-        '<div class="page-footer">Диагностический отчет | Страница ' + (pageIndex + 2) + " из " + totalPages + "</div></div>";
+        '<div class="page-footer">Диагностический отчет | Страница ' + pageNumber + " из " + totalPages + "</div></div>";
     });
     return html;
   }
