@@ -168,8 +168,12 @@
             primaryCompetency: competencyId,
             competencyName: COMPETENCIES[competencyId] || "Компетенция не размечена",
             evidenceType: KNOWLEDGE_TOPICS.has(topicId) ? "KNOWLEDGE" : TRANSFER_TOPICS.has(topicId) ? "TRANSFER" : "EXECUTION",
-            answerFormat: question.type === "radio" ? "SINGLE_CHOICE" : "NUMERIC_TEXT",
-            scoringRule: question.type === "radio" ? "OPTION_EXACT" : "NUMERIC_EQUIVALENCE",
+            answerFormat: question.type === "radio"
+              ? "SINGLE_CHOICE"
+              : (question.answerMode === "exact_reduced_fraction" ? "REDUCED_FRACTION" : "NUMERIC_TEXT"),
+            scoringRule: question.type === "radio"
+              ? "OPTION_EXACT"
+              : (question.answerMode === "exact_reduced_fraction" ? "EXACT_REDUCED_FRACTION" : "NUMERIC_EQUIVALENCE"),
             partialCreditRule: "NOT_AVAILABLE_FINAL_ANSWER_ONLY",
             outcome,
             diagnosticLimit: "Система видит только выбранный или введённый ответ; ход решения и причина ошибки не установлены.",
