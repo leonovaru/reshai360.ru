@@ -1813,13 +1813,25 @@
 
     document.getElementById("main-container").style.display = "none";
     document.getElementById("result-wrapper").style.display = "block";
-    hideCompletionStatus();
     window.scrollTo(0, 0);
 
-    await new Promise(resolve => setTimeout(resolve, 150));
+    // Экран обработки остаётся поверх страницы, пока её содержимое не подготовлено.
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    } catch (_) {}
     await safeTypeset(document.getElementById("result-screen"));
-    await new Promise(resolve => setTimeout(resolve, 200));
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const resultImages = Array.from(document.querySelectorAll("#result-wrapper img"));
+    await Promise.all(resultImages.map(img => {
+      if (img.complete) return Promise.resolve();
+      if (typeof img.decode === "function") return img.decode().catch(() => {});
+      return new Promise(resolve => {
+        img.addEventListener("load", resolve, { once: true });
+        img.addEventListener("error", resolve, { once: true });
+      });
+    }));
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    hideCompletionStatus();
+    window.scrollTo(0, 0);
 
     const downloadBtn = document.getElementById("downloadPdfBtn");
     try {
