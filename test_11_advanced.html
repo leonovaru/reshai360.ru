@@ -374,6 +374,7 @@
       try { localStorage.setItem(progressStorageKey, JSON.stringify({ version: 1, ...completedSnapshot, savedAt: Date.now() })); } catch (_) {}
     }
     await renderQuiz();
+    if (!wasCompleted) createProgressSaveControl();
     if (!wasCompleted) document.getElementById("main-container").style.visibility = "visible";
     // После восстановления локального черновика сразу отправляем его на сервер,
     // чтобы уже введённые ответы стали доступны на другом устройстве.
@@ -454,6 +455,9 @@
   let progressSyncTimer = null;
   let lastAppliedServerSavedAt = 0;
   let progressSyncInFlight = false;
+  let localProgressRevision = 0;
+  let localProgressDirty = false;
+  let progressSaveQueue = Promise.resolve();
 
   function getQuestionAnswer(qId, qDef) {
     if (qDef.type === "radio") {
@@ -465,50 +469,79 @@
   }
 
   function saveQuizProgress(immediate = false) {
-    if (!progressStorageKey || !questionNavigation.length) return;
+    if (!progressStorageKey || !questionNavigation.length) return Promise.resolve(false);
     try {
-      const answers = {};
-      const stats = {};
+      const answers = {}, stats = {};
       questionNavigation.forEach(item => {
-        const answer = getQuestionAnswer(item.id, item.qDef);
-        if (answer) answers[item.id] = answer;
-        stats[item.id] = {
-          checkCount: item.qDef.checkCount || 0,
-          attemptsHistory: item.qDef.attemptsHistory || [],
-          isCorrect: typeof item.qDef.isCorrect === "boolean" ? item.qDef.isCorrect : null
-        };
+        answers[item.id] = getQuestionAnswer(item.id, item.qDef);
+        stats[item.id] = { checkCount: item.qDef.checkCount || 0, attemptsHistory: item.qDef.attemptsHistory || [], isCorrect: typeof item.qDef.isCorrect === "boolean" ? item.qDef.isCorrect : null };
       });
-      const snapshot = {
-        version: 1,
-        answers,
-        marked: Array.from(markedQuestions),
-        stats,
-        savedAt: Date.now()
-      };
+      const snapshot = { version: 1, answers, marked: Array.from(markedQuestions), stats, savedAt: Date.now() };
       localStorage.setItem(progressStorageKey, JSON.stringify(snapshot));
-
+      const revision = ++localProgressRevision;
+      localProgressDirty = true;
       const saveToServer = () => {
-        fetch('/api/save-progress', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: currentToken, snapshot }),
-          keepalive: true
-        }).then(response => {
-          if (!response.ok) console.warn('Не удалось синхронизировать прогресс с сервером.');
-        }).catch(error => console.warn('Ошибка сохранения прогресса на сервере:', error));
+        const send = async () => {
+          try {
+            const response = await fetch('/api/save-progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: currentToken, snapshot }), keepalive: true });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok || !result.success) throw new Error(result.message || 'Не удалось сохранить прогресс на сервере.');
+            const storedSnapshot = { ...snapshot, savedAt: Number(result.savedAt) || Date.now() };
+            if (revision === localProgressRevision) {
+              localStorage.setItem(progressStorageKey, JSON.stringify(storedSnapshot));
+              serverProgressSnapshot = storedSnapshot;
+              lastAppliedServerSavedAt = Math.max(lastAppliedServerSavedAt, storedSnapshot.savedAt);
+              localProgressDirty = false;
+            }
+            return true;
+          } catch (error) { console.warn('Ошибка сохранения прогресса на сервере:', error); return false; }
+        };
+        progressSaveQueue = progressSaveQueue.then(send, send);
+        return progressSaveQueue;
       };
-
       clearTimeout(serverProgressSaveTimer);
-      if (immediate) {
-        // При уходе со страницы отправляем снимок сразу: обычный таймер может не успеть выполниться.
-        saveToServer();
-      } else {
-        serverProgressSaveTimer = setTimeout(saveToServer, 500);
-      }
-    } catch (error) {
-      console.warn("Не удалось сохранить прогресс диагностики:", error);
-    }
+      if (immediate) return saveToServer();
+      serverProgressSaveTimer = setTimeout(saveToServer, 500);
+      return Promise.resolve(true);
+    } catch (error) { console.warn("Не удалось сохранить прогресс диагностики:", error); return Promise.resolve(false); }
   }
+  function updateProgressSaveStatus(message, isError = false) {
+    const status = document.getElementById('progress-save-status');
+    if (!status) return;
+    status.textContent = message; status.style.color = isError ? '#fecaca' : '#dbeafe'; status.style.opacity = '1';
+  }
+  function createProgressSaveControl() {
+    if (document.getElementById('progress-save-control') || isCompletedView) return;
+    const wrapper = document.createElement('div');
+    wrapper.id = 'progress-save-control';
+    wrapper.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:10000;display:flex;flex-direction:column;align-items:flex-end;gap:7px;';
+    const status = document.createElement('div');
+    status.id = 'progress-save-status'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+    status.style.cssText = 'max-width:220px;padding:7px 11px;border-radius:12px;background:rgba(15,23,42,.94);color:#dbeafe;font-size:12px;line-height:1.35;box-shadow:0 4px 16px rgba(0,0,0,.22);opacity:0;transition:opacity .2s;';
+    const button = document.createElement('button');
+    button.type = 'button'; button.id = 'progress-save-button'; button.textContent = '☁'; button.title = 'Сохранить прогресс';
+    button.setAttribute('aria-label', 'Сохранить прогресс и продолжить на другом устройстве');
+    button.style.cssText = 'width:52px;height:52px;border:0;border-radius:50%;background:linear-gradient(135deg,#7165f5,#27a9dc);color:#fff;font-size:25px;line-height:1;box-shadow:0 5px 18px rgba(40,80,180,.35);cursor:pointer;';
+    button.addEventListener('click', async () => {
+      if (button.disabled) return;
+      button.disabled = true; button.style.opacity = '.7'; updateProgressSaveStatus('Сохраняем прогресс…');
+      const saved = await saveQuizProgress(true);
+      button.disabled = false; button.style.opacity = '1';
+      updateProgressSaveStatus(saved && !localProgressDirty ? 'Прогресс сохранён. Можно продолжить на другом устройстве.' : 'Сохранение не подтверждено. Проверьте интернет и попробуйте ещё раз.', !(saved && !localProgressDirty));
+    });
+    wrapper.append(status, button); document.body.appendChild(wrapper);
+  }
+  function showCompletionStatus() {
+    if (document.getElementById('completion-processing-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'completion-processing-overlay'; overlay.setAttribute('role', 'status'); overlay.setAttribute('aria-live', 'polite');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:10001;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,15,35,.72);backdrop-filter:blur(5px);';
+    overlay.innerHTML = '<div style="display:flex;align-items:center;gap:14px;max-width:420px;width:100%;padding:20px 22px;border:1px solid rgba(148,163,184,.25);border-radius:18px;background:#111c3b;color:#fff;box-shadow:0 18px 55px rgba(0,0,0,.3);"><span style="display:block;width:28px;height:28px;flex:0 0 28px;border:3px solid rgba(255,255,255,.25);border-top-color:#8b9cff;border-radius:50%;animation:reshai360-spin .8s linear infinite;"></span><span style="font-size:15px;font-weight:600;line-height:1.4;">Обрабатываем ваш результат</span></div>';
+    if (!document.getElementById('reshai360-processing-style')) { const style = document.createElement('style'); style.id = 'reshai360-processing-style'; style.textContent = '@keyframes reshai360-spin{to{transform:rotate(360deg)}}'; document.head.appendChild(style); }
+    document.body.appendChild(overlay);
+  }
+  function hideCompletionStatus() { document.getElementById('completion-processing-overlay')?.remove(); }
+
   function restoreQuizProgress() {
     if (!progressStorageKey) return;
     try {
@@ -518,15 +551,19 @@
         const raw = localStorage.getItem(progressStorageKey);
         if (raw) localSaved = JSON.parse(raw);
       } catch (_) {}
-      let saved = serverCompletedSnapshot ? { version: 1, ...serverCompletedSnapshot } : null;
-      if (!saved) {
-        const serverSaved = serverProgressSnapshot && serverProgressSnapshot.version === 1 ? serverProgressSnapshot : null;
-        saved = serverSaved && (!localSaved || Number(serverSaved.savedAt || 0) >= Number(localSaved.savedAt || 0))
-          ? serverSaved
-          : localSaved;
-      }
-      if (!saved) return;
+      const serverSaved = serverProgressSnapshot && serverProgressSnapshot.version === 1 ? serverProgressSnapshot : null;
+      const saved = serverCompletedSnapshot ? { version: 1, ...serverCompletedSnapshot } : (serverSaved || localSaved);
       if (!saved || saved.version !== 1) return;
+      questionNavigation.forEach(item => {
+        Array.from(document.getElementsByName(item.id)).forEach(option => { option.checked = false; option.disabled = false; });
+        const input = document.getElementById(item.id);
+        if (input && input.tagName === 'INPUT') { input.value = ''; input.disabled = false; }
+        const toggle = document.getElementById('btn_toggle_' + item.id); if (toggle) toggle.disabled = false;
+        const feedback = document.getElementById('feed_' + item.id); if (feedback) feedback.textContent = '';
+        const checkButton = document.getElementById('btn_' + item.id); if (checkButton) checkButton.style.display = '';
+        item.qDef.checkCount = 0; item.qDef.attemptsHistory = []; item.qDef.isCorrect = null;
+        item.qDef.userText = item.qDef.type === 'radio' ? 'Не выбрано' : 'Не введено';
+      });
       markedQuestions = new Set(Array.isArray(saved.marked) ? saved.marked : []);
       questionNavigation.forEach(item => {
         const answer = saved.answers && saved.answers[item.id];
@@ -600,33 +637,22 @@
       if (!remote || remote.version !== 1) return;
 
       const remoteSavedAt = Number(remote.savedAt) || 0;
-      if (remoteSavedAt <= lastAppliedServerSavedAt) return;
-
-      let localSaved = null;
-      try {
-        const raw = localStorage.getItem(progressStorageKey);
-        if (raw) localSaved = JSON.parse(raw);
-      } catch (_) {}
-
-      const localSavedAt = Number(localSaved && localSaved.savedAt) || 0;
-      if (remoteSavedAt > localSavedAt) {
-        // Применяем только более свежий серверный снимок, не затирая локальные изменения.
-        serverProgressSnapshot = remote;
-        localStorage.setItem(progressStorageKey, JSON.stringify(remote));
-        restoreQuizProgress();
-        questionNavigation.forEach(item => {
-          const button = document.getElementById("flag_" + item.id);
-          const active = markedQuestions.has(item.id);
-          if (button) {
-            button.classList.toggle("active", active);
-            button.setAttribute("aria-pressed", String(active));
-            button.setAttribute("aria-label", active ? "Задание отмечено для возврата" : "Отметить задание, чтобы вернуться позже");
-            button.title = active ? "Отмечено для возврата" : "Вернуться к заданию позже";
-          }
-        });
-        updateQuestionNavigator();
-      }
-      lastAppliedServerSavedAt = Math.max(lastAppliedServerSavedAt, remoteSavedAt);
+      if (remoteSavedAt <= lastAppliedServerSavedAt || localProgressDirty) return;
+      serverProgressSnapshot = remote;
+      localStorage.setItem(progressStorageKey, JSON.stringify(remote));
+      restoreQuizProgress();
+      questionNavigation.forEach(item => {
+        const button = document.getElementById("flag_" + item.id);
+        const active = markedQuestions.has(item.id);
+        if (button) {
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+          button.setAttribute("aria-label", active ? "Задание отмечено для возврата" : "Отметить задание, чтобы вернуться позже");
+          button.title = active ? "Отмечено для возврата" : "Вернуться к заданию позже";
+        }
+      });
+      updateQuestionNavigator();
+      lastAppliedServerSavedAt = remoteSavedAt;
     } catch (error) {
       console.warn("Не удалось получить обновления прогресса:", error);
     } finally {
@@ -1458,7 +1484,9 @@
       button.textContent = "Отправить письмо на почту";
     }
   }
+  let completionInProgress = false;
   async function checkAll(skipUnansweredConfirm = false) {
+    if (completionInProgress) return;
     saveQuizProgress();
     const unansweredQuestions = [];
     quizData.forEach((block, bIdx) => block.themes.forEach((theme, tIdx) => theme.questions.forEach((qDef, qIdx) => {
@@ -1476,7 +1504,11 @@
       const message = `Остались незаполненные задания: ${unansweredQuestions.length}. Завершить тест и посмотреть результаты без них?`;
       if (!window.confirm(message)) return;
     }
-
+    if (completionInProgress) return;
+    completionInProgress = true;
+    const finishButton = document.getElementById('finishBtn');
+    if (finishButton) { finishButton.disabled = true; finishButton.textContent = 'Обрабатываем результат…'; }
+    showCompletionStatus();
     let totalCorrect = 0;
     let totalQuestions = 0;
     let pdfAnalyticsRowsHtml = "";
@@ -1595,11 +1627,17 @@
       };
     });
     try {
-      const completionResponse = await fetch('/api/complete-diagnostic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: currentToken, snapshot: completionSnapshot })
-      });
+      const completionController = new AbortController();
+      const completionTimeout = setTimeout(() => completionController.abort(), 30000);
+      let completionResponse;
+      try {
+        completionResponse = await fetch('/api/complete-diagnostic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: currentToken, snapshot: completionSnapshot }),
+          signal: completionController.signal
+        });
+      } finally { clearTimeout(completionTimeout); }
       const completionResult = await completionResponse.json().catch(() => ({}));
       if (!completionResponse.ok || !completionResult.success) {
         throw new Error(completionResult.message || 'Не удалось зафиксировать завершение диагностики.');
@@ -1611,8 +1649,10 @@
       }
     } catch (completionError) {
       console.error('Ошибка фиксации завершения диагностики:', completionError);
-      alert(completionError.message || 'Не удалось сохранить завершение диагностики. Проверьте подключение и нажмите «Завершить» ещё раз.');
-      return;
+      hideCompletionStatus(); completionInProgress = false;
+      if (finishButton) { finishButton.disabled = false; finishButton.textContent = 'Завершить и посмотреть результаты'; }
+      const errorMessage = completionError.name === 'AbortError' ? 'Сервер долго не отвечает. Проверьте подключение и попробуйте завершить диагностику ещё раз.' : (completionError.message || 'Не удалось сохранить завершение диагностики. Проверьте подключение и нажмите «Завершить» ещё раз.');
+      alert(errorMessage); return;
     }
 
     let repeatBoxHtml = topicsToRepeat.length > 0 ? `<ol>${topicsToRepeat.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Ошибок в решенных заданиях нет.</p>`;
@@ -1687,6 +1727,7 @@
 
     document.getElementById("main-container").style.display = "none";
     document.getElementById("result-wrapper").style.display = "block";
+    hideCompletionStatus();
     window.scrollTo(0, 0);
 
     await new Promise(resolve => setTimeout(resolve, 150));
