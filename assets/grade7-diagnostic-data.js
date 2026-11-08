@@ -251,5 +251,5 @@
     ])
   ];
 
-  window.GRADE7_DIAGNOSTIC_DATA = { fundament, primenenie };
+  window.GRADE7_DIAGNOSTIC_DATA = { version: "2.1.0", fundament, primenenie };
 })();
