@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 16;
+  const VERSION = 17;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
