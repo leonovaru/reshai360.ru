@@ -180,6 +180,16 @@
           item.topicsWithRepeatedEvidence + "</td></tr>"
         ).join("")
       : "";
+    const repeatedSkillItems = diagnosticProfile && Array.isArray(diagnosticProfile.skills)
+      ? diagnosticProfile.skills.filter(skill => skill.evidenceCount >= 2 || skill.contradictory).slice(0, 6)
+      : [];
+    const repeatedSkillHtml = repeatedSkillItems.length
+      ? "<ul style='font-size:.72em;line-height:1.3;margin:0 0 8px;padding-left:18px;'>" +
+        repeatedSkillItems.map(skill =>
+          "<li style='margin:3px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
+          " (" + skill.correctCount + " из " + skill.evidenceCount + " независимых наблюдений верно).</li>"
+        ).join("") + "</ul>"
+      : "<p style='font-size:.72em;line-height:1.3;margin:0 0 8px;'>Пока недостаточно повторных независимых наблюдений для устойчивых выводов по отдельным навыкам.</p>";
     const diagnosticSummaryHtml = grade === "7" && diagnosticProfile
       ? "<div class='pdf-analytics-title'>Диагностическая интерпретация</div>" +
         "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Единичное выполнение описывает ответ на конкретное задание, но не подтверждает устойчивое владение навыком. Процент правильных ответов не является уровнем сформированности.</p>" +
@@ -189,7 +199,8 @@
         "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Повторяющиеся затруднения (H2): <b>" + ((diagnosticProfile.errorHypothesisSummary || {}).H2 || 0) +
         "</b>; противоречивые диагностические единицы: <b>" + (diagnosticProfile.contradictorySkillCount || 0) + "</b>.</p>" +
         "<table style='width:100%;border-collapse:collapse;font-size:.72em;margin-bottom:8px;'><thead><tr><th style='text-align:left;padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Компетенция</th><th style='padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Данные</th><th style='padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Повтор.</th></tr></thead><tbody>" +
-        competencyRows + "</tbody></table>"
+        competencyRows + "</tbody></table>" +
+        "<div style='font-size:.76em;font-weight:700;margin:0 0 3px;'>Навыки с повторными наблюдениями</div>" + repeatedSkillHtml
       : "";
     const blockHeading = grade === "7"
       ? "Доля правильных ответов по блокам (описательный показатель)"
