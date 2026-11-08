@@ -96,19 +96,23 @@
     };
   }
 
-  function makeQuestionCard(question, number, result, formatMath) {
+  function makeQuestionCard(question, number, result, formatMath, grade) {
     const questionHtml = typeof formatMath === "function"
       ? formatMath(question.q)
       : escapeHtml(question.q);
     const correctHtml = typeof formatMath === "function"
       ? formatMath(result.correctAnswer)
       : escapeHtml(result.correctAnswer);
+    const answerDetails = grade === "7"
+      ? "<b>Ответ участника:</b> " + escapeHtml(result.finalAnswer) + "<br>"
+      : "<b>Введенных ответов:</b> " + result.checkCount + " | <b>Ответы:</b> " +
+        (result.checkCount ? escapeHtml(result.attemptsText) : (result.isSkipped ? (question.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")) + "<br>";
     return `
       <div class="pdf-card ${result.statusClass}">
         <div class="pdf-q">${number}. ${questionHtml}</div>
         <div class="pdf-card-footer">
           <div class="pdf-ans">
-            <b>Ответ участника:</b> ${escapeHtml(result.finalAnswer)}<br>
+            ${answerDetails}
             <b>Правильный ответ:</b> ${correctHtml}
           </div>
           <span class="badge ${result.badgeClass}">${result.badgeText}</span>
@@ -128,7 +132,8 @@
 
   function makeFirstPage(model) {
     const { grade, levelLabel, studentName, dateText, score, total, evaluated, unanswered, blockRows, repeatTopics, studyTopics, diagnosticProfile } = model;
-    const percent = evaluated ? Math.round(score / evaluated * 100) : 0;
+    const accuracyDenominator = grade === "7" ? evaluated : total;
+    const percent = accuracyDenominator ? Math.round(score / accuracyDenominator * 100) : 0;
     const scoreLabel = grade === "7" ? "Доля правильных ответов среди оценённых" : "Итоговый результат";
     const scoreText = grade === "7"
       ? (evaluated > 0 ? score + " из " + evaluated + " (" + percent + "%)" : "Нет оценённых ответов")
@@ -138,9 +143,11 @@
     const studyVisible = studyTopics.slice(0, topicLimit);
     const repeatHtml = repeatTopics.length
       ? "<ol>" + repeatVisible.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>" + (repeatTopics.length > topicLimit ? '<p style="margin:4px 0 0;">И ещё ' + (repeatTopics.length - topicLimit) + ' тем — см. задания в подробной части отчёта.</p>' : "")
-      : (grade === "7" && diagnosticProfile && diagnosticProfile.evaluated === 0
-          ? '<p style="margin:0;">Нет оценённых ответов.</p>'
-          : '<p style="margin:0;">Неверных ответов среди оценённых заданий нет.</p>');
+      : (grade === "7"
+          ? (diagnosticProfile && diagnosticProfile.evaluated === 0
+              ? '<p style="margin:0;">Нет оценённых ответов.</p>'
+              : '<p style="margin:0;">Неверных ответов среди оценённых заданий нет.</p>')
+          : '<p style="margin:0;">Ошибок в решённых заданиях нет.</p>');
     const studyHtml = studyTopics.length
       ? "<ol>" + studyVisible.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>" + (studyTopics.length > topicLimit ? '<p style="margin:4px 0 0;">И ещё ' + (studyTopics.length - topicLimit) + ' тем — см. задания в подробной части отчёта.</p>' : "")
       : '<p style="margin:0;">Пропущенных заданий нет.</p>';
@@ -353,12 +360,15 @@
           if (!result.isSkipped) blockEvaluated++;
           if (result.isSkipped) studyTopics.add(themeName);
           else if (!result.isCorrect || result.guessedByBruteForce) repeatTopics.add(themeName);
-          cards.push(makeQuestionCard(question, questionNumber, result, formatMath));
+          cards.push(makeQuestionCard(question, questionNumber, result, formatMath, grade));
         });
       });
-      const blockPercent = blockEvaluated ? Math.round(blockCorrect / blockEvaluated * 100) : null;
+      const blockDenominator = grade === "7" ? blockEvaluated : blockTotal;
+      const blockPercent = blockDenominator ? Math.round(blockCorrect / blockDenominator * 100) : null;
       const fillClass = blockPercent === null ? "" : (blockPercent < 50 ? "bg-red" : (blockPercent < 70 ? "bg-yellow" : "bg-green"));
-      const blockValue = blockPercent === null ? "нет данных" : blockCorrect + " / " + blockEvaluated + " (" + blockPercent + "%)";
+      const blockValue = blockPercent === null
+        ? "нет данных"
+        : (grade === "7" ? blockCorrect + " / " + blockEvaluated + " (" + blockPercent + "%)" : blockPercent + "%");
       blockRows += '<div class="pdf-progress-row"><div class="pdf-progress-header"><span>' +
         escapeHtml(block.block) + '</span><span>' + blockValue + '</span></div><div class="pdf-progress-track">' +
         '<div class="pdf-progress-fill ' + fillClass + '" style="width:' + (blockPercent === null ? 0 : blockPercent) + '%"></div></div></div>';
