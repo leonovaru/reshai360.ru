@@ -6,8 +6,8 @@ window.CONFIG = {
         policy: "policy.html",
         offer: "offer.html",
         charityTelegram: "https://t.me/sobachiy_mir_krsk",
-        supportTelegram: "https://t.me/leonovaru",
-        supportVk: "https://vk.com/leonovaru"
+        supportTelegram: "https://t.me/reshai360_support_bot",
+        supportVk: "https://vk.me/reshai360"
     },
     media: {
         demoVideo: "demo_mobile.mp4",
