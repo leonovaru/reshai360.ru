@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 14;
+  const VERSION = 15;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -187,7 +187,7 @@
       ? "<ul style='font-size:.72em;line-height:1.3;margin:0 0 8px;padding-left:18px;'>" +
         repeatedSkillItems.map(skill =>
           "<li style='margin:3px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
-          " (" + skill.correctCount + " из " + skill.evidenceCount + " независимых наблюдений верно).</li>"
+          (skill.evidenceCount > 0 ? " (" + skill.correctCount + " из " + skill.evidenceCount + " независимых наблюдений верно)." : ".") + "</li>"
         ).join("") + "</ul>"
       : "<p style='font-size:.72em;line-height:1.3;margin:0 0 8px;'>Пока недостаточно повторных независимых наблюдений для устойчивых выводов по отдельным навыкам.</p>";
     const diagnosticSummaryHtml = grade === "7" && diagnosticProfile
