@@ -828,6 +828,12 @@
   function formatMathText(value) {
     if (value === null || value === undefined) return "";
     let source = String(value);
+    const protectedBlocks = [];
+    source = source.replace(/<(svg|table)\\b[\\s\\S]*?<\\/\\1>/gi, block => {
+      const key = "\\uE300" + protectedBlocks.length + "\\uE301";
+      protectedBlocks.push(block);
+      return key;
+    });
     const protectedHtml = [];
     source = source.replace(/<[^>]+>/g, tag => { const key = "\\uE200" + protectedHtml.length + "\\uE201"; protectedHtml.push(tag); return key; });
     const protectedParts = [];
@@ -877,6 +883,9 @@
     protectedHtml.forEach((tag, index) => { source = source.replace("\\uE200" + index + "\\uE201", tag); });
     protectedParts.forEach((part, index) => {
       source = source.replace("\uE100" + index + "\uE101", part);
+    });
+    protectedBlocks.forEach((block, index) => {
+      source = source.replace("\uE300" + index + "\uE301", block);
     });
     return source;
   }
