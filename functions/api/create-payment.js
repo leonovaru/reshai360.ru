@@ -181,7 +181,10 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         amount: { value: expectedPaymentAmount, currency: 'RUB' },
-        confirmation: { type: 'embedded' },
+        confirmation: {
+          type: 'redirect',
+          return_url: `https://reshai360.ru/success.html?token=${encodeURIComponent(createdToken)}&productKey=${encodeURIComponent(productKey)}`
+        },
         capture: true,
         description: `${product.title} (${email})`,
         metadata: { studentName, email, productKey, token },
@@ -206,8 +209,8 @@ export async function onRequestPost(context) {
     }
 
     const payment = await response.json();
-    if (!payment.confirmation || !payment.confirmation.confirmation_token || !payment.id) {
-      throw new Error('Некорректный ответ от платежного шлюза');
+    if (!payment.confirmation || !payment.confirmation.confirmation_url || !payment.id) {
+      throw new Error('ЮKassa не вернула ссылку для перехода к оплате');
     }
 
     // Сохраняем ID платежа в заказе. Тогда success-страница сможет сама
@@ -221,7 +224,7 @@ export async function onRequestPost(context) {
     }
 
     return new Response(JSON.stringify({
-      confirmationToken: payment.confirmation.confirmation_token,
+      confirmationUrl: payment.confirmation.confirmation_url,
       paymentAmount: expectedPaymentAmount,
       testMode,
       displayAmount: discountedDisplayPrice,
