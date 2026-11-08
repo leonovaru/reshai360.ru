@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Диагностический тест по математике | 7 класс — Применение</title>
+  <link rel="icon" type="image/png" href="/logo.png?v=20261105">
+  <link rel="shortcut icon" type="image/png" href="/logo.png?v=20261105">
+  
+  <!-- Яндекс.Метрика (замените YOUR_COUNTER_ID на ваш номер счетчика) -->
+  <script type="text/javascript" >
+     (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+     m[i].l=1*new Date();
+     for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+     k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+     (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+     ym(113852589, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true });
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/113852589" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+
+  <!-- MathJax SVG с локальным кешем шрифтов -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
+      svg: { fontCache: 'local' },
+      options: {
+        renderActions: {
+          assistiveMML: [],
+          addMenu: []
+        }
+      }
+    };
+  </script>
+  <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  
+  <!-- Библиотеки генерации PDF из canvas (html2canvas + jsPDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="/assets/report-generator.js?v=10"></script>
+  <script src="/assets/grade7-diagnostic-data.js?v=1"></script>
+
+  <style>
+    :root {
+      --primary-dark: #1b365d;
+      --primary-blue: #2563eb;
+      --bg-light: #f4f6f9;
+      --card-bg: #ffffff;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: var(--bg-light); color: #333; margin: 0; padding: 0; }
+    #main-container { visibility: hidden; }
+    .container { max-width: 900px; margin: 40px auto; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .top-instruction { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 15px 20px; margin-bottom: 25px; color: #334155; font-size: 0.95em; line-height: 1.6; }
+    .top-instruction-title { font-weight: 700; color: var(--primary-dark); margin-bottom: 4px; }
+    .top-instruction ul { margin: 0; padding-left: 18px; }
+    .top-instruction li { margin-bottom: 3px; }
+    h2.block-title { margin-top: 30px; color: var(--primary-dark); border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-size: 1.3em; }
+    h3.theme-title { margin-top: 20px; color: var(--primary-blue); font-size: 1.1em; }
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+    .question-title { font-weight: 600; font-size: 1.05em; margin-bottom: 12px; line-height: 1.5; }
+    .options { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .option-label { display: flex; align-items: flex-start; gap: 10px; background: #fff; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; line-height: 1.4; }
+    .option-label:hover { background: #eff6ff; }
+    .option-label input[type="radio"] { margin-top: 3px; flex-shrink: 0; }
+    .option-label span { flex: 1; word-break: break-word; }
+    .input-row { display: flex; align-items: center; gap: 8px; max-width: 350px; margin-top: 10px; }
+    .text-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; box-sizing: border-box; margin-top: 0; }
+    .text-input:disabled { background-color: #e2e8f0; cursor: not-allowed; color: #475569; }
+    .btn-minus-toggle { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 6px; width: 44px; height: 42px; font-weight: bold; font-size: 1.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s; flex-shrink: 0; }
+    .btn-minus-toggle:hover { background: #e2e8f0; border-color: #94a3b8; }
+    .btn-minus-toggle.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+    .btn-minus-toggle:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+    .btn-check { background: var(--primary-blue); color: #fff; border: none; min-height: 42px; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 0; transition: 0.2s; }
+    .btn-check:hover { background: #1d4ed8; }
+    .feedback { display: inline-block; margin-left: 15px; font-weight: bold; font-size: 1.05em; }
+    .btn-final { display: block; width: 100%; padding: 16px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.2s; }
+    .btn-final:hover { background: #15803d; }
+    .btn-pdf { display: inline-block; background: var(--primary-dark); color: #fff; border: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 1.05em; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .btn-pdf:hover:not(:disabled) { background: var(--primary-blue); }
+    .btn-pdf:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.8; box-shadow: none; }
+    mjx-container[jax="SVG"] { display: inline-block !important; margin: 0 2px !important; }
+    mjx-container[jax="SVG"] svg { overflow: visible !important; vertical-align: middle !important; max-width: none !important; }
+    mjx-assistive-mml, .mjx-assistive-mml { display: none !important; visibility: hidden !important; }
+    #result-wrapper { max-width: 900px; margin: 20px auto; display: none; padding: 0 15px; box-sizing: border-box; }
+    .screen-section-title { color: var(--primary-dark); border-bottom: 2px solid var(--primary-blue); padding-bottom: 8px; font-size: 1.25em; margin: 30px 0 15px 0; }
+    #pdf-export-container { position: fixed; top: 0; left: 0; z-index: -9999; opacity: 0; pointer-events: none; width: 794px !important; }
+    #result-pdf { width: 794px !important; }
+    #result-pdf .pdf-page { font-family: Arial, sans-serif !important; }
+    #result-pdf .pdf-page * { font-family: Arial, sans-serif; }
+    #result-pdf .pdf-page mjx-container { max-width: 100% !important; }
+    #result-pdf .pdf-page mjx-container svg { max-width: none !important; overflow: visible !important; }
+    .pdf-page { width: 794px !important; height: 1122px !important; min-height: 1122px !important; max-height: 1122px !important; background: #ffffff !important; padding: 25px 40px !important; box-sizing: border-box !important; margin: 0 auto !important; position: relative !important; overflow: hidden !important; font-size: 15px !important; }
+    .pdf-first-page-content { transform-origin: top left; }
+    .pdf-card { box-sizing: border-box; break-inside: avoid; page-break-inside: avoid; overflow-wrap: anywhere; }
+    .pdf-q, .pdf-ans { overflow-wrap: anywhere; min-width: 0; }
+    #result-screen .pdf-page { width: 100% !important; max-width: 794px; height: auto !important; min-height: auto !important; max-height: none !important; overflow: visible !important; padding: 20px !important; margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; }
+    .pdf-header-title { font-size: 1.35em; font-weight: 800; color: #1b2a4a; margin: 0 0 12px 0; }
+    .pdf-score-card { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; gap: 15px; flex-wrap: wrap; }
+    .pdf-student-info { font-size: 0.95em; color: #1e293b; line-height: 1.5; }
+    .pdf-student-info strong { color: var(--primary-dark); }
+    .pdf-score-right { text-align: right; }
+    .pdf-score-label { font-size: 0.85em; color: #64748b; margin-bottom: 2px; }
+    .pdf-score-main { font-size: 1.3em; font-weight: 800; color: #1b365d; }
+    .pdf-analytics-title { font-size: 1em; font-weight: 700; color: #1b365d; margin-bottom: 6px; border-bottom: 2px solid #2563eb; padding-bottom: 3px; }
+    .pdf-progress-row { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+    .pdf-progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; font-weight: 700; color: #1e293b; margin-bottom: 6px; gap: 15px; }
+    #result-screen .pdf-progress-header { display:grid; grid-template-columns:minmax(0,1fr) 64px; align-items:center; gap:12px; }
+    #result-screen .pdf-progress-header > span:first-child { min-width:0; overflow-wrap:anywhere; }
+    #result-screen .pdf-progress-header > span:last-child { display:block; width:100%; min-width:64px; white-space:nowrap; text-align:center; justify-self:center; }
+    .pdf-progress-track { height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
+    .pdf-progress-fill { height: 100%; border-radius: 6px; }
+    .bg-green { background-color: #22c55e; }
+    .bg-yellow { background-color: #eab308; }
+    .bg-red { background-color: #ef4444; }
+    .pdf-topics-container { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-top: 8px; width: 100%; }
+    .pdf-topics-box { min-width: 0; width: 100%; box-sizing: border-box; border-radius: 8px; padding: 10px 12px; font-size: 0.72em; line-height: 1.35; max-height: none; overflow: visible; overflow-wrap: anywhere; }
+    .pdf-topics-box.repeat { flex: 1 1 0; background: #fefce8; border: 1px solid #fde047; color: #713f12; }
+    .pdf-topics-box.repeat h4 { margin: 0 0 4px 0; color: #a16207; font-size: 0.95em; }
+    .pdf-topics-box.study { flex: 2 1 0; background: #fef2f2; border: 1px solid #fca5a5; color: #7f1d1d; }
+    .pdf-topics-box.study h4 { margin: 0 0 4px 0; color: #b91c1c; font-size: 0.95em; }
+    .pdf-topics-box ol { margin: 0; padding-left: 18px; column-count: 2; column-gap: 18px; }
+    .pdf-topics-box li { margin-bottom: 3px; break-inside: avoid; }
+    .pdf-topics-box { font-size: 0.78em; line-height: 1.3; }
+    .detail-section-title { margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); border-bottom: 2px solid #2563eb; padding-bottom: 5px; font-size: 1.05em; }
+    .pdf-card { background: #ffffff; border-left: 4px solid #cbd5e1; border-radius: 5px; padding: 10px 14px; margin-bottom: 10px; position: relative; }
+    .pdf-card.correct { border-left-color: #16a34a; background: #f0fdf4; }
+    .pdf-card.incorrect { border-left-color: #eab308; background: #fefce8; }
+    .pdf-card.skipped { border-left-color: #dc2626; background: #fef2f2; }
+    .pdf-q { font-weight: 600; margin-bottom: 4px; color: #1e293b; font-size: 0.9em; line-height: 1.35; }
+    .pdf-ans { font-size: 0.85em; color: #475569; line-height: 1.4; padding-right: 95px; }
+    .badge { position: absolute; bottom: 10px; right: 12px; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; white-space: nowrap; }
+    .badge-ok { background: #dcfce7; color: #15803d; }
+    .badge-err { background: #fef9c3; color: #a16207; }
+    .badge-skip { background: #fee2e2; color: #b91c1c; }
+    /* Единая типографика и безопасная высота карточек в отчёте */
+    .pdf-card { font-family:Arial,Helvetica,sans-serif !important; box-sizing:border-box; height:auto; min-height:0; overflow:visible; break-inside:avoid; page-break-inside:avoid; }
+    .pdf-card .pdf-q, .pdf-card .pdf-ans, .pdf-card .badge { font-family:Arial, Helvetica, sans-serif !important; }
+    .pdf-card .pdf-q, .pdf-card .pdf-ans { min-width:0; white-space:normal; overflow-wrap:anywhere; word-break:normal; }
+    .pdf-card-footer { display:flex; align-items:flex-end; gap:12px; width:100%; }
+    .pdf-card .pdf-ans { flex:1 1 auto; min-width:0; padding-right:0 !important; }
+    .pdf-card .badge { position:static !important; display:inline-flex; align-items:center; flex:0 0 auto; align-self:flex-end; margin:0 0 0 auto; white-space:nowrap; }
+    .page-footer { position: absolute; bottom: 10px; left: 40px; right: 40px; text-align: center; font-size: 0.72em; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; }
+  
+    .result-actions { display:flex; justify-content:center; align-items:stretch; flex-wrap:wrap; gap:10px; margin:24px auto 18px; width:100%; }
+    .result-actions > button { flex:1 1 190px; min-width:0; }
+    .result-action-secondary { padding:13px 16px; border:1px solid #c7d2fe; border-radius:10px; background:#eef2ff; color:#312e81; font-weight:700; cursor:pointer; }
+    #result-screen #promo-code-result { box-sizing:border-box; width:100%; max-width:794px; }
+    @media (max-width: 640px) {
+      #result-screen { padding:14px 10px !important; font-size:14px !important; }
+      #result-screen .pdf-page { width:100% !important; max-width:100% !important; padding:14px !important; box-sizing:border-box !important; overflow-wrap:anywhere;  height: auto !important; min-height: auto !important; max-height: none !important; overflow: visible !important;}
+      #result-screen .pdf-topics-container { display:flex !important; flex-direction:column !important; gap:10px !important; }
+      #result-screen .pdf-topics-box { width:100% !important; min-width:0 !important; max-height: none !important; height: auto !important; overflow: visible !important; box-sizing:border-box !important; overflow-wrap:anywhere; }
+      #result-screen .pdf-topics-box ol { column-count:1 !important; padding-left:20px; }
+      .result-actions { display:grid; grid-template-columns:1fr; gap:9px; }
+      .result-actions > button { width:100%; }
+    }
+
+    .question-navigator { position:sticky; top:8px; z-index:30; border:1px solid #cbd5e1; border-radius:12px; background:#fff; padding:10px 12px; margin:0 0 22px; box-shadow:0 3px 12px rgba(15,23,42,.10); }
+    .question-nav-toggle { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; border:0; background:transparent; color:#1b365d; font-weight:700; font-size:15px; cursor:pointer; padding:4px 2px; text-align:left; }
+    .question-nav-legend { display:flex; gap:14px; flex-wrap:wrap; color:#475569; font-size:12px; font-weight:500; }
+    .question-nav-legend span { display:inline-flex; align-items:center; gap:5px; }
+    .question-nav-legend i { width:10px; height:10px; border-radius:3px; display:inline-block; background:#2563eb; }
+    .question-nav-legend .legend-empty { background:#cbd5e1; }
+     .question-nav-legend .legend-correct { background:#16a34a; }
+     .question-nav-legend .legend-incorrect { background:#dc2626; }
+     .question-nav-legend .legend-pending { background:#475569; }
+    .question-nav-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr)); gap:7px; margin-top:12px; }
+    .question-nav-item { position:relative; min-height:38px; border:1px solid #cbd5e1; border-radius:8px; background:#e2e8f0; color:#334155; font-weight:700; cursor:pointer; }
+     .question-nav-item.unanswered,.question-nav-item.answered { border-color:#cbd5e1; background:#e2e8f0; color:#334155; }
+     .question-nav-item.correct { border-color:#16a34a; background:#16a34a; color:#fff; }
+     .question-nav-item.incorrect { border-color:#dc2626; background:#dc2626; color:#fff; }
+     .question-nav-item.pending { border-color:#475569; background:#475569; color:#fff; }
+    
+    .question-nav-item.marked::after { content:""; position:absolute; width:8px; height:8px; border-radius:50%; background:#facc15; border:1px solid #854d0e; top:-3px; right:-3px; }
+    .question-nav-item:focus-visible,.question-flag:focus-visible,.question-nav-toggle:focus-visible { outline:3px solid #fbbf24; outline-offset:2px; }
+    .question-action-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .question-flag { display:inline-flex; align-items:center; justify-content:center; flex:0 0 42px; width:42px; min-height:42px; height:42px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:#64748b; font-size:23px; line-height:1; cursor:pointer; }
+    .question-flag.active { background:transparent; border-color:transparent; color:#d97706; }
+    .question-action-row .feedback { margin-left:0; }
+    @media (max-width: 768px) { input, select, textarea { font-size:16px !important; } }
+    @media (max-width:640px) {
+      .question-navigator { position:sticky; top:6px; z-index:20; padding:9px 10px; box-shadow:0 3px 12px rgba(15,23,42,.10); }
+      .question-nav-grid { display:none; grid-template-columns:repeat(6,minmax(0,1fr)); }
+      .question-navigator.expanded .question-nav-grid { display:grid; }
+      .question-nav-item { min-height:40px; }
+      .question-nav-legend { gap:9px; font-size:11px; }
+      .question-flag { min-height:36px; }
+    }
+
+  
+    .question-navigator:not(.expanded) .question-nav-grid,
+    .question-navigator:not(.expanded) .question-nav-legend { display:none !important; }
+    .question-navigator.expanded .question-nav-grid { display:grid !important; }
+    .question-navigator.expanded .question-nav-legend { display:flex !important; }
+    .question-nav-toggle { min-height:32px; }
+  
+  
+    .pdf-card-footer { display:flex !important; align-items:flex-end !important; gap:12px; width:100%; }
+    .pdf-card .pdf-ans { flex:1 1 auto !important; min-width:0 !important; padding-right:0 !important; }
+    .pdf-card .badge { position:static !important; display:inline-flex !important; align-items:center; flex:0 0 auto; align-self:flex-end; margin:0 0 0 auto !important; white-space:nowrap; }
+
+  
+/* Единый стандарт отображения карточек заданий — эталон test_11_advanced */
+#quiz-container .card { box-sizing:border-box; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:20px; margin-bottom:15px; min-width:0; }
+#quiz-container .question-title { display:block; min-width:0; font-weight:600; font-size:1.05em; line-height:1.5; margin:0 0 12px; overflow-wrap:anywhere; }
+#quiz-container .question-title mjx-container[jax="SVG"] { display:inline-block !important; vertical-align:middle; max-width:100%; }
+#quiz-container .options { display:flex; flex-direction:column; gap:8px; margin-top:10px; min-width:0; }
+#quiz-container .option-label { display:flex; align-items:flex-start; gap:10px; box-sizing:border-box; min-width:0; background:#fff; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; line-height:1.4; }
+#quiz-container .option-label input[type="radio"] { flex:0 0 auto; margin-top:3px; }
+#quiz-container .option-label span { flex:1 1 auto; min-width:0; overflow-wrap:anywhere; word-break:normal; }
+#quiz-container .input-row { display:flex; align-items:center; gap:8px; width:100%; max-width:350px; margin-top:10px; }
+#quiz-container .text-input { width:100%; min-width:0; box-sizing:border-box; padding:10px; margin-top:0; border:1px solid #cbd5e1; border-radius:6px; font-size:16px; }
+#quiz-container .question-action-row { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-top:12px; min-width:0; }
+#quiz-container .question-flag { display:inline-flex; align-items:center; justify-content:center; flex:0 0 42px; width:42px; min-height:42px; height:42px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:#64748b; font-size:23px; line-height:1; cursor:pointer; }
+#quiz-container .question-flag.active { background:transparent; border-color:transparent; color:#d97706; }
+#quiz-container .question-action-row .feedback { margin-left:0; min-width:0; overflow-wrap:anywhere; }
+@media (max-width:640px) {
+  #quiz-container .card { padding:16px; }
+  #quiz-container .question-title { font-size:1em; line-height:1.5; }
+  #quiz-container .input-row { max-width:100%; }
+}
+
+  </style>
+<style>
+  /* Единое оформление настоящих таблиц в заданиях, на итоговом экране и в PDF-карточках. */
+  .question-data-table {
+    display: table !important;
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    margin: 12px 0;
+    background: #ffffff;
+    color: #1e293b;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .question-data-table th,
+  .question-data-table td {
+    border: 1px solid #cbd5e1;
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+  }
+  .question-data-table th {
+    background: #eff6ff;
+    color: #1e3a8a;
+    font-weight: 700;
+  }
+  .question-data-table th:last-child,
+  .question-data-table td:last-child { text-align: center; }
+  #result-screen .question-data-table,
+  #result-pdf .question-data-table { box-sizing: border-box; }
+  @media (max-width: 640px) {
+    .question-data-table { font-size: 13px; }
+    .question-data-table th,
+    .question-data-table td { padding: 7px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="main-container">
+  <div id="quiz-screen" style="display: block;">
+    <div class="test-brand-logo" style="text-align:center;margin:0 auto 18px;padding-top:4px;"><img src="/logo.png" alt="Решай360" style="display:block;width:150px;max-width:42vw;height:auto;max-height:72px;object-fit:contain;margin:0 auto;"></div>
+    <div class="top-instruction">
+      <div style="font-weight:700;color:#2563eb;margin:0 0 6px 0;">Диагностика 7 класса — Применение</div>
+      <div class="top-instruction-title">📋 Правила прохождения теста:</div>
+      <ul>
+        <li>Решайте задания самостоятельно и внимательно проверяйте свои ответы.</li>
+        <li>Если сомневаетесь в задании и хотите вернуться к нему позже, поставьте флажок рядом с кнопкой «Проверить».</li>
+        <li>Если в ответе получается десятичная дробь, используйте запятую (например, <strong>2,5</strong>).</li>
+        <li>Чтобы ввести отрицательное число, нажмите на кнопку <strong>«±»</strong> рядом с полем ввода.</li>
+                <li>Ответы и прогресс автоматически сохраняются по вашей ссылке. Можно продолжить диагностику, открыв эту же ссылку в другом браузере или на другом устройстве.</li>
+        <li><strong>Важно:</strong> ссылка на диагностику действует 7 дней с момента оплаты. Завершите прохождение до истечения этого срока.</li>
+      </ul>
+    </div>
+    <div id="question-navigator" class="question-navigator" aria-label="Навигация по заданиям">
+      <button type="button" id="question-nav-toggle" class="question-nav-toggle" onclick="toggleQuestionNavigator()" aria-expanded="false">
+        <span>Задания: <span id="question-nav-count">0</span></span><span aria-hidden="true">⌄</span>
+      </button>
+      <div class="question-nav-legend"><span><i class="legend-empty"></i> Нет ответа</span><span><i class="legend-pending"></i> Ответ не проверен</span><span><i class="legend-correct"></i> Верно</span><span><i class="legend-incorrect"></i> Неверно</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#facc15;border:1px solid #854d0e;margin-right:5px;"></i> Отмечено для возврата</span></div>
+      <div id="question-nav-grid" class="question-nav-grid"></div>
+    </div>
+    <div id="quiz-container"></div>
+    <button class="btn-final" id="finishBtn" onclick="checkAll()">Завершить и посмотреть результаты</button>
+  </div>
+</div>
+
+<div id="result-wrapper">
+  <div class="result-brand-logo" style="text-align:center;margin:0 auto 18px;padding-top:4px;"><img src="/logo.png" alt="Решай360" style="display:block;width:150px;max-width:42vw;height:auto;max-height:72px;object-fit:contain;margin:0 auto;"></div>
+  <div id="result-screen"></div>
+  <div id="promo-code-result" style="display:none; margin:14px auto 22px; max-width:650px; padding:12px 14px; border:1px solid #c7d2fe; border-radius:14px; background:#eef2ff; color:#312e81; box-shadow:none;">
+    <div style="font-size:12px; color:#4338ca; font-weight:800; text-transform:uppercase; letter-spacing:.7px; margin-bottom:8px;">🎁 Подарок за прохождение</div>
+    <p style="margin:0 0 9px; font-size:13px; line-height:1.45;">Промокод даёт <strong>скидку 10%</strong> на следующую диагностику. Используйте его сами или поделитесь с другом. Код одноразовый и действует 45 дней.</p>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin:10px 0; padding:10px 12px; background:#fff; border:1px dashed #818cf8; border-radius:10px;"><strong id="promo-code-result-value" style="font-size:18px; letter-spacing:2px; color:#312e81;"></strong><button type="button" onclick="copyPromoCode()" style="padding:8px 12px; border-radius:8px; background:#4338ca; color:white; font-weight:700; border:0; cursor:pointer;">Скопировать</button></div>
+    <p style="margin:0; font-size:13px; line-height:1.6; color:#4338ca;">Оставьте отзыв, пожелание или идею — скидка по промокоду увеличится до <strong>15%</strong>. <a id="feedback-form-link" href="https://reshai360.ru/index.html#feedback" target="_blank" rel="noopener noreferrer" style="color:#4338ca; text-decoration:underline; font-weight:700;">Открыть форму обратной связи</a>.</p>
+    <div id="report-email-block" style="display:none; margin-top:12px; padding:12px; background:#fff; border-radius:10px;">
+      <div id="report-email-status" style="margin:0 0 10px; padding:0; background:transparent; border-radius:0; font-size:.92em;" aria-live="polite"></div>
+      <label for="corrected-report-email" style="display:block; margin-bottom:7px; font-size:13px; line-height:1.5;">Если письмо не пришло, отправьте его ещё раз или укажите другой адрес:</label>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        <input id="corrected-report-email" type="email" autocomplete="email" placeholder="example@mail.ru" style="flex:1 1 210px; min-width:0; padding:11px 12px; border:1px solid #cbd5e1; border-radius:8px; font:inherit; box-sizing:border-box;">
+        <button id="resend-report-email" type="button" onclick="sendReportToUpdatedEmail()" style="padding:10px 14px; border:0; border-radius:8px; background:#4338ca; color:#fff; font-weight:700; cursor:pointer;">Отправить письмо на почту</button>
+      </div>
+    </div>
+    <div style="margin-top:14px; padding-top:14px; border-top:1px solid #c7d2fe;"><p style="font-size:.9em; font-weight:800; margin:0 0 8px;">Есть вопросы по тесту или отчёту? Свяжитесь с нами:</p><div style="display:flex; flex-wrap:wrap; gap:10px 16px; font-size:.88em;"><a href="mailto:support@reshai360.ru" style="color:#4338ca; text-decoration:underline;">✉ support@reshai360.ru</a><a href="https://t.me/reshai360_support_bot" target="_blank" rel="noopener noreferrer" style="color:#4338ca; text-decoration:underline;">Telegram</a><a href="https://vk.me/reshai360" target="_blank" rel="noopener noreferrer" style="color:#4338ca; text-decoration:underline;">ВКонтакте</a></div></div>
+  </div>
+</div>
+
+<div id="pdf-export-container">
+  <div id="result-pdf"></div>
+</div>
+
+<script>
+  let studentData = { fullName: "Ученик", email: "" };
+  let currentToken = "";
+  let generatedPdfBlob = null;
+
+  // Готовый PDF хранится в IndexedDB этого браузера до окончания 24-часового доступа.
+  function openDiagnosticPdfCache() {
+    return new Promise(resolve => {
+      if (!window.indexedDB) return resolve(null);
+      let request;
+      try { request = window.indexedDB.open("reshai360-pdf-cache", 1); }
+      catch (_) { return resolve(null); }
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains("reports")) db.createObjectStore("reports", { keyPath: "token" });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => resolve(null);
+      request.onblocked = () => resolve(null);
+    });
+  }
+
+  async function getCachedDiagnosticPdf(token) {
+    if (!token) return null;
+    const db = await openDiagnosticPdfCache();
+    if (!db) return null;
+    return new Promise(resolve => {
+      let transaction;
+      try { transaction = db.transaction("reports", "readonly"); }
+      catch (_) { db.close(); return resolve(null); }
+      const request = transaction.objectStore("reports").get(token);
+      request.onsuccess = () => {
+        const entry = request.result;
+        if (entry && entry.version === 10 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
+        if (entry) {
+          try { db.transaction("reports", "readwrite").objectStore("reports").delete(token); } catch (_) {}
+        }
+        resolve(null);
+      };
+      request.onerror = () => resolve(null);
+      transaction.oncomplete = () => db.close();
+      transaction.onerror = () => db.close();
+    });
+  }
+
+  async function saveCachedDiagnosticPdf(token, blob) {
+    if (!token || !blob) return false;
+    const db = await openDiagnosticPdfCache();
+    if (!db) return false;
+    return new Promise(resolve => {
+      let transaction;
+      try { transaction = db.transaction("reports", "readwrite"); }
+      catch (_) { db.close(); return resolve(false); }
+      transaction.objectStore("reports").put({ token, blob, version: 10, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+      transaction.oncomplete = () => { db.close(); resolve(true); };
+      transaction.onerror = () => { db.close(); resolve(false); };
+      transaction.onabort = () => { db.close(); resolve(false); };
+    });
+  }
+  let isCompletedView = false;
+  let existingPromoCode = "";
+
+  // Проверка токена при загрузке страницы (защита от пересылки и повторного прохождения)
+  window.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    currentToken = params.get('token') || localStorage.getItem('testToken');
+
+    if (!currentToken) {
+      alert("Доступ запрещен. Требуется оплата диагностики.");
+      window.location.href = "index.html";
+      return;
+    }
+
+    let completedSnapshot = null;
+    let wasCompleted = false;
+    try {
+      const response = await fetch('/api/verify-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: currentToken })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Сервер проверки доступа ответил с кодом ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (!result.valid) {
+        alert(result.message || "Ссылка недействительна или уже была использована.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      if (result.data) {
+        if (result.data.productKey !== '7_advanced') {
+          alert("Эта ссылка не соответствует выбранному уровню диагностики.");
+          window.location.href = "index.html";
+          return;
+        }
+        studentData.fullName = result.data.studentName || localStorage.getItem('studentName') || "Ученик";
+        studentData.email = result.data.email || localStorage.getItem('studentEmail') || "";
+        wasCompleted = result.data.isCompleted === true;
+        isCompletedView = wasCompleted;
+        existingPromoCode = String(result.data.promoCodeIssued || "");
+        completedSnapshot = result.data.answersSnapshot || null;
+        serverCompletedSnapshot = completedSnapshot;
+        serverProgressSnapshot = result.data.progressSnapshot || null;
+      }
+    } catch (err) {
+      console.error("Ошибка проверки токена:", err);
+      alert("Не удалось проверить доступ к тесту. Проверьте подключение к интернету и попробуйте открыть ссылку ещё раз.");
+      window.location.href = "index.html";
+      return;
+    }
+
+    progressStorageKey = "reshai360_progress_7_advanced_v2_" + currentToken;
+    if (completedSnapshot) {
+      // Серверный снимок завершённой диагностики важнее локального черновика с другого устройства.
+      try { localStorage.setItem(progressStorageKey, JSON.stringify({ version: 1, ...completedSnapshot, savedAt: Date.now() })); } catch (_) {}
+    }
+    await renderQuiz();
+    if (!wasCompleted) createProgressSaveControl();
+    if (!wasCompleted) document.getElementById("main-container").style.visibility = "visible";
+    // После восстановления локального черновика сразу отправляем его на сервер,
+    // чтобы уже введённые ответы стали доступны на другом устройстве.
+    if (!wasCompleted) {
+      const hasRestoredProgress = markedQuestions.size > 0 || questionNavigation.some(item =>
+        getQuestionAnswer(item.id, item.qDef) ||
+        item.qDef.checkCount > 0 ||
+        (item.qDef.attemptsHistory && item.qDef.attemptsHistory.length > 0)
+      );
+      if (hasRestoredProgress) saveQuizProgress(true);
+    }
+    if (!wasCompleted) startProgressSync();
+    if (wasCompleted) await checkAll(true);
+  });
+
+  function escapeHtml(text) {
+    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function sanitizeAnswerInput(input, invalidPattern) {
+    if (!input) return;
+    const original = input.value;
+    const caret = input.selectionStart == null ? original.length : input.selectionStart;
+    const clean = original.replace(invalidPattern, "");
+    if (clean === original) return;
+    const cleanCaret = original.slice(0, caret).replace(invalidPattern, "").length;
+    input.value = clean;
+    try { input.setSelectionRange(cleanCaret, cleanCaret); } catch (_) {}
+  }
+
+  function moveAnswerCaretToEnd(input) {
+    if (!input) return;
+    const placeCaret = () => {
+      if (document.activeElement !== input) return;
+      const end = input.value.length;
+      try { input.setSelectionRange(end, end); } catch (_) {}
+    };
+    requestAnimationFrame(placeCaret);
+  }
+
+  function toggleMinus(qId) {
+    const input = document.getElementById(qId);
+    if (!input || input.disabled) return;
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? start;
+    const val = input.value.trim();
+    input.value = val.startsWith('-') ? val.substring(1) : '-' + val;
+    updateMinusBtnState(qId);
+    // Keep focus on the answer field so the mobile keyboard stays open.
+    input.focus({ preventScroll: true });
+    const shift = val.startsWith('-') ? -1 : 1;
+    const nextStart = Math.max(0, start + shift);
+    const nextEnd = Math.max(nextStart, end + shift);
+    try { input.setSelectionRange(nextStart, nextEnd); } catch (_) {}
+    saveQuizProgress();
+    updateQuestionNavigator();
+  }
+
+  function updateMinusBtnState(qId) {
+    const input = document.getElementById(qId);
+    const btn = document.getElementById(`btn_toggle_${qId}`);
+    if (input && btn) {
+      if (input.value.trim().startsWith('-')) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    }
+  }
+
+
+  let questionNavigation = [];
+  let markedQuestions = new Set();
+  let progressStorageKey = "";
+  let serverCompletedSnapshot = null;
+  let serverProgressSnapshot = null;
+  let serverProgressSaveTimer = null;
+  let progressSyncTimer = null;
+  let lastAppliedServerSavedAt = 0;
+  let progressSyncInFlight = false;
+  let localProgressRevision = 0;
+  let localProgressDirty = false;
+  let progressSaveQueue = Promise.resolve();
+  let progressSaveStatusTimer = null;
+
+  function getQuestionAnswer(qId, qDef) {
+    if (qDef.type === "radio") {
+      const selected = Array.from(document.getElementsByName(qId)).find(option => option.checked);
+      return selected ? { type: "radio", value: selected.value } : null;
+    }
+    const input = document.getElementById(qId);
+    return input && input.value.trim() ? { type: "text", value: input.value } : null;
+  }
+
+  function saveQuizProgress(immediate = false) {
+    if (!progressStorageKey || !questionNavigation.length) return Promise.resolve(false);
+    try {
+      const answers = {}, stats = {};
+      questionNavigation.forEach(item => {
+        answers[item.id] = getQuestionAnswer(item.id, item.qDef);
+        stats[item.id] = { checkCount: item.qDef.checkCount || 0, attemptsHistory: item.qDef.attemptsHistory || [], isCorrect: typeof item.qDef.isCorrect === "boolean" ? item.qDef.isCorrect : null };
+      });
+      const snapshot = { version: 1, answers, marked: Array.from(markedQuestions), stats, savedAt: Date.now() };
+      localStorage.setItem(progressStorageKey, JSON.stringify(snapshot));
+      const revision = ++localProgressRevision;
+      localProgressDirty = true;
+      const saveToServer = () => {
+        const send = async () => {
+          try {
+            const response = await fetch('/api/save-progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: currentToken, snapshot }), keepalive: true });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok || !result.success) throw new Error(result.message || 'Не удалось сохранить прогресс на сервере.');
+            const storedSnapshot = { ...snapshot, savedAt: Number(result.savedAt) || Date.now() };
+            if (revision === localProgressRevision) {
+              localStorage.setItem(progressStorageKey, JSON.stringify(storedSnapshot));
+              serverProgressSnapshot = storedSnapshot;
+              lastAppliedServerSavedAt = Math.max(lastAppliedServerSavedAt, storedSnapshot.savedAt);
+              localProgressDirty = false;
+            }
+            return true;
+          } catch (error) { console.warn('Ошибка сохранения прогресса на сервере:', error); return false; }
+        };
+        progressSaveQueue = progressSaveQueue.then(send, send);
+        return progressSaveQueue;
+      };
+      clearTimeout(serverProgressSaveTimer);
+      if (immediate) return saveToServer();
+      serverProgressSaveTimer = setTimeout(saveToServer, 500);
+      return Promise.resolve(true);
+    } catch (error) { console.warn("Не удалось сохранить прогресс диагностики:", error); return Promise.resolve(false); }
+  }
+  function updateProgressSaveStatus(message, isError = false, autoHide = false) {
+    const status = document.getElementById('progress-save-status');
+    if (!status) return;
+    clearTimeout(progressSaveStatusTimer);
+    status.textContent = message; status.style.color = isError ? '#fecaca' : '#dbeafe'; status.style.opacity = '1';
+    if (autoHide && !isError) {
+      progressSaveStatusTimer = setTimeout(() => { status.style.opacity = '0'; }, 4000);
+    }
+  }
+  function createProgressSaveControl() {
+    if (document.getElementById('progress-save-control') || isCompletedView) return;
+    const wrapper = document.createElement('div');
+    wrapper.id = 'progress-save-control';
+    wrapper.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:10000;display:flex;flex-direction:column;align-items:flex-end;gap:7px;';
+    const status = document.createElement('div');
+    status.id = 'progress-save-status'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+    status.style.cssText = 'max-width:220px;padding:7px 11px;border-radius:12px;background:rgba(15,23,42,.94);color:#dbeafe;font-size:12px;line-height:1.35;box-shadow:0 4px 16px rgba(0,0,0,.22);opacity:0;transition:opacity .2s;';
+    const button = document.createElement('button');
+    button.type = 'button'; button.id = 'progress-save-button'; button.textContent = '💾'; button.title = 'Сохранить прогресс';
+    button.setAttribute('aria-label', 'Сохранить прогресс и продолжить на другом устройстве');
+    button.style.cssText = 'width:52px;height:52px;border:0;border-radius:50%;background:linear-gradient(135deg,#7165f5,#27a9dc);color:#fff;font-size:25px;line-height:1;box-shadow:0 5px 18px rgba(40,80,180,.35);cursor:pointer;';
+    button.addEventListener('click', async () => {
+      if (button.disabled) return;
+      button.disabled = true; button.style.opacity = '.7'; updateProgressSaveStatus('Сохраняем прогресс…');
+      const saved = await saveQuizProgress(true);
+      button.disabled = false; button.style.opacity = '1';
+      updateProgressSaveStatus(saved && !localProgressDirty ? 'Прогресс сохранён. Можно продолжить на другом устройстве.' : 'Сохранение не подтверждено. Проверьте интернет и попробуйте ещё раз.', !(saved && !localProgressDirty), saved && !localProgressDirty);
+    });
+    wrapper.append(status, button); document.body.appendChild(wrapper);
+  }
+  function showCompletionStatus() {
+    if (document.getElementById('completion-processing-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'completion-processing-overlay'; overlay.setAttribute('role', 'status'); overlay.setAttribute('aria-live', 'polite');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:10001;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,15,35,.72);backdrop-filter:blur(5px);';
+    overlay.innerHTML = '<div style="display:flex;align-items:center;gap:14px;max-width:420px;width:100%;padding:20px 22px;border:1px solid rgba(148,163,184,.25);border-radius:18px;background:#111c3b;color:#fff;box-shadow:0 18px 55px rgba(0,0,0,.3);"><span style="display:block;width:28px;height:28px;flex:0 0 28px;border:3px solid rgba(255,255,255,.25);border-top-color:#8b9cff;border-radius:50%;animation:reshai360-spin .8s linear infinite;"></span><span style="font-size:15px;font-weight:600;line-height:1.4;">Обрабатываем ваш результат</span></div>';
+    if (!document.getElementById('reshai360-processing-style')) { const style = document.createElement('style'); style.id = 'reshai360-processing-style'; style.textContent = '@keyframes reshai360-spin{to{transform:rotate(360deg)}}'; document.head.appendChild(style); }
+    document.body.appendChild(overlay);
+  }
+  function hideCompletionStatus() { document.getElementById('completion-processing-overlay')?.remove(); }
+
+  function restoreQuizProgress() {
+    if (!progressStorageKey) return;
+    try {
+      // Завершённый снимок имеет приоритет; иначе выбираем самый свежий прогресс с сервера или из браузера.
+      let localSaved = null;
+      try {
+        const raw = localStorage.getItem(progressStorageKey);
+        if (raw) localSaved = JSON.parse(raw);
+      } catch (_) {}
+      const serverSaved = serverProgressSnapshot && serverProgressSnapshot.version === 1 ? serverProgressSnapshot : null;
+      const saved = serverCompletedSnapshot ? { version: 1, ...serverCompletedSnapshot } : (serverSaved || localSaved);
+      if (!saved || saved.version !== 1) return;
+      questionNavigation.forEach(item => {
+        Array.from(document.getElementsByName(item.id)).forEach(option => { option.checked = false; option.disabled = false; });
+        const input = document.getElementById(item.id);
+        if (input && input.tagName === 'INPUT') { input.value = ''; input.disabled = false; }
+        const toggle = document.getElementById('btn_toggle_' + item.id); if (toggle) toggle.disabled = false;
+        const feedback = document.getElementById('feed_' + item.id); if (feedback) feedback.textContent = '';
+        const checkButton = document.getElementById('btn_' + item.id); if (checkButton) checkButton.style.display = '';
+        item.qDef.checkCount = 0; item.qDef.attemptsHistory = []; item.qDef.isCorrect = null;
+        item.qDef.userText = item.qDef.type === 'radio' ? 'Не выбрано' : 'Не введено';
+      });
+      markedQuestions = new Set(Array.isArray(saved.marked) ? saved.marked : []);
+      questionNavigation.forEach(item => {
+        const answer = saved.answers && saved.answers[item.id];
+        if (answer && answer.type === "radio" && item.qDef.type === "radio") {
+          const option = Array.from(document.getElementsByName(item.id)).find(el => el.value === String(answer.value));
+          if (option) option.checked = true;
+        } else if (answer && answer.type === "text" && item.qDef.type === "text") {
+          const input = document.getElementById(item.id);
+          if (input) {
+            input.value = String(answer.value || "");
+            updateMinusBtnState(item.id);
+          }
+        }
+        const stat = saved.stats && saved.stats[item.id];
+        if (stat) {
+          item.qDef.checkCount = Number(stat.checkCount) || 0;
+          item.qDef.attemptsHistory = Array.isArray(stat.attemptsHistory) ? stat.attemptsHistory.filter((answer, index, history) => index === 0 || answer !== history[index - 1]) : [];
+          item.qDef.checkCount = Math.min(item.qDef.checkCount, item.qDef.attemptsHistory.length);
+          if (typeof stat.isCorrect === "boolean") {
+            item.qDef.isCorrect = stat.isCorrect;
+            const feedEl = document.getElementById(`feed_${item.id}`);
+            const btnEl = document.getElementById(`btn_${item.id}`);
+            if (stat.isCorrect) {
+              if (feedEl) feedEl.innerHTML = "<span style='color: #16a34a'>Верно! ✅</span>";
+              if (item.qDef.type === "radio") {
+                Array.from(document.getElementsByName(item.id)).forEach(el => el.disabled = true);
+              } else {
+                const inputEl = document.getElementById(item.id);
+                if (inputEl) inputEl.disabled = true;
+                const toggleBtn = document.getElementById(`btn_toggle_${item.id}`);
+                if (toggleBtn) toggleBtn.disabled = true;
+              }
+              if (btnEl) btnEl.style.display = "none";
+            } else if (feedEl) {
+              feedEl.innerHTML = "<span style='color: #dc2626'>Неверно ❌</span>";
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.warn("Не удалось восстановить прогресс диагностики:", error);
+    }
+  }
+
+
+  async function syncProgressFromServer() {
+    if (!currentToken || !progressStorageKey || isCompletedView || progressSyncInFlight || document.visibilityState === "hidden") return;
+    progressSyncInFlight = true;
+    try {
+      const response = await fetch("/api/get-progress?token=" + encodeURIComponent(currentToken), {
+        method: "GET",
+        cache: "no-store",
+        headers: { "Accept": "application/json" }
+      });
+      if (!response.ok) return;
+      const result = await response.json();
+      if (result && result.completed) {
+        // Не перезагружаем устройство, которое само завершает тест и формирует PDF.
+        if (isCompletedView) return;
+        if (!window.__reshai360CompletionReloading) {
+          window.__reshai360CompletionReloading = true;
+          if (progressSyncTimer) {
+            clearInterval(progressSyncTimer);
+            progressSyncTimer = null;
+          }
+          window.location.reload();
+        }
+        return;
+      }
+      const remote = result && result.success ? result.snapshot : null;
+      if (!remote || remote.version !== 1) return;
+
+      const remoteSavedAt = Number(remote.savedAt) || 0;
+      if (remoteSavedAt <= lastAppliedServerSavedAt || localProgressDirty) return;
+      serverProgressSnapshot = remote;
+      localStorage.setItem(progressStorageKey, JSON.stringify(remote));
+      restoreQuizProgress();
+      questionNavigation.forEach(item => {
+        const button = document.getElementById("flag_" + item.id);
+        const active = markedQuestions.has(item.id);
+        if (button) {
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+          button.setAttribute("aria-label", active ? "Задание отмечено для возврата" : "Отметить задание, чтобы вернуться позже");
+          button.title = active ? "Отмечено для возврата" : "Вернуться к заданию позже";
+        }
+      });
+      updateQuestionNavigator();
+      lastAppliedServerSavedAt = remoteSavedAt;
+    } catch (error) {
+      console.warn("Не удалось получить обновления прогресса:", error);
+    } finally {
+      progressSyncInFlight = false;
+    }
+  }
+
+  function startProgressSync() {
+    if (isCompletedView || progressSyncTimer) return;
+    lastAppliedServerSavedAt = Math.max(lastAppliedServerSavedAt, Number(serverProgressSnapshot && serverProgressSnapshot.savedAt) || 0);
+    syncProgressFromServer();
+    progressSyncTimer = setInterval(syncProgressFromServer, 2500);
+  }
+
+  function updateQuestionNavigator() {
+    const grid = document.getElementById("question-nav-grid");
+    const count = document.getElementById("question-nav-count");
+    if (!grid) return;
+    let answeredCount = 0;
+    grid.innerHTML = questionNavigation.map(item => {
+      const answered = !!getQuestionAnswer(item.id, item.qDef);
+      if (answered) answeredCount++;
+      const marked = markedQuestions.has(item.id);
+      const statusClass = !answered ? "unanswered" : (item.qDef.isCorrect === true ? "correct" : (item.qDef.isCorrect === false ? "incorrect" : "pending"));
+       return '<button type="button" class="question-nav-item ' + statusClass + (marked ? ' marked' : '') +
+        '" data-question-id="' + item.id + '" aria-label="Задание ' + item.number + (answered ? ', есть ответ' : ', нет ответа') + (marked ? ', вернуться позже' : '') + '">' + item.number + '</button>';
+    }).join("");
+    if (count) count.textContent = answeredCount + " из " + questionNavigation.length + " с ответом";
+  }
+
+  function toggleQuestionFlag(qId) {
+    if (markedQuestions.has(qId)) markedQuestions.delete(qId);
+    else markedQuestions.add(qId);
+    const button = document.getElementById("flag_" + qId);
+    if (button) {
+      const active = markedQuestions.has(qId);
+      button.classList.toggle("active", active);
+      button.textContent = "⚑";
+      button.setAttribute("aria-label", active ? "Задание отмечено для возврата" : "Отметить задание, чтобы вернуться позже");
+      button.title = active ? "Отмечено для возврата" : "Вернуться к заданию позже";
+      button.setAttribute("aria-pressed", String(active));
+    }
+    saveQuizProgress();
+    updateQuestionNavigator();
+  }
+
+  function toggleQuestionNavigator() {
+    const nav = document.getElementById("question-navigator");
+    if (!nav) return;
+    nav.classList.toggle("expanded");
+    const toggle = document.getElementById("question-nav-toggle");
+    if (toggle) toggle.setAttribute("aria-expanded", String(nav.classList.contains("expanded")));
+  }
+
+  function navigateToQuestion(qId) {
+    const card = document.getElementById("card_" + qId);
+    if (!card) return;
+    const nav = document.getElementById("question-navigator");
+    if (window.innerWidth <= 640 && nav) {
+      nav.classList.remove("expanded");
+      const toggle = document.getElementById("question-nav-toggle");
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
+    }
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function bindQuestionProgressEvents() {
+    const container = document.getElementById("quiz-container");
+    if (!container) return;
+    function clearEditedQuestionFeedback(target) {
+      if (!target || !target.matches("input")) return;
+      const qId = target.type === "radio" ? target.name : target.id;
+      if (!/^q_\d+_\d+_\d+$/.test(qId || "")) return;
+      const feedback = document.getElementById("feed_" + qId);
+      if (feedback) feedback.textContent = "";
+      const [, bIdx, tIdx, qIdx] = qId.split("_").map(Number);
+      const question = quizData[bIdx]?.themes[tIdx]?.questions[qIdx];
+      if (question) question.isCorrect = null;
+    }
+    container.addEventListener("input", event => {
+      if (event.target.matches("input")) {
+        clearEditedQuestionFeedback(event.target);
+        saveQuizProgress();
+        updateQuestionNavigator();
+      }
+    });
+    container.addEventListener("change", event => {
+      if (event.target.matches("input")) {
+        clearEditedQuestionFeedback(event.target);
+        saveQuizProgress();
+        updateQuestionNavigator();
+      }
+    });
+    const grid = document.getElementById("question-nav-grid");
+    if (grid) grid.addEventListener("click", event => {
+      const navButton = event.target.closest(".question-nav-item");
+      if (navButton) navigateToQuestion(navButton.dataset.questionId);
+    });
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") saveQuizProgress(true);
+  });
+  window.addEventListener("pagehide", () => saveQuizProgress(true));
+
+  // Подтверждение выхода отключено: прогресс сохраняется автоматически.
+  window.onbeforeunload = null;
+
+
+
+
+  // Единый форматтер математических фрагментов в тексте заданий и отчёта.
+  // Уже размеченные MathJax-формулы не трогаем.
+  function formatMathText(value) {
+    if (value === null || value === undefined) return "";
+    let source = String(value);
+    const protectedHtml = [];
+    source = source.replace(/<[^>]+>/g, tag => { const key = "\\uE200" + protectedHtml.length + "\\uE201"; protectedHtml.push(tag); return key; });
+    const protectedParts = [];
+    const hold = value => {
+      const key = "\uE100" + protectedParts.length + "\uE101";
+      const withFractions = value.replace(/\\\(([\s\S]*?)\\\)/g, (_, body) => {
+        const stacked = body.replace(/(\([^()]*\)|[A-Za-z0-9]+)\s*\/\s*(\([^()]*\)|[A-Za-z0-9]+)/g, "\\frac{$1}{$2}");
+        return "\\(" + stacked + "\\)";
+      });
+      const normalized = withFractions.startsWith("\\(") && !withFractions.startsWith("\\(\\displaystyle")
+        ? withFractions.replace(/^\\\(/, "\\(\\displaystyle ")
+        : withFractions;
+      protectedParts.push(normalized);
+      return key;
+    };
+    source = source.replace(/(\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|\$[^$]+\$)/g, hold);
+
+    const clean = value => String(value).trim()
+      .replace(/[−–]/g, "-")
+      .replace(/·/g, "\\cdot ")
+      .replace(/×/g, "\\times ")
+      .replace(/÷/g, "\\div ")
+      .replace(/([⁰¹²³⁴⁵⁶⁷⁸⁹])/g, digit => "^{" + "⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit) + "}");
+
+    const atom = "(?:\\d*[A-Za-z](?:[A-Za-z0-9]*)?|\\d+\\([^()]*\\)|\\([^()]*\\)|[A-Za-z](?:[A-Za-z0-9]*)?|\\d+(?:[.,]\\d+)?)";
+    const power = "(?:\\s*(?:\\^\\{?\\d+\\}?|[⁰¹²³⁴⁵⁶⁷⁸⁹]))?";
+    const term = "(?:[+−-]\\s*)?" + atom + power;
+    const chain = term + "(?:(?:\\s*[+−:·×*/=<>≤≥]\\s*|\\s+)(?:" + atom + power + ")){1,12}";
+    const expressionPattern = new RegExp("(?<![A-Za-zА-Яа-я0-9])(" + chain + ")(?![A-Za-zА-Яа-я0-9])", "g");
+
+    source = source.replace(expressionPattern, match => {
+      let expression = clean(match);
+      expression = expression.replace(/([A-Za-z0-9]+)\s*\/\s*([A-Za-z0-9]+)/g, "\\frac{$1}{$2}");
+      return "\\(\\displaystyle " + expression + "\\)";
+    });
+
+    source = source.replace(/(?<![A-Za-zА-Яа-я0-9])([A-Za-z0-9]+)\s*\/\s*([A-Za-z0-9]+)(?![A-Za-zА-Яа-я0-9])/g,
+      (_, numerator, denominator) => "\\(\\displaystyle \\frac{" + clean(numerator) + "}{" + clean(denominator) + "}\\)");
+
+    source = source.replace(/(?<![A-Za-zА-Яа-я0-9])([A-Za-z0-9]+)([⁰¹²³⁴⁵⁶⁷⁸⁹])(?![A-Za-zА-Яа-я0-9])/g, (_, base, digit) => "\\(\\displaystyle " + clean(base) + "^{" + "⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit) + "}\\)");
+
+    source = source.replace(/√\s*\(([^()]+)\)/g, (_, expression) =>
+      "\\(\\displaystyle \\sqrt{" + clean(expression) + "}\\)");
+    source = source.replace(/√\s*(\d+(?:[.,]\d+)?)/g, (_, number) =>
+      "\\(\\displaystyle \\sqrt{" + number + "}\\)");
+
+    protectedHtml.forEach((tag, index) => { source = source.replace("\\uE200" + index + "\\uE201", tag); });
+    protectedParts.forEach((part, index) => {
+      source = source.replace("\uE100" + index + "\uE101", part);
+    });
+    return source;
+  }
+
+  async function safeTypeset(targetElement) {
+    if (!window.MathJax) return;
+    try {
+      if (MathJax.startup && MathJax.startup.promise) await MathJax.startup.promise;
+      if (typeof MathJax.typesetPromise === 'function') {
+        await MathJax.typesetPromise(targetElement ? [targetElement] : []);
+      }
+    } catch (err) {
+      console.error("MathJax error:", err);
+    }
+  }
+
+  function clearMathTypeset(targetElement) {
+    if (!targetElement || !window.MathJax || typeof MathJax.typesetClear !== 'function') return;
+    try {
+      MathJax.typesetClear([targetElement]);
+    } catch (err) {
+      console.warn("MathJax cleanup error:", err);
+    }
+  }
+
+  const quizData = window.GRADE7_DIAGNOSTIC_DATA.primenenie;
+  if (!Array.isArray(quizData) || quizData.length !== 10) {
+    throw new Error("Не удалось загрузить банк диагностики 7 класса.");
+  }
+
+  function formatInteractiveQuestionContent(value, type) {
+    const source = String(value ?? "");
+    const plain = source
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\\\(([\s\S]*?)\\\)/g, " MATH ")
+      .replace(/\\\[([\s\S]*?)\\\]/g, " MATH ")
+      .replace(/\s+/g, " ")
+      .trim();
+    const normalized = plain.toLocaleLowerCase("ru-RU");
+    const hasInstruction = /^(найдите|вычислите|решите|определите|посчитайте|укажите|сравните|постройте|докажите|запишите|округлите|выберите|ответьте|сократите|переведите|представьте|выразите|установите|расположите|выполните|упростите|раскройте|разложите|составьте|дополните|изобразите|рассчитайте|заполните|оцените)\\b/.test(normalized);
+    const expressionOnly = plain.length > 0 && !/[a-zа-яё]/i.test(plain);
+    const instruction = type === "text" && !hasInstruction
+      ? (expressionOnly ? "Вычислите: " : "Найдите ответ: ")
+      : "";
+    return instruction + formatMathText(source);
+  }
+
+  async function renderQuiz() {
+    questionNavigation = [];
+    let html = "";
+    let qIndex = 1;
+
+    quizData.forEach((block, bIdx) => {
+      html += `<h2 class="block-title">${block.block}</h2>`;
+      block.themes.forEach((theme, tIdx) => {
+        html += `<h3 class="theme-title">${theme.theme}</h3>`;
+        theme.questions.forEach((qDef, qIdx) => {
+          qDef.checkCount = qDef.checkCount || 0;
+          qDef.attemptsHistory = qDef.attemptsHistory || [];
+          const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
+          questionNavigation.push({ id: qId, number: qIndex, qDef });
+          html += `<div class="card" id="card_${qId}">`;
+          html += `<div class="question-title">${qIndex}. ${formatInteractiveQuestionContent(qDef.q, qDef.type)}</div>`;
+
+          if (qDef.type === "radio") {
+            html += `<div class="options" id="opt_${qId}">`;
+            const shuffledOptions = qDef.options.map((opt, originalIndex) => ({ opt, originalIndex }));
+            for (let i = shuffledOptions.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+            }
+            shuffledOptions.forEach(({ opt, originalIndex }) => {
+              html += `<label class="option-label"><input type="radio" name="${qId}" value="${originalIndex}"> <span>${formatMathText(opt)}</span></label>`;
+            });
+            html += `</div>`;
+          } else {
+            html += `<div class="input-row">`;
+            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Введите ответ" onfocus="moveAnswerCaretToEnd(this)" oninput="sanitizeAnswerInput(this, /[^0-9,.\\-\\+\\*\\/]/g); updateMinusBtnState('${qId}'); saveQuizProgress();">`;
+            html += `<button type="button" class="btn-minus-toggle" id="btn_toggle_${qId}" onpointerdown="event.preventDefault(); document.getElementById('${qId}').focus({preventScroll:true})" onclick="toggleMinus('${qId}')" title="Изменить знак (+/−)">±</button>`;
+            html += `</div>`;
+          }
+
+          html += `<div class="question-action-row">`;
+          html += `<button class="btn-check" id="btn_${qId}" onclick="checkSingle(${bIdx}, ${tIdx}, ${qIdx})">Проверить</button>`;
+          html += '<button type="button" class="question-flag" id="flag_' + qId + '" onclick="toggleQuestionFlag(\'' + qId + '\')" aria-label="Отметить задание, чтобы вернуться позже" aria-pressed="false" title="Вернуться к заданию позже">⚑</button>';
+          html += `<div class="feedback" id="feed_${qId}"></div></div>`;
+          html += `</div>`;
+          qIndex++;
+        });
+      });
+    });
+
+    const quizContainer = document.getElementById("quiz-container");
+    quizContainer.innerHTML = html;
+    restoreQuizProgress();
+    bindQuestionProgressEvents();
+    questionNavigation.forEach(item => {
+      const button = document.getElementById("flag_" + item.id);
+      const active = markedQuestions.has(item.id);
+      if (button) { button.classList.toggle("active", active); button.textContent = "⚑"; button.setAttribute("aria-label", active ? "Задание отмечено для возврата" : "Отметить задание, чтобы вернуться позже"); button.title = active ? "Отмечено для возврата" : "Вернуться к заданию позже"; button.setAttribute("aria-pressed", String(active)); }
+    });
+    updateQuestionNavigator();
+    // Не задерживаем показ всех заданий ожиданием MathJax: текст появляется сразу,
+    // математические формулы дорисовываются асинхронно после отображения страницы.
+    if (!isCompletedView) safeTypeset(quizContainer);
+  }
+
+  function checkSingle(bIdx, tIdx, qIdx, silent = false) {
+    const qDef = quizData[bIdx].themes[tIdx].questions[qIdx];
+    const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
+    let userAns = "";
+    let formattedUserAns = "";
+
+    if (qDef.type === "radio") {
+      const els = document.getElementsByName(qId);
+      for (let el of els) { if (el.checked) userAns = el.value; }
+      formattedUserAns = (userAns !== "") ? qDef.options[parseInt(userAns)] : "Не выбрано";
+      qDef.correctText = qDef.options[qDef.a];
+    } else {
+      const inputEl = document.getElementById(qId);
+      userAns = inputEl ? inputEl.value.trim().replace(/\s+/g, "").replace(/,/g, ".") : "";
+      formattedUserAns = (userAns !== "") ? userAns.replace(/\./g, ",") : "Не введено";
+      qDef.correctText = qDef.a;
+    }
+
+    if (!silent && userAns !== "") {
+      if (!qDef.attemptsHistory) qDef.attemptsHistory = [];
+      const lastAttempt = qDef.attemptsHistory[qDef.attemptsHistory.length - 1];
+      if (lastAttempt !== formattedUserAns) {
+        qDef.checkCount = (qDef.checkCount || 0) + 1;
+        qDef.attemptsHistory.push(formattedUserAns);
+      }
+    }
+
+    qDef.userText = formattedUserAns;
+    
+
+    if (userAns === "") {
+      if (!silent) {
+        const feedEl = document.getElementById(`feed_${qId}`);
+        if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Ответ не введен!</span>";
+      }
+      qDef.isCorrect = undefined;
+       if (!silent) saveQuizProgress();
+       updateQuestionNavigator();
+       return;
+    }
+
+    const expectedAnswer = qDef.type === "text" ? String(qDef.a).trim().replace(/\s+/g, "").replace(/,/g, ".") : qDef.a;
+    const parseNumericAnswer = value => {
+      const normalized = String(value).trim().replace(/,/g, ".");
+      if (/^[+-]?\d+(?:\.\d+)?$/.test(normalized)) return Number(normalized);
+      const fraction = normalized.match(/^([+-]?\d+)\/([+-]?\d+)$/);
+      if (fraction && Number(fraction[2]) !== 0) return Number(fraction[1]) / Number(fraction[2]);
+      return NaN;
+    };
+    const userNumeric = parseNumericAnswer(userAns);
+    const expectedNumeric = parseNumericAnswer(expectedAnswer);
+    const isRight = (qDef.type === "radio")
+      ? (parseInt(userAns, 10) === qDef.a)
+      : (userAns !== "" && Number.isFinite(userNumeric) && Number.isFinite(expectedNumeric)
+          ? Math.abs(userNumeric - expectedNumeric) < 1e-9
+          : userAns === expectedAnswer);
+
+    if (isRight) {
+      qDef.isCorrect = true;
+      if (!silent) {
+        const feedEl = document.getElementById(`feed_${qId}`);
+        if (feedEl) feedEl.innerHTML = "<span style='color: #16a34a'>Верно! ✅</span>";
+        if (qDef.type === "radio") {
+          const els = document.getElementsByName(qId);
+          els.forEach(el => el.disabled = true);
+        } else {
+          const inputEl = document.getElementById(qId);
+          if (inputEl) inputEl.disabled = true;
+          const toggleBtn = document.getElementById(`btn_toggle_${qId}`);
+          if (toggleBtn) toggleBtn.disabled = true;
+        }
+        const btnEl = document.getElementById(`btn_${qId}`);
+        if (btnEl) btnEl.style.display = "none";
+      }
+    } else {
+      qDef.isCorrect = false;
+      if (!silent) {
+        const feedEl = document.getElementById(`feed_${qId}`);
+        if (feedEl) feedEl.innerHTML = "<span style='color: #dc2626'>Неверно ❌</span>";
+      }
+    }
+    if (!silent) saveQuizProgress();
+    updateQuestionNavigator();
+  }
+
+  function downloadPDF() {
+    if (!generatedPdfBlob) return;
+    const url = URL.createObjectURL(generatedPdfBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Отчет_${studentData.fullName}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  let pdfCountdownTimer = null;
+  let pdfCountdownRemaining = 60;
+  function startPdfCountdown() {
+    const button = document.getElementById("downloadPdfBtn");
+    if (!button) return;
+    pdfCountdownRemaining = 60;
+    button.innerText = "⏳ Подготовка PDF: 60 сек";
+    if (pdfCountdownTimer) clearInterval(pdfCountdownTimer);
+    pdfCountdownTimer = setInterval(() => {
+      pdfCountdownRemaining = Math.max(0, pdfCountdownRemaining - 1);
+      const currentButton = document.getElementById("downloadPdfBtn");
+      if (currentButton && currentButton.disabled) {
+        currentButton.innerText = "⏳ Подготовка PDF: " + pdfCountdownRemaining + " сек";
+      }
+      if (pdfCountdownRemaining === 0) {
+        clearInterval(pdfCountdownTimer);
+        pdfCountdownTimer = null;
+      }
+    }, 1000);
+  }
+  async function retryReportEmail() {
+    const status = document.getElementById('report-email-status');
+    if (!generatedPdfBlob || !currentToken || !status) return;
+    status.textContent = 'Повторно отправляем письмо…';
+    try {
+      const formData = new FormData();
+      formData.append('token', currentToken);
+      formData.append('forceEmail', 'true');
+      formData.append('email', studentData.email || '');
+      formData.append('name', studentData.fullName || 'Ученик');
+      formData.append('score', String(window.__lastReportScore || 0));
+      formData.append('total', String(window.__lastReportTotal || 1));
+      formData.append('document', generatedPdfBlob, `Отчет_${studentData.fullName || 'Ученик'}.pdf`);
+      const snapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {} };
+      questionNavigation.forEach(item => {
+        const answer = getQuestionAnswer(item.id, item.qDef);
+        if (answer) snapshot.answers[item.id] = answer;
+        snapshot.stats[item.id] = { checkCount: item.qDef.checkCount || 0, attemptsHistory: item.qDef.attemptsHistory || [] };
+      });
+      formData.append('answersSnapshot', JSON.stringify(snapshot));
+      const response = await fetch('/api/send-report', { method: 'POST', body: formData });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) throw new Error(result.message || 'Не удалось отправить письмо.');
+      status.textContent = (result.emailSent ? 'Почтовый сервис принял письмо с PDF. Проверьте входящие, «Спам» и «Промоакции».' : (result.emailError ? 'Не удалось отправить PDF: ' + result.emailError : 'Почтовый сервис не подтвердил отправку PDF.')) + (result.emailId ? ' Идентификатор отправки: ' + result.emailId + '.' : '');
+      if (result.emailSent) showReportEmailSentPopup(studentData.email);
+      status.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Отправить ещё раз</button>';
+    } catch (error) {
+      status.textContent = error.message || 'Ошибка отправки.';
+      status.innerHTML += ' <button type="button" onclick="retryReportEmail()" style="text-decoration:underline;color:#4338ca;font-weight:700;">Повторить отправку</button>';
+    }
+  }
+
+  function copyPromoCode() {
+    const code = document.getElementById("promo-code-result-value")?.textContent || "";
+    if (!code || !navigator.clipboard || !navigator.clipboard.writeText) return;
+    navigator.clipboard.writeText(code).then(() => { const note = document.getElementById("promo-code-result-note"); if (note) note.textContent = "Промокод скопирован."; }).catch(() => {});
+  }
+  function showReportEmailSentPopup(email) {
+    if (!email) return;
+    const emailBlock = document.getElementById("report-email-block");
+    if (emailBlock) emailBlock.style.display = "block";
+    document.getElementById("report-email-sent-modal")?.remove();
+    const overlay = document.createElement("div");
+    overlay.id = "report-email-sent-modal";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(3,7,18,.76);backdrop-filter:blur(5px);";
+    const dialog = document.createElement("div");
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.setAttribute("aria-labelledby", "report-email-sent-title");
+    dialog.style.cssText = "position:relative;width:100%;max-width:440px;padding:28px 24px 24px;border:1px solid rgba(129,140,248,.45);border-radius:22px;background:linear-gradient(145deg,#111827,#1e1b4b 58%,#172554);box-shadow:0 24px 80px rgba(0,0,0,.45);color:#fff;text-align:center;";
+    const close = document.createElement("button");
+    close.type = "button";
+    close.setAttribute("aria-label", "Закрыть уведомление");
+    close.textContent = "×";
+    close.style.cssText = "position:absolute;top:10px;right:14px;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;font-size:26px;line-height:1;cursor:pointer;";
+    close.addEventListener("click", () => overlay.remove());
+    const mark = document.createElement("div");
+    mark.textContent = "✓";
+    mark.style.cssText = "display:flex;align-items:center;justify-content:center;width:54px;height:54px;margin:0 auto 14px;border-radius:50%;background:rgba(52,211,153,.16);color:#6ee7b7;font-size:30px;font-weight:800;";
+    const title = document.createElement("h2");
+    title.id = "report-email-sent-title";
+    title.textContent = "Письмо отправлено";
+    title.style.cssText = "margin:0 0 12px;font-size:22px;font-weight:800;";
+    const message = document.createElement("p");
+    message.textContent = "Письмо с PDF отправлено на " + email + ".";
+    message.style.cssText = "margin:0 0 10px;color:#e2e8f0;font-size:15px;line-height:1.6;overflow-wrap:anywhere;";
+    const hint = document.createElement("p");
+    hint.textContent = "Проверьте входящие, а если письма нет — папки «Спам» и «Промоакции».";
+    hint.style.cssText = "margin:0 0 22px;color:#cbd5e1;font-size:14px;line-height:1.6;";
+    const ok = document.createElement("button");
+    ok.type = "button";
+    ok.textContent = "Понятно";
+    ok.style.cssText = "width:100%;padding:12px 18px;border:0;border-radius:12px;background:linear-gradient(100deg,#6366f1,#0ea5e9);color:#fff;font-size:15px;font-weight:800;cursor:pointer;";
+    ok.addEventListener("click", () => overlay.remove());
+    overlay.addEventListener("click", event => { if (event.target === overlay) overlay.remove(); });
+    dialog.append(close, mark, title, message, hint, ok);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    close.focus();
+  }
+
+  async function sendReportToUpdatedEmail() {
+    const input = document.getElementById("corrected-report-email");
+    const button = document.getElementById("resend-report-email");
+    const status = document.getElementById("report-email-status");
+    const email = String(input?.value || "").trim();
+    if (!input || !input.checkValidity() || !email) {
+      if (input) input.reportValidity();
+      return;
+    }
+    if (!generatedPdfBlob || !currentToken) {
+      status.textContent = "Не удалось подготовить PDF-отчёт. Обратитесь в поддержку.";
+      return;
+    }
+    button.disabled = true;
+    button.textContent = "Отправляем…";
+    status.textContent = "Отправляем PDF-отчёт на новый адрес…";
+    try {
+      const formData = new FormData();
+      formData.append("token", currentToken);
+      formData.append("forceEmail", "true");
+      formData.append("email", email);
+      formData.append("name", studentData.fullName || "Ученик");
+      formData.append("score", String(window.__lastReportScore || 0));
+      formData.append("total", String(window.__lastReportTotal || 1));
+      formData.append("document", generatedPdfBlob, "Отчет_" + (studentData.fullName || "Ученик") + ".pdf");
+      const snapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {} };
+      questionNavigation.forEach(item => {
+        const answer = getQuestionAnswer(item.id, item.qDef);
+        if (answer) snapshot.answers[item.id] = answer;
+        snapshot.stats[item.id] = { checkCount: item.qDef.checkCount || 0, attemptsHistory: item.qDef.attemptsHistory || [] };
+      });
+      formData.append("answersSnapshot", JSON.stringify(snapshot));
+      const response = await fetch("/api/send-report", { method: "POST", body: formData });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success || !result.emailSent) {
+        throw new Error(result.emailError || result.message || "Не удалось отправить письмо на указанный адрес.");
+      }
+      studentData.email = email;
+      status.textContent = "Почтовый сервис принял письмо с PDF на " + email + ". Если письма нет во входящих, проверьте «Спам» и «Промоакции» — ниже можно отправить его ещё раз.";
+      showReportEmailSentPopup(email);
+      if (result.feedbackUrl) {
+        const feedbackLink = document.getElementById("feedback-form-link");
+        if (feedbackLink) feedbackLink.href = result.feedbackUrl;
+      }
+    } catch (error) {
+      status.textContent = error.message || "Не удалось отправить письмо. Попробуйте ещё раз.";
+    } finally {
+      button.disabled = false;
+      button.textContent = "Отправить письмо на почту";
+    }
+  }
+  let completionInProgress = false;
+  async function checkAll(skipUnansweredConfirm = false) {
+    if (completionInProgress) return;
+    saveQuizProgress();
+    const unansweredQuestions = [];
+    quizData.forEach((block, bIdx) => block.themes.forEach((theme, tIdx) => theme.questions.forEach((qDef, qIdx) => {
+      const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
+      let answered = false;
+      if (qDef.type === "radio") {
+        answered = Array.from(document.getElementsByName(qId)).some(option => option.checked);
+      } else {
+        const input = document.getElementById(qId);
+        answered = !!(input && input.value.trim());
+      }
+      if (!answered) unansweredQuestions.push(qId);
+    })));
+    if (unansweredQuestions.length > 0 && !skipUnansweredConfirm) {
+      const message = `Остались незаполненные задания: ${unansweredQuestions.length}. Завершить тест и посмотреть результаты без них?`;
+      if (!window.confirm(message)) return;
+    }
+    if (completionInProgress) return;
+    completionInProgress = true;
+    const finishButton = document.getElementById('finishBtn');
+    if (finishButton) { finishButton.disabled = true; finishButton.textContent = 'Обрабатываем результат…'; }
+    showCompletionStatus();
+    let totalCorrect = 0;
+    let totalQuestions = 0;
+    let pdfAnalyticsRowsHtml = "";
+    let screenCardsHtml = "";
+    let topicsToRepeatSet = new Set();
+    let topicsToStudySet = new Set();
+    let qIndex = 1;
+
+    quizData.forEach((block, bIdx) => {
+      let blockCorrect = 0;
+      let blockTotal = 0;
+
+      block.themes.forEach((theme, tIdx) => {
+        let themeCorrect = 0;
+        let themeTotal = theme.questions.length;
+        const cleanThemeName = theme.theme.replace(/^\d+\.\s*/, '');
+
+        theme.questions.forEach((qDef, qIdx) => {
+          checkSingle(bIdx, tIdx, qIdx, true);
+          if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано" && !(qDef.checkCount > 0)) {
+            qDef.checkCount = 1;
+          }
+          if (qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано") {
+            if (!qDef.attemptsHistory || qDef.attemptsHistory.length === 0) {
+              qDef.attemptsHistory = [qDef.userText];
+            }
+          }
+
+          const isSkipped = (qDef.userText === "Не введено" || qDef.userText === "Не выбрано");
+          const distinctRadioAnswers = new Set([...(qDef.attemptsHistory || []), qDef.userText]
+            .filter(answer => answer && answer !== "Не выбрано")
+            .map(answer => String(answer)));
+          const isGuessedByBruteForce = (qDef.type === 'radio' && qDef.options.length > 0 && distinctRadioAnswers.size >= qDef.options.length);
+
+          if (qDef.isCorrect) themeCorrect++;
+
+          let statusClass = "incorrect";
+          let badgeStatus = "Ошибка ⚠️";
+          let badgeClass = "badge-err";
+
+          if (qDef.isCorrect && !isGuessedByBruteForce) {
+            statusClass = "correct";
+            badgeStatus = "Верно ✅";
+            badgeClass = "badge-ok";
+          } else if (qDef.isCorrect && isGuessedByBruteForce) {
+            statusClass = "incorrect";
+            badgeStatus = "Перебор ⚠️";
+            badgeClass = "badge-err";
+            topicsToRepeatSet.add(cleanThemeName);
+          } else if (isSkipped) {
+            statusClass = "skipped";
+            badgeStatus = "Не решено ❌";
+            badgeClass = "badge-skip";
+            topicsToStudySet.add(cleanThemeName);
+          } else {
+            statusClass = "incorrect";
+            badgeStatus = "Ошибка ⚠️";
+            badgeClass = "badge-err";
+            topicsToRepeatSet.add(cleanThemeName);
+          }
+
+          const finalAnswer = qDef.userText || (isSkipped ? "Ответ не введён" : "Ответ не проверялся");
+          const attemptsList = qDef.attemptsHistory && qDef.attemptsHistory.length > 0 ? qDef.attemptsHistory.join(" ➔ ") : "Проверок ещё не было";
+          const checkCountVal = qDef.checkCount || 0;
+
+          const cardHtml = `
+            <div class="pdf-card ${statusClass}">
+              <div class="pdf-q">${qIndex}. ${formatMathText(qDef.q)}</div>
+              <div class="pdf-card-footer"><div class="pdf-ans">
+                <b>Введенных ответов:</b> ${checkCountVal} | <b>Ответы:</b> ${checkCountVal ? escapeHtml(attemptsList) : (isSkipped ? (qDef.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")}<br>
+                <b>Правильный ответ:</b> ${formatMathText(qDef.correctText)}
+              </div><span class="badge ${badgeClass}">${badgeStatus}</span></div>
+            </div>
+          `;
+          screenCardsHtml += cardHtml;
+          qIndex++;
+        });
+        blockCorrect += themeCorrect;
+        blockTotal += themeTotal;
+      });
+
+      const blockPercent = Math.round((blockCorrect / blockTotal) * 100);
+      let fillClass = blockPercent < 50 ? "bg-red" : (blockPercent < 70 ? "bg-yellow" : "bg-green");
+
+      pdfAnalyticsRowsHtml += `
+        <div class="pdf-progress-row">
+          <div class="pdf-progress-header">
+            <span>${block.block}</span>
+            <span>${blockPercent}%</span>
+          </div>
+          <div class="pdf-progress-track">
+            <div class="pdf-progress-fill ${fillClass}" style="width: ${blockPercent}%"></div>
+          </div>
+        </div>
+      `;
+      totalCorrect += blockCorrect;
+      totalQuestions += blockTotal;
+    });
+
+    const percent = Math.round((totalCorrect / totalQuestions) * 100);
+    window.__lastReportScore = totalCorrect;
+    window.__lastReportTotal = totalQuestions;
+    const topicsToRepeat = Array.from(topicsToRepeatSet);
+    const topicsToStudy = Array.from(topicsToStudySet);
+
+    // Сначала фиксируем завершение и полный снимок ответов на сервере.
+    // Генерация или отправка PDF больше не влияет на статус завершённой диагностики.
+    const completionSnapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {} };
+    questionNavigation.forEach(item => {
+      const answer = getQuestionAnswer(item.id, item.qDef);
+      if (answer) completionSnapshot.answers[item.id] = answer;
+      completionSnapshot.stats[item.id] = {
+        checkCount: item.qDef.checkCount || 0,
+        attemptsHistory: item.qDef.attemptsHistory || []
+      };
+    });
+    try {
+      const completionController = new AbortController();
+      const completionTimeout = setTimeout(() => completionController.abort(), 30000);
+      let completionResponse;
+      try {
+        completionResponse = await fetch('/api/complete-diagnostic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: currentToken, snapshot: completionSnapshot }),
+          signal: completionController.signal
+        });
+      } finally { clearTimeout(completionTimeout); }
+      const completionResult = await completionResponse.json().catch(() => ({}));
+      existingPromoCode = completionResult.promoCode || existingPromoCode;
+      if (!completionResponse.ok || !completionResult.success) {
+        throw new Error(completionResult.message || 'Не удалось зафиксировать завершение диагностики.');
+      }
+      isCompletedView = true;
+      document.getElementById('progress-save-control')?.remove();
+      if (progressSyncTimer) {
+        clearInterval(progressSyncTimer);
+        progressSyncTimer = null;
+      }
+    } catch (completionError) {
+      console.error('Ошибка фиксации завершения диагностики:', completionError);
+      hideCompletionStatus(); completionInProgress = false;
+      if (finishButton) { finishButton.disabled = false; finishButton.textContent = 'Завершить и посмотреть результаты'; }
+      const errorMessage = completionError.name === 'AbortError' ? 'Сервер долго не отвечает. Проверьте подключение и попробуйте завершить диагностику ещё раз.' : (completionError.message || 'Не удалось сохранить завершение диагностики. Проверьте подключение и нажмите «Завершить» ещё раз.');
+      alert(errorMessage); return;
+    }
+
+    let repeatBoxHtml = topicsToRepeat.length > 0 ? `<ol>${topicsToRepeat.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Ошибок в решенных заданиях нет.</p>`;
+    let studyBoxHtml = topicsToStudy.length > 0 ? `<ol>${topicsToStudy.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Пропущенных заданий нет.</p>`;
+
+    const pdfTopicsSplitHtml = `
+      <div class="pdf-topics-container">
+        <div class="pdf-topics-box repeat">
+          <h4>⚠️ Темы для повторения (ошибки / перебор):</h4>
+          ${repeatBoxHtml}
+        </div>
+        <div class="pdf-topics-box study">
+          <h4>📌 Темы для изучения (не решено):</h4>
+          ${studyBoxHtml}
+        </div>
+      </div>
+    `;
+
+    const now = new Date();
+    const testDateStr = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    const firstPageHtml = `
+      <div class="pdf-first-page-content">
+      <h1 class="pdf-header-title">Диагностическая карта знаний</h1>
+      <div class="pdf-score-card">
+        <div class="pdf-student-info">
+          7 класс<br>
+          <strong>Ученик:</strong> ${escapeHtml(studentData.fullName)}<br>
+          Дата прохождения: ${testDateStr}
+        </div>
+        <div class="pdf-score-right">
+          <div class="pdf-score-label">Итоговый результат</div>
+          <div class="pdf-score-main">${totalCorrect} из ${totalQuestions} (${percent}%)</div>
+        </div>
+      </div>
+      <div class="pdf-analytics-title">Результат диагностики</div>
+      <div>${pdfAnalyticsRowsHtml}</div>
+      ${pdfTopicsSplitHtml}
+      </div>
+    `;
+
+    const screenResultHtml = `
+      <div class="pdf-page" style="position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 12px; margin-bottom: 25px;">
+        ${firstPageHtml}
+      </div>
+      <div class="result-actions">
+        <button id="downloadPdfBtn" class="btn-pdf" disabled onclick="downloadPDF()">⏳ Подготовка PDF: 60 сек</button>
+        <button type="button" class="result-action-secondary" onclick="const p=document.getElementById('promo-code-result'); if(p){p.style.display='block'; p.scrollIntoView({behavior:'smooth',block:'center'});}">🎁 Забрать промокод</button>
+        <button type="button" class="result-action-secondary" onclick="document.querySelector('#result-screen .screen-section-title')?.scrollIntoView({behavior:'smooth',block:'start'})">Посмотреть задания с ответами</button>
+      </div>
+      <h3 class="screen-section-title">Детализация ответов</h3>
+      ${screenCardsHtml}
+    `;
+
+    clearMathTypeset(document.getElementById("result-screen"));
+    document.getElementById("result-screen").innerHTML = screenResultHtml;
+    const promoCard = document.getElementById("promo-code-result");
+    const resultActions = document.querySelector("#result-screen .result-actions");
+    if (promoCard && resultActions) resultActions.insertAdjacentElement("afterend", promoCard);
+    if (promoCard) promoCard.style.display = "block";
+    if (existingPromoCode) {
+      const promoValue = document.getElementById("promo-code-result-value");
+      const promoNote = document.getElementById("promo-code-result-note");
+      if (promoValue) promoValue.textContent = existingPromoCode;
+    }
+    startPdfCountdown();
+
+
+    document.getElementById("main-container").style.display = "none";
+    document.getElementById("result-wrapper").style.display = "block";
+    window.scrollTo(0, 0);
+
+    // Экран обработки остаётся поверх страницы, пока её содержимое не подготовлено.
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    } catch (_) {}
+    await safeTypeset(document.getElementById("result-screen"));
+    const resultImages = Array.from(document.querySelectorAll("#result-wrapper img"));
+    await Promise.all(resultImages.map(img => {
+      if (img.complete) return Promise.resolve();
+      if (typeof img.decode === "function") return img.decode().catch(() => {});
+      return new Promise(resolve => {
+        img.addEventListener("load", resolve, { once: true });
+        img.addEventListener("error", resolve, { once: true });
+      });
+    }));
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    hideCompletionStatus();
+    window.scrollTo(0, 0);
+
+    const downloadBtn = document.getElementById("downloadPdfBtn");
+    try {
+      let savedServerPdfBlob = null;
+      if (isCompletedView && currentToken) {
+        try {
+          const savedReportResponse = await fetch('/api/get-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: currentToken })
+          });
+          if (savedReportResponse.ok) {
+            const savedBlob = await savedReportResponse.blob();
+            if (savedBlob.type === 'application/pdf' && savedBlob.size > 0) savedServerPdfBlob = savedBlob;
+          }
+        } catch (savedReportError) {
+          console.warn('Не удалось получить сохранённый PDF с сервера:', savedReportError);
+        }
+      }
+
+      if (savedServerPdfBlob) {
+        generatedPdfBlob = savedServerPdfBlob;
+      } else {
+        const cachedPdfBlob = await getCachedDiagnosticPdf(currentToken);
+        if (cachedPdfBlob) {
+          generatedPdfBlob = cachedPdfBlob;
+        } else {
+          let savedReportSnapshot = null;
+        try { savedReportSnapshot = JSON.parse(localStorage.getItem(progressStorageKey) || "null"); } catch (_) {}
+        generatedPdfBlob = await window.Reshai360ReportGenerator.generate({
+          quizData,
+          snapshot: savedReportSnapshot,
+          studentName: studentData.fullName,
+          formatMath: formatMathText,
+          resultContainer: document.getElementById("result-pdf")
+        });
+          if (currentToken) await saveCachedDiagnosticPdf(currentToken, generatedPdfBlob);
+        }
+      }
+      if (pdfCountdownTimer) { clearInterval(pdfCountdownTimer); pdfCountdownTimer = null; }
+      if (downloadBtn) { downloadBtn.disabled = false; downloadBtn.innerText = "📄 Скачать PDF-отчёт"; }
+
+      // Фиксируем цель Яндекс.Метрики: Тест решен до конца
+      if (typeof ym !== 'undefined') {
+        ym(113852589, 'reachGoal', 'test_completed');
+      }
+
+      // Повторный просмотр завершённой диагностики не должен повторно отправлять тот же отчёт.
+      if (currentToken) {
+        const formData = new FormData();
+        formData.append('token', currentToken);
+        if (studentData.email) formData.append('email', studentData.email);
+        formData.append('name', studentData.fullName);
+        formData.append('score', totalCorrect);
+        formData.append('total', totalQuestions);
+        formData.append('document', generatedPdfBlob, `Отчет_${studentData.fullName}.pdf`);
+        const answersSnapshot = { answers: {}, marked: Array.from(markedQuestions), stats: {} };
+        questionNavigation.forEach(item => {
+          const answer = getQuestionAnswer(item.id, item.qDef);
+          if (answer) answersSnapshot.answers[item.id] = answer;
+          answersSnapshot.stats[item.id] = { checkCount: item.qDef.checkCount || 0, attemptsHistory: item.qDef.attemptsHistory || [] };
+        });
+        formData.append('answersSnapshot', JSON.stringify(answersSnapshot));
+
+        window.__lastReportScore = totalCorrect;
+        window.__lastReportTotal = totalQuestions;
+                let reportResponse = null;
+        let reportResult = {};
+        try {
+          reportResponse = await fetch('/api/send-report', {
+            method: 'POST',
+            body: formData
+          });
+          reportResult = await reportResponse.json().catch(() => ({}));
+        } catch (reportError) {
+          console.error("Ошибка отправки письма:", reportError);
+          reportResult.message = reportError.message || "Не удалось связаться с почтовым сервисом.";
+        }
+
+        const emailStatus = document.getElementById('report-email-status');
+        const emailInput = document.getElementById('corrected-report-email');
+        if (emailInput) emailInput.value = studentData.email || '';
+
+        if (reportResponse && reportResponse.ok && reportResult.success && reportResult.promoCode) {
+          document.getElementById('promo-code-result-value').textContent = reportResult.promoCode;
+          document.getElementById('promo-code-result').style.display = 'block';
+          if (studentData.email) {
+            const accepted = reportResult.emailSent || reportResult.emailPreviouslyAccepted;
+            emailStatus.textContent = accepted
+              ? 'Письмо с PDF отправлено на ' + studentData.email + '. Проверьте входящие, а если письма нет — папки «Спам» и «Промоакции».'
+              : 'Не удалось отправить письмо на ' + studentData.email + '. Причина: ' + (reportResult.emailError || 'почтовый сервис не подтвердил отправку.') + ' Проверьте правильность адреса и введите актуальную почту ниже для повторной отправки.';
+            if (accepted) showReportEmailSentPopup(studentData.email);
+          } else {
+            emailStatus.textContent = 'PDF-отчёт сформирован. Адрес электронной почты не указан — введите актуальную почту ниже, чтобы получить письмо.';
+          }
+          if (reportResult.feedbackUrl) {
+            const feedbackLink = document.getElementById('feedback-form-link');
+            if (feedbackLink) feedbackLink.href = reportResult.feedbackUrl;
+          }
+        } else {
+          document.getElementById('promo-code-result').style.display = 'block';
+          if (emailStatus) {
+            emailStatus.textContent = 'Не удалось подтвердить отправку письма' + (studentData.email ? ' на ' + studentData.email : '') + '. Причина: ' + (reportResult.emailError || reportResult.message || 'нет ответа от сервера отправки почты') + '. Проверьте адрес и введите актуальную почту ниже.';
+          }
+        }
+      }
+
+    } catch (err) {
+      console.error("Ошибка при генерации/отправке PDF:", err);
+      if (downloadBtn) downloadBtn.innerText = generatedPdfBlob ? "📄 Скачать PDF-отчёт" : "⚠️ Не удалось сформировать PDF";
+    }
+  }
+</script>
+</body>
+</html>
