@@ -14,6 +14,10 @@ function escapeHtml(value) {
 export async function sendDiagnosticLinkEmail({ env, token, tokenData }) {
   if (tokenData.diagnosticLinkEmailSentAt) {
     tokenData.diagnosticLinkEmailStatus = "Отправлено";
+    tokenData.diagnosticLinkEmailError = null;
+    await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), {
+      expirationTtl: getOrderExpirationTtl(tokenData)
+    });
     return { sent: true, alreadySent: true, id: tokenData.diagnosticLinkEmailId || null };
   }
 
