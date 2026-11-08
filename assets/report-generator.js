@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 13;
+  const VERSION = 14;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -27,6 +27,22 @@
     const fraction = normalized.match(/^([+-]?\d+)\/([+-]?\d+)$/);
     if (fraction && Number(fraction[2]) !== 0) return Number(fraction[1]) / Number(fraction[2]);
     return NaN;
+  }
+
+  function isExactReducedFractionAnswer(value, expected) {
+    const parseReduced = input => {
+      const match = normalizeAnswer(input).match(/^([+-]?\d+)\/(\d+)$/);
+      if (!match) return null;
+      const numerator = Number(match[1]);
+      const denominator = Number(match[2]);
+      if (!Number.isSafeInteger(numerator) || !Number.isSafeInteger(denominator) || denominator <= 0) return null;
+      let a = Math.abs(numerator), b = denominator;
+      while (b) { const remainder = a % b; a = b; b = remainder; }
+      return a === 1 ? [numerator, denominator] : null;
+    };
+    const actual = parseReduced(value);
+    const target = parseReduced(expected);
+    return !!actual && !!target && actual[0] === target[0] && actual[1] === target[1];
   }
 
   function evaluateQuestion(question, questionId, answerSnapshot, statsSnapshot, formatMath) {
@@ -52,11 +68,15 @@
       correctAnswer = String(question.a == null ? "" : question.a).replace(/\./g, ",");
       isSkipped = !rawAnswer;
       if (rawAnswer) {
-        const userNumber = parseNumeric(rawAnswer);
-        const expectedNumber = parseNumeric(question.a);
-        isCorrect = Number.isFinite(userNumber) && Number.isFinite(expectedNumber)
-          ? Math.abs(userNumber - expectedNumber) < 1e-9
-          : normalizeAnswer(rawAnswer) === normalizeAnswer(question.a);
+        if (question.answerMode === "exact_reduced_fraction") {
+          isCorrect = isExactReducedFractionAnswer(rawAnswer, question.a);
+        } else {
+          const userNumber = parseNumeric(rawAnswer);
+          const expectedNumber = parseNumeric(question.a);
+          isCorrect = Number.isFinite(userNumber) && Number.isFinite(expectedNumber)
+            ? Math.abs(userNumber - expectedNumber) < 1e-9
+            : normalizeAnswer(rawAnswer) === normalizeAnswer(question.a);
+        }
       }
     }
 
