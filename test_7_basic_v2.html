@@ -1015,8 +1015,8 @@
       qDef.correctText = qDef.options[qDef.a];
     } else {
       const inputEl = document.getElementById(qId);
-      userAns = inputEl ? inputEl.value.trim().replace(/\\s+/g, "").replace(/,/g, ".") : "";
-      formattedUserAns = userAns !== "" ? userAns.replace(/\\./g, ",") : "Не введено";
+      userAns = inputEl ? inputEl.value.trim().replace(/\s+/g, "").replace(/,/g, ".") : "";
+      formattedUserAns = userAns !== "" ? userAns.replace(/\./g, ",") : "Не введено";
       qDef.correctText = qDef.a;
     }
 
@@ -1044,12 +1044,12 @@
     }
 
     const expectedAnswer = qDef.type === "text"
-      ? String(qDef.a).trim().replace(/\\s+/g, "").replace(/,/g, ".")
+      ? String(qDef.a).trim().replace(/\s+/g, "").replace(/,/g, ".")
       : qDef.a;
     const parseNumericAnswer = value => {
       const normalized = String(value).trim().replace(/,/g, ".");
-      if (/^[+-]?\\d+(?:\\.\\d+)?$/.test(normalized)) return Number(normalized);
-      const fraction = normalized.match(/^([+-]?\\d+)\\/([+-]?\\d+)$/);
+      if (/^[+-]?\d+(?:\.\d+)?$/.test(normalized)) return Number(normalized);
+      const fraction = normalized.match(/^([+-]?\d+)\/([+-]?\d+)$/);
       if (fraction && Number(fraction[2]) !== 0) return Number(fraction[1]) / Number(fraction[2]);
       return NaN;
     };
