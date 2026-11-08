@@ -96,6 +96,12 @@ export async function onRequestPost(context) {
 
     // Письмо и Telegram отправляются независимо: сбой одного канала не блокирует другой.
     const diagnosticEmailResult = await sendDiagnosticLinkEmail({ env, token, tokenData });
+    scheduleOrderSync(context, {
+      env,
+      token,
+      order: tokenData,
+      event: diagnosticEmailResult.sent ? "diagnostic_link_email_sent" : "diagnostic_link_email_status_updated"
+    });
 
     // Партнёрское начисление создаётся только после серверного подтверждения оплаты.
     // Ключ основан на payment ID: повторный webhook перезаписывает ту же запись, а не создаёт новую.
