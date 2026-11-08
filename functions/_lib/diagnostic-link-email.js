@@ -25,6 +25,18 @@ export async function sendDiagnosticLinkEmail({ env, token, tokenData }) {
     return { sent: false, configured: true };
   }
 
+  const lastAttemptAt = Date.parse(tokenData.diagnosticLinkEmailAttemptAt || "");
+  if (Number.isFinite(lastAttemptAt) && Date.now() - lastAttemptAt < 60 * 1000) {
+    return { sent: false, configured: true, retryDeferred: true };
+  }
+
+  // Не чаще одного обращения к Resend в минуту для одного заказа:
+  // success.html опрашивает статус платежа несколько раз подряд.
+  tokenData.diagnosticLinkEmailAttemptAt = new Date().toISOString();
+  await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), {
+    expirationTtl: getOrderExpirationTtl(tokenData)
+  });
+
   const diagnosticUrl = "https://reshai360.ru/" + testFile + "?token=" + encodeURIComponent(token);
   const studentName = String(tokenData.studentName || "").trim();
   const safeName = escapeHtml(studentName || "Здравствуйте");
