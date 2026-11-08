@@ -100,7 +100,10 @@ export async function onRequestPost(context) {
           answersSnapshot = {
             answers: parsed.answers,
             marked: Array.isArray(parsed.marked) ? parsed.marked : [],
-            stats: parsed.stats && typeof parsed.stats === "object" ? parsed.stats : {}
+            stats: parsed.stats && typeof parsed.stats === "object" ? parsed.stats : {},
+            diagnosticProfile: parsed.diagnosticProfile && typeof parsed.diagnosticProfile === "object" && !Array.isArray(parsed.diagnosticProfile)
+              ? parsed.diagnosticProfile
+              : null
           };
         }
       }
@@ -255,6 +258,7 @@ export async function onRequestPost(context) {
       try {
         const testFiles = {
           '7': 'test_7_basic.html', '7_basic': 'test_7_basic.html', '7_advanced': 'test_7_advanced.html',
+          '7_basic_v2': 'test_7_basic_v2.html', '7_advanced_v2': 'test_7_advanced_v2.html',
           '8': 'test_8_basic.html', '8_basic': 'test_8_basic.html', '8_advanced': 'test_8_advanced.html',
           '9': 'test_9_basic.html', '9_basic': 'test_9_basic.html', '9_advanced': 'test_9_advanced.html',
           '10': 'test_10_basic.html', '10_basic': 'test_10_basic.html', '10_advanced': 'test_10_advanced.html',
