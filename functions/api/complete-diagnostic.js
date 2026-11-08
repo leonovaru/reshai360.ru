@@ -48,6 +48,11 @@ export async function onRequestPost(context) {
       changed = true;
     }
 
+    const previousLinkExpiry = Number(tokenData.linkExpiresAt) || null;
+    const linkExpiresAt = ensurePaidOrderLinkExpiry(tokenData);
+    if (linkExpiresAt <= Date.now()) return Response.json({ success: false, message: "Срок действия ссылки на диагностику истёк." }, { status: 403 });
+    if (Number(tokenData.linkExpiresAt) !== previousLinkExpiry) changed = true;
+
     // Бонусный промокод создаётся сразу при завершении диагностики, независимо от PDF и email.
     if (!tokenData.promoCodeIssued) {
       const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -72,10 +77,6 @@ export async function onRequestPost(context) {
       changed = true;
     }
 
-    const previousLinkExpiry = Number(tokenData.linkExpiresAt) || null;
-    const linkExpiresAt = ensurePaidOrderLinkExpiry(tokenData);
-    if (linkExpiresAt <= Date.now()) return Response.json({ success: false, message: "Срок действия ссылки на диагностику истёк." }, { status: 403 });
-    if (Number(tokenData.linkExpiresAt) !== previousLinkExpiry) changed = true;
     if (changed) await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
 
     const archiveKey = "completed-order:" + token;
