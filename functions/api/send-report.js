@@ -1,7 +1,7 @@
 import { ensurePaidOrderLinkExpiry, getOrderExpirationTtl } from "../_lib/telegram-payment.js";
 import { scheduleOrderSync } from "../_lib/google-sheets.js";
 
-const RESULTS_REPORT_VERSION = 6;
+const RESULTS_REPORT_VERSION = 7;
 
 async function getPromoRecordsForEmail(env, email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
