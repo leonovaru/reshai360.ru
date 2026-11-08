@@ -1019,6 +1019,55 @@
 
                     let widget;
                     let paymentFinished = false;
+                    let paymentCheckTimer = null;
+                    let paymentCheckStartedAt = Date.now();
+                    let paymentCheckInProgress = false;
+
+                    // Дополнительный канал возврата: если банк открыл отдельную вкладку/
+                    // приложение и return_url не восстановил исходный браузер, исходная
+                    // страница сама дождётся серверного подтверждения и продолжит заказ.
+                    async function checkPaidOrder() {
+                        if (paymentFinished || paymentCheckInProgress) return;
+                        paymentCheckInProgress = true;
+                        try {
+                            const checkResponse = await fetch('/api/verify-token', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                cache: 'no-store',
+                                body: JSON.stringify({ token: data.returnUrl ? new URL(data.returnUrl).searchParams.get('token') : null })
+                            });
+                            const checkResult = await checkResponse.json();
+                            if (checkResponse.ok && checkResult.valid) {
+                                paymentFinished = true;
+                                if (paymentCheckTimer) clearInterval(paymentCheckTimer);
+                                try { widget.destroy(); } catch (_) {}
+                                window.location.assign(data.returnUrl);
+                                return;
+                            }
+                            if (checkResponse.status === 409) {
+                                if (paymentCheckTimer) clearInterval(paymentCheckTimer);
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = originalBtnContent;
+                                alert(checkResult.message || 'Платёж отменён. Вы можете попробовать ещё раз.');
+                                return;
+                            }
+                        } catch (checkError) {
+                            console.warn('Проверка статуса оплаты временно недоступна:', checkError);
+                        } finally {
+                            paymentCheckInProgress = false;
+                        }
+
+                        if (Date.now() - paymentCheckStartedAt > 10 * 60 * 1000) {
+                            if (paymentCheckTimer) clearInterval(paymentCheckTimer);
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalBtnContent;
+                            alert('Не удалось автоматически получить подтверждение. Не оплачивайте повторно, если деньги уже списаны. Нажмите кнопку поддержки — мы проверим заказ.');
+                        }
+                    }
+
+                    const tokenFromReturnUrl = new URL(data.returnUrl).searchParams.get('token');
+                    if (!tokenFromReturnUrl) throw new Error('Не удалось получить номер заказа для проверки оплаты.');
+
                     widget = new window.YooMoneyCheckoutWidget({
                         confirmation_token: data.confirmationToken,
                         return_url: data.returnUrl,
@@ -1029,22 +1078,36 @@
                         error_callback: function(error) {
                             console.error('Ошибка виджета ЮKassa:', error);
                             try { widget.destroy(); } catch (_) {}
+                            if (paymentCheckTimer) clearInterval(paymentCheckTimer);
                             submitBtn.disabled = false;
                             submitBtn.innerHTML = originalBtnContent;
                             alert('Не удалось открыть форму оплаты. Если платёж уже был подтверждён, не оплачивайте повторно — обратитесь в поддержку.');
                         }
                     });
 
-                    // return_url обрабатывается самим виджетом ЮKassa.
-                    // Это важно для T-Pay: после подтверждения в приложении банк возвращает
-                    // пользователя на страницу проверки заказа, а не требует повторной покупки.
+                    // Проверяем статус независимо от возврата из банковского приложения.
+                    // При возвращении пользователя в исходную вкладку проверяем немедленно.
                     widget.on('modal_close', function() {
                         if (paymentFinished) return;
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnContent;
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = 'Ожидаем подтверждение оплаты…';
+                        checkPaidOrder();
                     });
 
-                    widget.render();
+                    widget.render().then(() => {
+                        paymentCheckTimer = setInterval(checkPaidOrder, 2500);
+                        checkPaidOrder();
+                    }).catch(error => {
+                        console.error('Не удалось отобразить виджет ЮKassa:', error);
+                        if (paymentCheckTimer) clearInterval(paymentCheckTimer);
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnContent;
+                        alert('Не удалось открыть форму оплаты. Попробуйте обновить страницу.');
+                    });
+
+                    document.addEventListener('visibilitychange', function() {
+                        if (!document.hidden && !paymentFinished) checkPaidOrder();
+                    });
                 } else {
                     alert(data.message || 'Ошибка создания платежа');
                     submitBtn.disabled = false;
