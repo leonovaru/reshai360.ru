@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 11;
+  const VERSION = 12;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -127,7 +127,7 @@
   }
 
   function makeFirstPage(model) {
-    const { grade, levelLabel, studentName, dateText, score, total, blockRows, repeatTopics, studyTopics } = model;
+    const { grade, levelLabel, studentName, dateText, score, total, blockRows, repeatTopics, studyTopics, diagnosticProfile } = model;
     const percent = total ? Math.round(score / total * 100) : 0;
     const topicLimit = 12;
     const repeatVisible = repeatTopics.slice(0, topicLimit);
@@ -138,6 +138,30 @@
     const studyHtml = studyTopics.length
       ? "<ol>" + studyVisible.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>" + (studyTopics.length > topicLimit ? '<p style="margin:4px 0 0;">И ещё ' + (studyTopics.length - topicLimit) + ' тем — см. задания в подробной части отчёта.</p>' : "")
       : '<p style="margin:0;">Пропущенных заданий нет.</p>';
+    const evidence = diagnosticProfile && diagnosticProfile.evidenceSummary || {};
+    const competencyRows = diagnosticProfile && Array.isArray(diagnosticProfile.competencies)
+      ? diagnosticProfile.competencies.map(item =>
+          "<tr><td style='padding:4px 6px;border-bottom:1px solid #e2e8f0;'>" + escapeHtml(item.competencyId + " · " + item.name) +
+          "</td><td style='padding:4px 6px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
+          item.topicsWithEvidence + "/" + item.presentedTopics + "</td><td style='padding:4px 6px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
+          item.topicsWithRepeatedEvidence + "</td></tr>"
+        ).join("")
+      : "";
+    const diagnosticSummaryHtml = grade === "7" && diagnosticProfile
+      ? "<div class='pdf-analytics-title'>Диагностическая интерпретация</div>" +
+        "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Единичное выполнение описывает ответ на конкретное задание, но не подтверждает устойчивое владение навыком. Процент правильных ответов не является уровнем сформированности.</p>" +
+        "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Единичные наблюдения: <b>" + (evidence.E1 || 0) +
+        "</b>; повторные наблюдения: <b>" + ((evidence.E2 || 0) + (evidence.E3 || 0)) +
+        "</b>; без оценённых наблюдений: <b>" + (evidence.E0 || 0) + "</b>.</p>" +
+        "<table style='width:100%;border-collapse:collapse;font-size:.72em;margin-bottom:8px;'><thead><tr><th style='text-align:left;padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Компетенция</th><th style='padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Данные</th><th style='padding:4px 6px;border-bottom:1px solid #cbd5e1;'>Повтор.</th></tr></thead><tbody>" +
+        competencyRows + "</tbody></table>"
+      : "";
+    const blockHeading = grade === "7"
+      ? "Доля правильных ответов по блокам (описательный показатель)"
+      : "Результат диагностики";
+    const repeatHeading = grade === "7"
+      ? "Темы с неверными итоговыми ответами:"
+      : "⚠️ Темы для повторения (ошибки / перебор):";
     return `
       <div class="pdf-first-page-content">
         <h1 class="pdf-header-title">Диагностическая карта знаний</h1>
@@ -152,11 +176,12 @@
             <div class="pdf-score-main">${score} из ${total} (${percent}%)</div>
           </div>
         </div>
-        <div class="pdf-analytics-title">Результат диагностики</div>
+        <div class="pdf-analytics-title">${blockHeading}</div>
         <div>${blockRows}</div>
+        ${diagnosticSummaryHtml}
         <div class="pdf-topics-container">
           <div class="pdf-topics-box repeat">
-            <h4>⚠️ Темы для повторения (ошибки / перебор):</h4>${repeatHtml}
+            <h4>${repeatHeading}</h4>${repeatHtml}
           </div>
           <div class="pdf-topics-box study">
             <h4>📌 Темы для изучения (не решено):</h4>${studyHtml}
@@ -285,10 +310,11 @@
   }
 
   async function generate(options) {
-    const { quizData, snapshot, studentName, formatMath, resultContainer } = options || {};
+    const { quizData, snapshot, studentName, formatMath, resultContainer, diagnosticProfile: suppliedDiagnosticProfile } = options || {};
     if (!Array.isArray(quizData) || !resultContainer) throw new Error("Недостаточно данных для формирования отчёта.");
     const answersSnapshot = snapshot && typeof snapshot === "object" ? snapshot : {};
     const statsSnapshot = answersSnapshot.stats || {};
+    const diagnosticProfile = suppliedDiagnosticProfile || answersSnapshot.diagnosticProfile || null;
     const match = String(global.location && global.location.pathname || "").match(/test_(\d+)_(basic|advanced)/i);
     const grade = match ? match[1] : "";
     const level = match ? match[2] : "basic";
@@ -338,6 +364,7 @@
       blockRows,
       repeatTopics: Array.from(repeatTopics),
       studyTopics: Array.from(studyTopics),
+      diagnosticProfile,
       cards,
       formatMath
     };
