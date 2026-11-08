@@ -36,7 +36,7 @@
   <!-- Библиотеки генерации PDF из canvas (html2canvas + jsPDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="/assets/report-generator.js?v=6"></script>
+  <script src="/assets/report-generator.js?v=7"></script>
 
   <style>
     :root {
@@ -286,7 +286,7 @@
       const request = transaction.objectStore("reports").get(token);
       request.onsuccess = () => {
         const entry = request.result;
-        if (entry && entry.version === 6 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
+        if (entry && entry.version === 7 && entry.expiresAt > Date.now() && entry.blob instanceof Blob) return resolve(entry.blob);
         if (entry) {
           try { db.transaction("reports", "readwrite").objectStore("reports").delete(token); } catch (_) {}
         }
@@ -306,7 +306,7 @@
       let transaction;
       try { transaction = db.transaction("reports", "readwrite"); }
       catch (_) { db.close(); return resolve(false); }
-      transaction.objectStore("reports").put({ token, blob, version: 6, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+      transaction.objectStore("reports").put({ token, blob, version: 7, savedAt: Date.now(), expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
       transaction.oncomplete = () => { db.close(); resolve(true); };
       transaction.onerror = () => { db.close(); resolve(false); };
       transaction.onabort = () => { db.close(); resolve(false); };
