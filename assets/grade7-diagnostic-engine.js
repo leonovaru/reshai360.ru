@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.10.0";
+  const VERSION = "7.11.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -87,7 +87,7 @@
           : "UNANSWERED";
       return { outcome };
     });
-    const assessed = groupedResults.filter(item => ["CORRECT","INCORRECT","PARTIAL","INCOMPLETE"].includes(item.outcome));
+    const assessed = groupedResults.filter(item => ["CORRECT","INCORRECT","PARTIAL"].includes(item.outcome));
     const correct = assessed.filter(item => item.outcome === "CORRECT").length;
     const incorrect = assessed.filter(item => item.outcome === "INCORRECT").length;
     const partial = assessed.filter(item => item.outcome === "PARTIAL").length;
@@ -313,7 +313,7 @@
       '<p style="margin:0 0 12px;line-height:1.5;color:#475569;">Единичный ответ не подтверждает устойчивое владение навыком. Процент правильных ответов — описательный показатель, а не уровень сформированности.</p>' +
       '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.92em;"><thead><tr><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Компетенция</th><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Темы с данными</th><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Повторные наблюдения</th></tr></thead><tbody>' +
       rows + '</tbody></table></div>' +
-      '<h4 style="margin:14px 0 4px;font-size:1em;">Навыки с повторными наблюдениями</h4>' + repeatedHtml +
+      '<h4 style="margin:14px 0 4px;font-size:1em;">Навыки с повторными свидетельствами или неполным результатом</h4>' + repeatedHtml +
       '<details style="margin-top:12px;"><summary style="cursor:pointer;font-weight:700;">Ограничения интерпретации</summary><ul style="margin:8px 0 0;padding-left:20px;">' +
       profile.limitations.map(item => "<li>" + escapeHtml(item) + "</li>").join("") +
       '</ul></details></section>';
