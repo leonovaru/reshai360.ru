@@ -137,7 +137,7 @@ export async function onRequestPost(context) {
     }), { expirationTtl: 3888000 });
     scheduleOrderSync(context, { env, token, order: tokenData, event: "diagnostic_completed" });
 
-    return Response.json({ success: true, completed: true, completedAt: tokenData.completedAt || null, promoCode: tokenData.promoCodeIssued || null });
+    return Response.json({ success: true, completed: true, completedAt: tokenData.completedAt || null, promoCode: tokenData.promoCodeIssued || null, snapshot: grade7V2Snapshot || tokenData.answersSnapshot || null });
   } catch (error) {
     console.error("Complete diagnostic error:", error);
     return Response.json({ success: false, message: "Не удалось сохранить завершение диагностики. Попробуйте ещё раз." }, { status: 500 });
