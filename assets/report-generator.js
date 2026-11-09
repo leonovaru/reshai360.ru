@@ -88,6 +88,7 @@
 
     const history = Array.isArray(stat.attemptsHistory) ? stat.attemptsHistory.map(String) : [];
     const checkCount = Math.max(Number(stat.checkCount) || 0, history.length);
+    const selfCorrected = stat.selfCorrected === true;
     const distinctRadioAnswers = new Set(history.filter(item => item && item !== "Не выбрано"));
     if (question.type === "radio" && finalAnswer !== "Не выбрано") distinctRadioAnswers.add(finalAnswer);
     const guessedByBruteForce = question.type === "radio" && (question.options || []).length > 0 && distinctRadioAnswers.size >= question.options.length;
@@ -107,6 +108,10 @@
       badgeText = "Не решено ❌";
     }
 
+    if (isCorrect && selfCorrected && !guessedByBruteForce) {
+      badgeText = "Исправлено самостоятельно ✓";
+    }
+
     const attemptsText = history.length ? history.join(" ➔ ") : "Проверок ещё не было";
     return {
       finalAnswer,
@@ -114,6 +119,7 @@
       isSkipped,
       isCorrect,
       guessedByBruteForce,
+      selfCorrected,
       checkCount,
       attemptsText,
       statusClass,
@@ -130,7 +136,8 @@
       ? formatMath(result.correctAnswer)
       : escapeHtml(result.correctAnswer);
     const answerDetails = grade === "7"
-      ? "<b>Ответ участника:</b> " + escapeHtml(result.finalAnswer) + "<br>"
+      ? "<b>Ответ участника:</b> " + escapeHtml(result.finalAnswer) + "<br>" +
+        (result.checkCount ? "<b>История проверок:</b> " + escapeHtml(result.attemptsText) + "<br>" : "")
       : "<b>Введенных ответов:</b> " + result.checkCount + " | <b>Ответы:</b> " +
         (result.checkCount ? escapeHtml(result.attemptsText) : (result.isSkipped ? (question.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")) + "<br>";
     return `
