@@ -47,7 +47,7 @@
 
   function isExactMixedNumberAnswer(value, expected) {
     const parseMixed = input => {
-      const match = String(input == null ? "" : input).trim().replace(/,/g, ".").replace(/\\s+/g, " ").match(/^([+-]?)(\\d+)\\s+(\\d+)\\/(\\d+)$/);
+      const match = String(input == null ? "" : input).trim().replace(/,/g, ".").replace(/\s+/g, " ").match(/^([+-]?)(\d+)\s+(\d+)\/(\d+)$/);
       if (!match) return null;
       const whole = Number(match[2]);
       const numerator = Number(match[3]);
