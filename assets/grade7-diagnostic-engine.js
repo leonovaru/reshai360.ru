@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.8.2";
+  const VERSION = "7.8.3";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -35,7 +35,7 @@
   const TRANSFER_TOPICS = new Set(["T10"]);
   // Разные действия внутри одной темы не объединяем в один навык.
   const SPLIT_QUESTION_TOPICS = new Set([
-    "N05","DF05","Z08","F03","DF07","P07","P08","Z09","A07","T06","S01","S02","S05"
+    "N05","N08","N09","F01","F02","F03","F12","DF05","Z08","DF07","P07","P08","Z09","A07","T06","S01","S02","S05"
   ]);
   // Повторные задания одного типа действия могут давать повторное свидетельство.
   const REPEATED_SAME_SKILL_TOPICS = new Set(["N04","N06","N07","A05"]);
