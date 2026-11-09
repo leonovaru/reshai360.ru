@@ -17,6 +17,10 @@ export async function onRequestPost(context) {
     }
 
     const tokenData = JSON.parse(tokenDataRaw);
+    const requestHost = new URL(request.url).hostname;
+    const isPagesPreviewHost = requestHost.endsWith('.pages.dev') && requestHost !== 'reshai360-ru.pages.dev';
+    if (tokenData.previewTest === true && !isPagesPreviewHost) return Response.json({ valid: false, message: 'Тестовый заказ доступен только в Preview.' }, { status: 403 });
+    const isPreviewTestOrder = tokenData.previewTest === true && isPagesPreviewHost;
     let orderDataChanged = false;
     if (tokenData.isPaid === true) {
       const oldExpiry = Number(tokenData.linkExpiresAt) || null;
@@ -93,7 +97,7 @@ export async function onRequestPost(context) {
     }
 
     if (isGrade7V2Product(tokenData.productKey)) {
-      const access = await getPaidGrade7Order(env, token);
+      const access = await getPaidGrade7Order(env, token, request);
       if (access.error) {
         return Response.json({ valid: false, message: "Не удалось проверить доступ к диагностике." }, {
           status: access.status || 503
@@ -138,6 +142,8 @@ export async function onRequestPost(context) {
 
     // Если webhook не сработал или письмо не удалось отправить раньше,
     // повторяем отправку ссылки. Ошибка почты не блокирует доступ к оплаченной диагностике.
+    if (isPreviewTestOrder) return Response.json({ valid: true, data: { ...tokenData, progressSnapshot }, completed: tokenData.isCompleted === true });
+
     const diagnosticEmailResult = await sendDiagnosticLinkEmail({ env, token, tokenData });
     if (!diagnosticEmailResult.sent) {
       console.error("Payment was verified, but diagnostic link email is pending a retry.");
