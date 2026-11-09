@@ -966,7 +966,7 @@
   }
 
   const quizData = window.GRADE7_DIAGNOSTIC_DATA.primenenie;
-  if (!Array.isArray(quizData) || quizData.length !== 10) {
+  if (!Array.isArray(quizData) || quizData.length === 0 || quizData.some(block => !block || !Array.isArray(block.themes) || block.themes.length === 0)) {
     throw new Error("Не удалось загрузить банк диагностики 7 класса.");
   }
 
