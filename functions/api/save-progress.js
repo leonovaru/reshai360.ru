@@ -33,7 +33,7 @@ export async function onRequestPost({ request, env }) {
 
     const tokenData = JSON.parse(tokenDataRaw);
     if (isGrade7V2Product(tokenData.productKey)) {
-      const access = await getPaidGrade7Order(env, token);
+      const access = await getPaidGrade7Order(env, token, request);
       if (access.error) return progressErrorResponse(access.error, access.status);
       const validated = validateGrade7ProgressSnapshot(input, tokenData.productKey);
       if (validated.error) return progressErrorResponse(validated.error, 400);
