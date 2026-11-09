@@ -33,6 +33,7 @@
     "G01","G02","G03","G06","G07","G08","G09","G16","G18","G19"
   ]);
   const KNOWLEDGE_QUESTION_INDEXES = {
+    D04: [0],
     F01: [0],
     F02: [0],
     A01: [0],
@@ -45,7 +46,7 @@
     "N05","N08","N09","F01","F02","F03","F12","DF05","DF07","Z08","P07","P08","Z09","A07","T06","S01","S02","S05"
   ]);
   // Повторные задания одного типа действия могут давать повторное свидетельство.
-  const REPEATED_SAME_SKILL_TOPICS = new Set(["N04","N06","N07","A05"]);
+  const REPEATED_SAME_SKILL_TOPICS = new Set(["N04","N06","N07","D04","D06","D07","A05"]);
 
   const TOPIC_COMPETENCY = Object.create(null);
   Object.keys(TOPIC_GROUPS).forEach(competencyId => {
