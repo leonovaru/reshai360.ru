@@ -127,7 +127,13 @@ export async function onRequestPost({ request, env }) {
       token, diagnostic.diagnosticId, diagnostic.diagnosticVersion
     );
 
-    const results = await env.DB.batch([operationInsert, attemptInsert]);
+    const progressTouch = env.DB.prepare(`
+      UPDATE diagnostic_progress
+      SET revision = revision + 1, updated_at = ?
+      WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND status = 'IN_PROGRESS'
+    `).bind(now, token, diagnostic.diagnosticId, diagnostic.diagnosticVersion);
+
+    const results = await env.DB.batch([operationInsert, attemptInsert, progressTouch]);
     if (results.some(result => !result.success)) throw new Error("D1 attempt transaction failed");
 
     const stored = await env.DB.prepare(`
