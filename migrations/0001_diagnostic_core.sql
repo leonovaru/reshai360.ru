@@ -1,8 +1,7 @@
 -- Решай360: core diagnostic storage (D1 / SQLite)
 -- Migration: 0001_diagnostic_core
 -- This migration creates new tables only. It does not read, alter, or delete KV data.
-
-PRAGMA foreign_keys = ON;
+-- D1 enforces SQLite foreign-key constraints by default.
 
 CREATE TABLE IF NOT EXISTS diagnostic_progress (
   token TEXT NOT NULL,
