@@ -411,7 +411,7 @@
         .map(item => [item.questionId, item])
     );
     let diagnosticProfile = suppliedDiagnosticProfile || answersSnapshot.diagnosticProfile || null;
-    const match = String(global.location && global.location.pathname || "").match(/test_(\\d+)_(basic|advanced)/i);
+    const match = String(global.location && global.location.pathname || "").match(/test_(\d+)_(basic|advanced)/i);
     const grade = match ? match[1] : "";
     const level = match ? match[2] : "basic";
     if (grade === "7" && answersSnapshot.schemaVersion === 2 && serverResults.size &&
@@ -429,7 +429,7 @@
               const option = (question.options || [])[Number(answer.value)];
               if (option !== undefined) userText = String(option);
             } else if (answer && answer.type === "text") {
-              userText = String(answer.value ?? "").replace(/\\./g, ",");
+              userText = String(answer.value ?? "").replace(/\./g, ",");
             }
             return {
               ...question,
