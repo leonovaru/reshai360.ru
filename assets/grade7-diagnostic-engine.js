@@ -289,11 +289,13 @@
         item.topicsWithEvidence + " из " + item.presentedTopics + "</td><td>" +
         item.topicsWithRepeatedEvidence + "</td></tr>";
     }).join("");
-    const repeatedSkills = profile.skills.filter(skill => skill.evidenceCount >= 2 || skill.partialCount > 0).slice(0, 8);
+    const repeatedSkills = profile.skills.filter(skill => skill.evidenceCount >= 2 || skill.partialCount > 0 || skill.incompleteCount > 0).slice(0, 8);
     const repeatedHtml = repeatedSkills.length
       ? "<ul style='margin:8px 0 0;padding-left:20px;'>" + repeatedSkills.map(skill =>
           "<li style='margin:4px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
-          (skill.evidenceCount > 0 ? " (" + skill.correctCount + " из " + skill.evidenceCount + " повторных наблюдений верно). " : ". ") +
+          (skill.partialCount > 0 ? " (частичный результат: " + skill.correctCount + " верно, " + skill.incorrectCount + " с ошибкой). " :
+          skill.incompleteCount > 0 ? " (неполное выполнение: " + skill.unansweredCount + " ответов без ответа). " :
+          skill.evidenceCount > 0 ? " (верно: " + skill.correctCount + ", с ошибкой: " + skill.incorrectCount + "). " : ". ") +
           escapeHtml(skill.reason) + "</li>"
         ).join("") + "</ul>"
       : "<p style='margin:8px 0 0;color:#475569;'>В текущем наборе пока недостаточно повторных наблюдений для устойчивых выводов по отдельным навыкам.</p>";
