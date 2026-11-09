@@ -85,7 +85,9 @@
       t("A04", "Свойства действий в буквенной записи", r("Какое свойство записано в равенстве 5 · 8 = 8 · 5?", ["Переместительное свойство умножения", "Сочетательное свойство умножения", "Распределительное свойство"], 0)),
       t("A05", "Степень числа", n("Вычисли: 4².", "16"), n("Вычисли: 2³.", "8")),
       t("A06", "Буквенные равенства и неизвестный компонент", n("Найди x: x − 15 = 20.", "35")),
-      t("A07", "Формулы", n("Найди периметр квадрата со стороной 5 см.", "20"))
+      t("A07", "Формулы", n("Найди периметр квадрата со стороной 5 см.", "20")),
+      t("A08", "Преобразование буквенных выражений", r("Упрости выражение 6a + 2a.", ["8a", "8a²", "6a + 2"], 0)),
+      t("A09", "Решение уравнений с переменной", n("Реши уравнение: 3x + 4 = 19.", "5"))
     ]),
     b("Блок 8. Текстовые задачи", [
       t("T01", "Задачи на сумму и разность", n("В библиотеке было 120 книг. Принесли ещё 35. Сколько книг стало?", "155")),
@@ -128,6 +130,10 @@
       t("S04", "Круговые диаграммы", n("Круговая диаграмма разделена на четыре равные части. Сколько процентов составляет одна часть? <svg class='tex2jax_ignore' viewBox='0 0 260 190' role='img' aria-label='Круговая диаграмма из четырёх равных секторов' style='display:block;width:100%;max-width:300px;height:auto;margin:10px 0;'><path d='M95 95 L95 20 A75 75 0 0 1 170 95 Z' fill='#2563eb' stroke='#fff' stroke-width='2'/><path d='M95 95 L170 95 A75 75 0 0 1 95 170 Z' fill='#60a5fa' stroke='#fff' stroke-width='2'/><path d='M95 95 L95 170 A75 75 0 0 1 20 95 Z' fill='#93c5fd' stroke='#fff' stroke-width='2'/><path d='M95 95 L20 95 A75 75 0 0 1 95 20 Z' fill='#bfdbfe' stroke='#fff' stroke-width='2'/><text x='132' y='63' fill='#fff' font-size='13' text-anchor='middle' font-weight='700'>1/4</text></svg>", "25")),
       t("S05", "Представление данных", n("По таблице определи, на сколько больше ручек продали во вторник, чем в среду: <table class='tex2jax_ignore' role='table' style='border-collapse:collapse;max-width:420px;width:100%;margin:10px 0;font-size:14px;'><caption style='caption-side:top;text-align:left;font-weight:700;padding:4px;'>Продажи ручек</caption><thead><tr><th scope='col' style='border:1px solid #94a3b8;padding:6px;'>День</th><th scope='col' style='border:1px solid #94a3b8;padding:6px;'>Количество</th></tr></thead><tbody><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Понедельник</th><td style='border:1px solid #94a3b8;padding:6px;'>3</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Вторник</th><td style='border:1px solid #94a3b8;padding:6px;'>5</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Среда</th><td style='border:1px solid #94a3b8;padding:6px;'>2</td></tr></tbody></table>", "3"))
     ])
+        b("Блок 11. Логика и математическое рассуждение", [
+      t("R01", "Закономерности и последовательности", r("Каждое следующее число получается прибавлением 3. Какое число должно быть следующим: 4, 7, 10, 13, ...?", ["15", "16", "17"], 1)),
+      t("R02", "Проверка утверждений и контрпример", r("Какой пример показывает, что утверждение «если число делится на 4, то оно делится на 8» неверно?", ["12 делится на 4, но не делится на 8", "16 делится и на 4, и на 8", "24 делится и на 4, и на 8"], 0))
+    ]),
   ];
 
   const primenenie = [
@@ -206,7 +212,9 @@
       t("A04", "Свойства действий в буквенной записи", r("Как можно преобразовать выражение 7a + 7b с помощью распределительного свойства?", ["7(a + b)", "14ab", "7 + a + b"], 0)),
       t("A05", "Степень числа", n("Вычисли: 3³ + 2⁴.", "43")),
       t("A06", "Буквенные равенства и неизвестный компонент", n("Найди x: 240 : x = 15.", "16")),
-      t("A07", "Формулы", n("Прямоугольник имеет длину 12 см и ширину 5 см. Найди его площадь.", "60"), n("Ребро куба равно 4 см. Найди объём куба.", "64"))
+      t("A07", "Формулы", n("Прямоугольник имеет длину 12 см и ширину 5 см. Найди его площадь.", "60"), n("Ребро куба равно 4 см. Найди объём куба.", "64")),
+      t("A08", "Преобразование буквенных выражений", r("Упрости выражение 3(2x + 1) − x.", ["5x + 3", "6x + 3", "5x − 3"], 0)),
+      t("A09", "Решение уравнений с переменной", n("Реши уравнение: 5(x − 2) = 3x + 8.", "9"))
     ]),
     b("Блок 8. Текстовые задачи", [
       t("T01", "Задачи на сумму и разность", n("В магазине было 250 кг яблок. В первый день продали 78 кг, во второй — на 15 кг больше. Сколько килограммов осталось?", "79")),
@@ -249,7 +257,11 @@
       t("S04", "Круговые диаграммы", n("По круговой диаграмме определи, сколько процентов участников выбрали баскетбол: <svg class='tex2jax_ignore' viewBox='0 0 420 190' role='img' aria-label='Круговая диаграмма: футбол 25 процентов, плавание 40 процентов, третий сектор — остальные участники' style='display:block;width:100%;max-width:420px;height:auto;margin:10px 0;'><path d='M100 95 L100 25 A70 70 0 0 1 170 95 Z' fill='#2563eb' stroke='#fff' stroke-width='2'/><path d='M100 95 L170 95 A70 70 0 0 1 43.4 136.1 Z' fill='#60a5fa' stroke='#fff' stroke-width='2'/><path d='M100 95 L43.4 136.1 A70 70 0 0 1 100 25 Z' fill='#93c5fd' stroke='#fff' stroke-width='2'/><g font-size='13' fill='#1e293b'><rect x='210' y='42' width='13' height='13' fill='#2563eb'/><text x='232' y='54'>Футбол — 25%</text><rect x='210' y='76' width='13' height='13' fill='#60a5fa'/><text x='232' y='88'>Плавание — 40%</text><rect x='210' y='110' width='13' height='13' fill='#93c5fd'/><text x='232' y='122'>Баскетбол — ?</text></g></svg>", "35")),
       t("S05", "Представление данных", n("По таблице найди, сколько страниц прочитано за неделю: <table class='tex2jax_ignore' role='table' style='border-collapse:collapse;max-width:440px;width:100%;margin:10px 0;font-size:14px;'><caption style='caption-side:top;text-align:left;font-weight:700;padding:4px;'>Количество прочитанных страниц</caption><thead><tr><th scope='col' style='border:1px solid #94a3b8;padding:6px;'>День</th><th scope='col' style='border:1px solid #94a3b8;padding:6px;'>Страницы</th></tr></thead><tbody><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Пн</th><td style='border:1px solid #94a3b8;padding:6px;'>10</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Вт</th><td style='border:1px solid #94a3b8;padding:6px;'>15</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Ср</th><td style='border:1px solid #94a3b8;padding:6px;'>12</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Чт</th><td style='border:1px solid #94a3b8;padding:6px;'>18</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Пт</th><td style='border:1px solid #94a3b8;padding:6px;'>20</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Сб</th><td style='border:1px solid #94a3b8;padding:6px;'>15</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Вс</th><td style='border:1px solid #94a3b8;padding:6px;'>10</td></tr></tbody></table>", "100"), n("По той же таблице найди наибольшее количество страниц за день.", "20"), n("По той же таблице найди наименьшее количество страниц за день.", "10"))
     ])
+        b("Блок 11. Логика и математическое рассуждение", [
+      t("R01", "Закономерности и последовательности", r("В последовательности 2, 6, 12, 20 каждое следующее число получается прибавлением следующего чётного числа. Какое число будет следующим?", ["28", "30", "32"], 1)),
+      t("R02", "Проверка утверждений и контрпример", r("Какой пример опровергает утверждение «если сумма двух натуральных чисел делится на 3, то каждое слагаемое делится на 3»?", ["1 + 2 = 3", "3 + 6 = 9", "6 + 12 = 18"], 0))
+    ]),
   ];
 
-  window.GRADE7_DIAGNOSTIC_DATA = { version: "2.2.4", fundament, primenenie };
+  window.GRADE7_DIAGNOSTIC_DATA = { version: "2.2.5", fundament, primenenie };
 })();
