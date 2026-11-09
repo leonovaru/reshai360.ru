@@ -1,6 +1,10 @@
 import { isGrade7V2Product } from "../_lib/grade7-d1-progress.js";
 import { completeGrade7InD1 } from "../_lib/grade7-d1-completion.js";
 import { listGrade7Questions, resolveGrade7Question, scoreGrade7Answer } from "../_lib/grade7-diagnostic-bank.js";
+import { onRequestPost as checkAnswerHandler } from "./check-answer-grade7-v2.js";
+import { onRequestPost as saveProgressHandler } from "./save-progress.js";
+import { onRequestGet as getProgressHandler } from "./get-progress.js";
+import { onRequestPost as completeDiagnosticHandler } from "./complete-diagnostic.js";
 
 export async function onRequestGet() {
   try {
@@ -15,6 +19,10 @@ export async function onRequestGet() {
       isGrade7V2Product("7_advanced_v2") &&
       !isGrade7V2Product("7") &&
       typeof completeGrade7InD1 === "function" &&
+      typeof checkAnswerHandler === "function" &&
+      typeof saveProgressHandler === "function" &&
+      typeof getProgressHandler === "function" &&
+      typeof completeDiagnosticHandler === "function" &&
       basic.length > 0 && advanced.length > 0 &&
       basic.every(question => resolveGrade7Question("7_basic_v2", question.questionId)) &&
       advanced.every(question => resolveGrade7Question("7_advanced_v2", question.questionId)) &&
@@ -23,6 +31,12 @@ export async function onRequestGet() {
       ok,
       service: "grade7-v2-runtime",
       d1CompletionModuleLoaded: typeof completeGrade7InD1 === "function",
+      endpointModulesLoaded: {
+        checkAnswer: typeof checkAnswerHandler === "function",
+        saveProgress: typeof saveProgressHandler === "function",
+        getProgress: typeof getProgressHandler === "function",
+        completeDiagnostic: typeof completeDiagnosticHandler === "function"
+      },
       products: {
         basic: { available: basic.length > 0, questionCount: basic.length },
         advanced: { available: advanced.length > 0, questionCount: advanced.length }
