@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.8.4";
+  const VERSION = "7.8.5";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -35,7 +35,7 @@
   const TRANSFER_TOPICS = new Set(["T10"]);
   // Разные действия внутри одной темы не объединяем в один навык.
   const SPLIT_QUESTION_TOPICS = new Set([
-    "N05","N08","N09","F01","F02","F03","F12","DF05","DF07","Z08","P07","P08","Z09","A07","T06","S01","S02","S05"
+    "N05","N05","N08","N09","F01","F02","F03","F12","DF05","DF07","Z08","P07","P08","Z09","A07","T06","S01","S02","S05"
   ]);
   // Повторные задания одного типа действия могут давать повторное свидетельство.
   const REPEATED_SAME_SKILL_TOPICS = new Set(["N04","N06","N07","A05","F06"]);
@@ -68,27 +68,32 @@
     });
     const groupedResults = Array.from(groups.values()).map(items => {
       const outcomes = new Set(items.map(item => item.outcome));
-      const outcome = outcomes.size > 1 && (outcomes.has("CORRECT") || outcomes.has("INCORRECT"))
-        ? "CONTRADICTORY"
+      const outcome = outcomes.has("CORRECT") && outcomes.has("INCORRECT")
+        ? "PARTIAL"
         : outcomes.has("CORRECT") ? "CORRECT"
         : outcomes.has("INCORRECT") ? "INCORRECT"
         : "UNANSWERED";
       return { outcome };
     });
-    const assessed = groupedResults.filter(item => item.outcome === "CORRECT" || item.outcome === "INCORRECT");
+    const assessed = groupedResults.filter(item => item.outcome === "CORRECT" || item.outcome === "INCORRECT" || item.outcome === "PARTIAL");
     const correct = assessed.filter(item => item.outcome === "CORRECT").length;
-    const incorrect = assessed.length - correct;
+    const incorrect = assessed.filter(item => item.outcome === "INCORRECT").length;
+    const partial = assessed.filter(item => item.outcome === "PARTIAL").length;
     const evidenceLevel = assessed.length === 0 ? "E0" : assessed.length === 1 ? "E1" : "E2";
     let status = "Недостаточно данных";
     let reason = groupedResults.some(item => item.outcome === "CONTRADICTORY")
       ? "В составном задании получены разные результаты. Для оценки навыка нужна отдельная проверка."
       : "Нет ответов, которые позволяют оценить это действие.";
     const hasContradictoryGroup = groupedResults.some(item => item.outcome === "CONTRADICTORY");
-    let errorHypothesisLevel = incorrect === 0 && !hasContradictoryGroup
-      ? "H0"
-      : (incorrect >= 2 && correct === 0 && !hasContradictoryGroup ? "H2" : "H1");
+    let errorHypothesisLevel = partial > 0 || hasContradictoryGroup
+      ? "H1"
+      : incorrect === 0 ? "H0"
+      : (incorrect >= 2 && correct === 0 ? "H2" : "H1");
 
-    if (assessed.length === 1) {
+    if (partial > 0) {
+      status = "Формируется";
+      reason = "В составном задании часть ответов верна, а часть содержит ошибки. Это частичный результат одного задания, а не повторное независимое наблюдение.";
+    } else if (assessed.length === 1) {
       reason = assessed[0].outcome === "CORRECT"
         ? "Есть одно успешное выполнение. Устойчивость навыка не проверена."
         : "Зафиксирована одна ошибка. Этого недостаточно, чтобы утверждать, что навык не сформирован.";
@@ -125,7 +130,8 @@
       correctCount: correct,
       incorrectCount: incorrect,
       unansweredCount: observations.filter(item => item.outcome === "UNANSWERED").length,
-      contradictory: correct > 0 && incorrect > 0 || groupedResults.some(item => item.outcome === "CONTRADICTORY")
+      partialCount: partial,
+      contradictory: groupedResults.some(item => item.outcome === "CONTRADICTORY")
     };
   }
 
