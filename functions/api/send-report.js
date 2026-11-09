@@ -131,7 +131,7 @@ export async function onRequestPost(context) {
     const reportVersion = isGrade7V2Product(tokenData.productKey) ? GRADE7_V2_REPORT_VERSION : RESULTS_REPORT_VERSION;
     let authoritativeGrade7Snapshot = null;
     if (isGrade7V2Product(tokenData.productKey)) {
-      const access = await getPaidGrade7Order(env, token);
+      const access = await getPaidGrade7Order(env, token, request);
       if (access.error) return Response.json({ success: false, message: "Не удалось подтвердить завершённую диагностику." }, { status: access.status || 403 });
       const completion = await env.DB.prepare(`
         SELECT snapshot_json
