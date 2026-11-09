@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.9.0";
+  const VERSION = "7.10.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -75,17 +75,23 @@
     });
     const groupedResults = Array.from(groups.values()).map(items => {
       const outcomes = new Set(items.map(item => item.outcome));
-      const outcome = outcomes.has("CORRECT") && outcomes.has("INCORRECT")
+      const hasCorrect = outcomes.has("CORRECT");
+      const hasIncorrect = outcomes.has("INCORRECT");
+      const hasUnanswered = outcomes.has("UNANSWERED");
+      const outcome = hasCorrect && hasIncorrect
         ? "PARTIAL"
-        : outcomes.has("CORRECT") ? "CORRECT"
-        : outcomes.has("INCORRECT") ? "INCORRECT"
-        : "UNANSWERED";
+        : (hasCorrect || hasIncorrect) && hasUnanswered
+          ? "INCOMPLETE"
+          : hasCorrect ? "CORRECT"
+          : hasIncorrect ? "INCORRECT"
+          : "UNANSWERED";
       return { outcome };
     });
-    const assessed = groupedResults.filter(item => item.outcome === "CORRECT" || item.outcome === "INCORRECT" || item.outcome === "PARTIAL");
+    const assessed = groupedResults.filter(item => ["CORRECT","INCORRECT","PARTIAL","INCOMPLETE"].includes(item.outcome));
     const correct = assessed.filter(item => item.outcome === "CORRECT").length;
     const incorrect = assessed.filter(item => item.outcome === "INCORRECT").length;
     const partial = assessed.filter(item => item.outcome === "PARTIAL").length;
+    const incomplete = assessed.filter(item => item.outcome === "INCOMPLETE").length;
     const evidenceLevel = assessed.length === 0 ? "E0" : assessed.length === 1 ? "E1" : assessed.length === 2 ? "E2" : "E3";
     let status = "Недостаточно данных";
     let reason = "Нет ответов, которые позволяют оценить это действие.";
@@ -99,8 +105,11 @@
           : "H1";
 
     if (partial > 0) {
-      status = "Формируется";
-      reason = "В составном задании часть ответов верна, а часть содержит ошибки. Это частичный результат одного задания, а не повторное независимое наблюдение.";
+      status = "Частичный результат";
+      reason = "В составном задании есть и верные, и ошибочные ответы. Это один частичный результат, а не повторные независимые наблюдения.";
+    } else if (incomplete > 0) {
+      status = "Неполный результат";
+      reason = "В составном задании часть ответов пропущена. По неполному выполнению нельзя делать вывод об успешном освоении всего действия.";
     } else if (assessed.length === 1) {
       reason = assessed[0].outcome === "CORRECT"
         ? "Есть одно успешное выполнение. Устойчивость навыка не проверена."
@@ -139,6 +148,7 @@
       incorrectCount: incorrect,
       unansweredCount: observations.filter(item => item.outcome === "UNANSWERED").length,
       partialCount: partial,
+      incompleteCount: incomplete,
     };
   }
 
