@@ -37,9 +37,13 @@ export async function onRequestPost(context) {
     }
 
     const tokenData = JSON.parse(tokenDataRaw);
+    const requestHost = new URL(request.url).hostname;
+    const isPagesPreviewHost = requestHost.endsWith('.pages.dev') && requestHost !== 'reshai360-ru.pages.dev';
+    if (tokenData.previewTest === true && !isPagesPreviewHost) return Response.json({ success: false, message: 'Тестовый заказ доступен только в Preview.' }, { status: 403 });
+    const isPreviewTestOrder = tokenData.previewTest === true && isPagesPreviewHost;
     let grade7V2Snapshot = null;
     if (isGrade7V2Product(tokenData.productKey)) {
-      const completion = await completeGrade7InD1(env, token, input);
+      const completion = await completeGrade7InD1(env, token, input, request);
       if (completion.error) {
         const messages = {
           INVALID_TOKEN: "Ссылка на диагностику недействительна или истекла.",
@@ -93,7 +97,7 @@ export async function onRequestPost(context) {
     if (Number(tokenData.linkExpiresAt) !== previousLinkExpiry) changed = true;
 
     // Бонусный промокод создаётся сразу при завершении диагностики, независимо от PDF и email.
-    if (!tokenData.promoCodeIssued) {
+    if (!isPreviewTestOrder && !tokenData.promoCodeIssued) {
       const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
       let promoCode = null;
       for (let attempt = 0; attempt < 8 && !promoCode; attempt++) {
@@ -117,6 +121,8 @@ export async function onRequestPost(context) {
     }
 
     if (changed) await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
+
+    if (isPreviewTestOrder) return Response.json({ success: true, completed: true, completedAt: tokenData.completedAt || null, promoCode: null, previewTest: true, snapshot: grade7V2Snapshot || tokenData.answersSnapshot || null });
 
     const archiveKey = "completed-order:" + token;
     let previousArchive = {};
