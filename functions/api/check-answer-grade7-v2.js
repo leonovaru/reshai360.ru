@@ -100,10 +100,11 @@ export async function onRequestPost({ request, env }) {
         component_id, attempt_number, operation_id, submitted_value_json,
         correctness, source, created_at
       )
-      SELECT ?, ?, ?, ?, ?, ?, COALESCE(MAX(attempt_number), 0) + 1, ?, ?, ?, 'STUDENT_CHECK', ?
-      FROM diagnostic_attempts
-      WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND question_id = ?
-        AND NOT EXISTS (
+      SELECT ?, ?, ?, ?, ?, ?,
+        (SELECT COALESCE(MAX(attempt_number), 0) + 1 FROM diagnostic_attempts
+         WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND question_id = ?),
+        ?, ?, ?, 'STUDENT_CHECK', ?
+      WHERE NOT EXISTS (
           SELECT 1 FROM diagnostic_attempts
           WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND operation_id = ?
         )
@@ -118,8 +119,9 @@ export async function onRequestPost({ request, env }) {
         )
     `).bind(
       attemptId, token, diagnostic.diagnosticId, diagnostic.diagnosticVersion,
-      questionId, question.topicId, operationId, JSON.stringify(answer), correctness, now,
+      questionId, question.topicId,
       token, diagnostic.diagnosticId, diagnostic.diagnosticVersion, questionId,
+      operationId, JSON.stringify(answer), correctness, now,
       token, diagnostic.diagnosticId, diagnostic.diagnosticVersion, operationId,
       token, diagnostic.diagnosticId, diagnostic.diagnosticVersion, operationId, requestHash,
       token, diagnostic.diagnosticId, diagnostic.diagnosticVersion
