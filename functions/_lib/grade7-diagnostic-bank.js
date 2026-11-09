@@ -102,6 +102,19 @@ function parseReducedFraction(value) {
   return a === 1 ? [numerator, denominator] : null;
 }
 
+function parseMixedNumber(value) {
+  const normalized = String(value == null ? "" : value).trim().replace(/,/g, ".");
+  const match = normalized.match(/^([+-]?)(\\d+)\\s+(\\d+)\\/(\\d+)$/);
+  if (!match) return null;
+  const whole = Number(match[2]);
+  const numerator = Number(match[3]);
+  const denominator = Number(match[4]);
+  if (!Number.isSafeInteger(whole) || !Number.isSafeInteger(numerator) ||
+      !Number.isSafeInteger(denominator) || denominator <= 0 ||
+      numerator <= 0 || numerator >= denominator) return null;
+  return [match[1] === "-" ? -1 : 1, whole, numerator, denominator];
+}
+
 export function scoreGrade7Answer(question, submittedValue) {
   if (!question || !submittedValue || typeof submittedValue !== "object") return "UNASSESSED";
 
@@ -116,6 +129,15 @@ export function scoreGrade7Answer(question, submittedValue) {
   }
 
   if (question.questionType !== "text" || submittedValue.type !== "text") return "UNASSESSED";
+  if (question.answerMode === "exact_mixed_number") {
+    const actualMixed = parseMixedNumber(submittedValue.value);
+    const expectedMixed = parseMixedNumber(question.correctAnswer);
+    return actualMixed && expectedMixed &&
+      actualMixed.every((part, index) => part === expectedMixed[index])
+      ? "CORRECT"
+      : "INCORRECT";
+  }
+
   const actual = normalizeAnswerText(submittedValue.value);
   if (!actual) return "UNASSESSED";
   const expected = normalizeAnswerText(question.correctAnswer);
