@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 22;
+  const VERSION = 23;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -179,7 +179,7 @@
       "<th style='text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;'>Компетенция</th>" +
       "<th style='padding:7px;border-bottom:1px solid #cbd5e1;'>Темы с данными</th>" +
       "<th style='padding:7px;border-bottom:1px solid #cbd5e1;'>Повторные</th></tr></thead><tbody>" + rows + "</tbody></table>" +
-      "<div class='pdf-analytics-title'>Навыки с повторными наблюдениями</div>" + repeatedHtml +
+      "<div class='pdf-analytics-title'>Навыки с повторными свидетельствами или неполным результатом</div>" + repeatedHtml +
       "<div class='pdf-analytics-title' style='margin-top:16px;'>Ограничения интерпретации</div>" +
       "<ul style='font-size:.8em;line-height:1.35;margin:0;padding-left:20px;'>" + limitations + "</ul>" +
       "</div>";
@@ -201,7 +201,7 @@
       : (grade === "7"
           ? (diagnosticProfile && diagnosticProfile.evaluated === 0
               ? '<p style="margin:0;">Нет оценённых ответов.</p>'
-              : '<p style="margin:0;">Неверных ответов среди оценённых заданий нет.</p>')
+              : '<p style="margin:0;">Повторяющихся затруднений по имеющимся наблюдениям не выявлено. Единичные ошибки см. в подробных заданиях.</p>')
           : '<p style="margin:0;">Ошибок в решённых заданиях нет.</p>');
     const studyHtml = studyTopics.length
       ? "<ol>" + studyVisible.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>" + (studyTopics.length > topicLimit ? '<p style="margin:4px 0 0;">И ещё ' + (studyTopics.length - topicLimit) + ' тем — см. задания в подробной части отчёта.</p>' : "")
@@ -221,7 +221,7 @@
       ? "Доля правильных ответов по блокам (описательный показатель)"
       : "Результат диагностики";
     const repeatHeading = grade === "7"
-      ? "Темы с неверными итоговыми ответами:"
+      ? "Темы с повторяющимися затруднениями:"
       : "⚠️ Темы для повторения (ошибки / перебор):";
     const studyHeading = grade === "7"
       ? "Темы с пропущенными заданиями (недостаточно данных):"
@@ -431,6 +431,13 @@
       total += blockTotal;
       evaluated += blockEvaluated;
     });
+
+    if (grade === "7") {
+      repeatTopics.clear();
+      (diagnosticProfile && diagnosticProfile.skills || []).forEach(skill => {
+        if (skill.status === "Требует развития") repeatTopics.add(skill.topicName);
+      });
+    }
 
     const model = {
       grade,
