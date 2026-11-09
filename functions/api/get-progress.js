@@ -53,7 +53,7 @@ export async function onRequestGet({ request, env }) {
           answers: drafts.answers && typeof drafts.answers === "object" ? drafts.answers : {},
           stats: drafts.stats && typeof drafts.stats === "object" ? drafts.stats : {},
           marked: Array.isArray(marked) ? marked : [],
-          savedAt: Number(drafts.savedAt) || Date.parse(progress.updated_at || "") || null,
+          savedAt: Math.max(Number(drafts.savedAt) || 0, Date.parse(progress.updated_at || "") || 0) || null,
           revision: Number(progress.revision || 0)
         };
       }
