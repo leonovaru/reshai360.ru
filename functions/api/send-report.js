@@ -1,5 +1,6 @@
 import { ensurePaidOrderLinkExpiry, getOrderExpirationTtl } from "../_lib/telegram-payment.js";
 import { scheduleOrderSync } from "../_lib/google-sheets.js";
+import { getPaidGrade7Order, isGrade7V2Product } from "../_lib/grade7-d1-progress.js";
 
 const RESULTS_REPORT_VERSION = 10;
 
@@ -126,6 +127,24 @@ export async function onRequestPost(context) {
       );
     }
     const tokenData = JSON.parse(tokenDataRaw);
+    let authoritativeGrade7Snapshot = null;
+    if (isGrade7V2Product(tokenData.productKey)) {
+      const access = await getPaidGrade7Order(env, token);
+      if (access.error) return Response.json({ success: false, message: "Не удалось подтвердить завершённую диагностику." }, { status: access.status || 403 });
+      const completion = await env.DB.prepare(`
+        SELECT snapshot_json
+        FROM diagnostic_completions
+        WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
+      `).bind(token, access.diagnostic.diagnosticId, access.diagnostic.diagnosticVersion).first();
+      if (!completion?.snapshot_json) {
+        return Response.json({ success: false, message: "Сначала завершите диагностику и зафиксируйте результат." }, { status: 409 });
+      }
+      try { authoritativeGrade7Snapshot = JSON.parse(completion.snapshot_json); }
+      catch { return Response.json({ success: false, message: "Не удалось прочитать зафиксированный результат." }, { status: 500 }); }
+      // Для v2 серверный снимок и серверная оценка имеют приоритет над полями формы.
+      answersSnapshot = authoritativeGrade7Snapshot;
+      tokenData.answersSnapshot = authoritativeGrade7Snapshot;
+    }
     if (tokenData.isPaid !== true) {
       return Response.json(
         { success: false, message: "Отчёт доступен только после подтверждения оплаты." },
@@ -145,10 +164,16 @@ export async function onRequestPost(context) {
       );
     }
 
-    const scoreNumber = Number(score);
-    const totalNumber = Number(total);
+    const scoreNumber = authoritativeGrade7Snapshot
+      ? Number(authoritativeGrade7Snapshot.scoring?.correct || 0)
+      : Number(score);
+    const totalNumber = authoritativeGrade7Snapshot
+      ? Number(authoritativeGrade7Snapshot.reportMetadata?.questionCount || authoritativeGrade7Snapshot.questions?.length || 0)
+      : Number(total);
     const evaluatedRaw = formData.get("evaluated");
-    const evaluatedNumber = evaluatedRaw == null || evaluatedRaw === "" ? totalNumber : Number(evaluatedRaw);
+    const evaluatedNumber = authoritativeGrade7Snapshot
+      ? Number(authoritativeGrade7Snapshot.scoring?.correct || 0) + Number(authoritativeGrade7Snapshot.scoring?.incorrect || 0)
+      : (evaluatedRaw == null || evaluatedRaw === "" ? totalNumber : Number(evaluatedRaw));
 
     if (
       !Number.isFinite(scoreNumber) ||
