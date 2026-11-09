@@ -36,14 +36,3 @@ export async function onRequestGet({ env }) {
     );
   }
 }
-
-export async function onRequest({ request }) {
-  if (request.method === "GET") {
-    return onRequestGet({ env: {} });
-  }
-
-  return new Response(null, {
-    status: 405,
-    headers: { allow: "GET", "cache-control": "no-store" },
-  });
-}
