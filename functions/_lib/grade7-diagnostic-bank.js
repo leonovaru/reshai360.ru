@@ -72,3 +72,68 @@ export function listGrade7Questions(productKey) {
   });
   return result;
 }
+
+function normalizeAnswerText(value) {
+  return String(value == null ? "" : value).trim().replace(/\\s+/g, "").replace(/,/g, ".");
+}
+
+function parseNumericAnswer(value) {
+  const normalized = normalizeAnswerText(value);
+  if (/^[+-]?\\d+(?:\\.\\d+)?$/.test(normalized)) return Number(normalized);
+  const fraction = normalized.match(/^([+-]?\\d+)\\/([+-]?\\d+)$/);
+  if (fraction && Number(fraction[2]) !== 0) return Number(fraction[1]) / Number(fraction[2]);
+  return NaN;
+}
+
+function parseReducedFraction(value) {
+  const normalized = normalizeAnswerText(value);
+  const match = normalized.match(/^([+-]?\\d+)\\/(\\d+)$/);
+  if (!match) return null;
+  const numerator = Number(match[1]);
+  const denominator = Number(match[2]);
+  if (!Number.isSafeInteger(numerator) || !Number.isSafeInteger(denominator) || denominator <= 0) return null;
+  let a = Math.abs(numerator);
+  let b = denominator;
+  while (b) {
+    const remainder = a % b;
+    a = b;
+    b = remainder;
+  }
+  return a === 1 ? [numerator, denominator] : null;
+}
+
+export function scoreGrade7Answer(question, submittedValue) {
+  if (!question || !submittedValue || typeof submittedValue !== "object") return "UNASSESSED";
+
+  if (question.questionType === "radio") {
+    if (submittedValue.type !== "radio") return "UNASSESSED";
+    const selectedIndex = Number(submittedValue.value);
+    if (!Number.isInteger(selectedIndex) || selectedIndex < 0 ||
+        !Array.isArray(question.options) || selectedIndex >= question.options.length) {
+      return "UNASSESSED";
+    }
+    return selectedIndex === question.correctAnswer ? "CORRECT" : "INCORRECT";
+  }
+
+  if (question.questionType !== "text" || submittedValue.type !== "text") return "UNASSESSED";
+  const actual = normalizeAnswerText(submittedValue.value);
+  if (!actual) return "UNASSESSED";
+  const expected = normalizeAnswerText(question.correctAnswer);
+
+  if (question.answerMode === "exact_reduced_fraction") {
+    const actualFraction = parseReducedFraction(actual);
+    const expectedFraction = parseReducedFraction(expected);
+    return actualFraction && expectedFraction &&
+      actualFraction[0] === expectedFraction[0] &&
+      actualFraction[1] === expectedFraction[1]
+      ? "CORRECT"
+      : "INCORRECT";
+  }
+
+  const actualNumeric = parseNumericAnswer(actual);
+  const expectedNumeric = parseNumericAnswer(expected);
+  if (Number.isFinite(actualNumeric) && Number.isFinite(expectedNumeric)) {
+    return Math.abs(actualNumeric - expectedNumeric) < 1e-9 ? "CORRECT" : "INCORRECT";
+  }
+  return actual === expected ? "CORRECT" : "INCORRECT";
+}
