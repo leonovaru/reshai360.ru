@@ -99,34 +99,45 @@ export async function completeGrade7InD1(env, token, input) {
     `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion, operationId,
       requestHash, JSON.stringify({ success: true, completionId, completedAt }), now,
       token, diagnostic.diagnosticId, diagnostic.diagnosticVersion),
-    ...questionResults.filter(item => item.answer).map(item => env.DB.prepare(`
+    env.DB.prepare(`
       INSERT INTO diagnostic_attempts (
         attempt_id, token, diagnostic_id, diagnostic_version, question_id,
         component_id, attempt_number, operation_id, submitted_value_json,
         correctness, source, created_at
       )
-      SELECT ?, ?, ?, ?, ?, ?,
-        (SELECT COALESCE(MAX(attempt_number), 0) + 1 FROM diagnostic_attempts
-         WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND question_id = ?),
-        ?, ?, ?, 'FINALIZE_DRAFT', ?
+      SELECT
+        json_extract(value, '$.attemptId'), ?, ?, ?, json_extract(value, '$.questionId'),
+        json_extract(value, '$.topicId'),
+        (SELECT COALESCE(MAX(attempt_number), 0) + 1 FROM diagnostic_attempts a
+         WHERE a.token = ? AND a.diagnostic_id = ? AND a.diagnostic_version = ?
+           AND a.question_id = json_extract(value, '$.questionId')),
+        json_extract(value, '$.operationId'), json_extract(value, '$.answerJson'),
+        json_extract(value, '$.correctness'), 'FINALIZE_DRAFT', ?
+      FROM json_each(?)
       WHERE EXISTS (
         SELECT 1 FROM diagnostic_progress
         WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND status = 'IN_PROGRESS'
       )
         AND NOT EXISTS (
-          SELECT 1 FROM diagnostic_attempts
-          WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND question_id = ?
-            AND submitted_value_json = ?
+          SELECT 1 FROM diagnostic_attempts a
+          WHERE a.token = ? AND a.diagnostic_id = ? AND a.diagnostic_version = ?
+            AND a.question_id = json_extract(value, '$.questionId')
+            AND a.submitted_value_json = json_extract(value, '$.answerJson')
         )
     `).bind(
-      crypto.randomUUID(), token, diagnostic.diagnosticId, diagnostic.diagnosticVersion,
-      item.questionId, item.topicId,
-      token, diagnostic.diagnosticId, diagnostic.diagnosticVersion, item.questionId,
-      "final-" + completionId + "-" + item.questionId,
-      JSON.stringify(item.answer), item.correctness, now,
       token, diagnostic.diagnosticId, diagnostic.diagnosticVersion,
-      token, diagnostic.diagnosticId, diagnostic.diagnosticVersion, item.questionId, JSON.stringify(item.answer)
-    )),
+      token, diagnostic.diagnosticId, diagnostic.diagnosticVersion,
+      now, JSON.stringify(questionResults.filter(item => item.answer).map(item => ({
+        attemptId: crypto.randomUUID(),
+        questionId: item.questionId,
+        topicId: item.topicId,
+        operationId: "final-" + completionId + "-" + item.questionId,
+        answerJson: JSON.stringify(item.answer),
+        correctness: item.correctness
+      }))),
+      token, diagnostic.diagnosticId, diagnostic.diagnosticVersion,
+      token, diagnostic.diagnosticId, diagnostic.diagnosticVersion
+    ),
     env.DB.prepare(`
       INSERT INTO diagnostic_completions (
         completion_id, token, diagnostic_id, diagnostic_version,
