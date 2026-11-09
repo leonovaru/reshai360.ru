@@ -255,5 +255,5 @@
     ]),
   ];
 
-  globalThis.GRADE7_DIAGNOSTIC_DATA = { version: "2.4.10", fundament, primenenie };
+  globalThis.GRADE7_DIAGNOSTIC_DATA = { version: "2.4.11", fundament, primenenie };
 })();
