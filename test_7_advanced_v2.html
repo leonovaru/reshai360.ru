@@ -1279,7 +1279,7 @@
     const button = document.getElementById("resend-report-email");
     const status = document.getElementById("report-email-status");
     const email = String(input?.value || "").trim();
-    if (isPreviewMode) { if (status) status.textContent = "В режиме предпросмотра отправка писем отключена."; return; }
+    if (isPreviewMode || isServerPreviewMode) { if (status) status.textContent = "В режиме предпросмотра отправка писем отключена."; return; }
     if (!input || !input.checkValidity() || !email) {
       if (input) input.reportValidity();
       return;
