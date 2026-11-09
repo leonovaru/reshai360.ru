@@ -104,7 +104,7 @@ function parseReducedFraction(value) {
 
 function parseMixedNumber(value) {
   const normalized = String(value == null ? "" : value).trim().replace(/,/g, ".");
-  const match = normalized.match(/^([+-]?)(\\d+)\\s+(\\d+)\\/(\\d+)$/);
+  const match = normalized.match(/^([+-]?)(\d+)\s+(\d+)\/(\d+)$/);
   if (!match) return null;
   const whole = Number(match[2]);
   const numerator = Number(match[3]);
