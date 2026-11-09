@@ -5,13 +5,18 @@ export function isGrade7V2Product(productKey) {
   return productKey === "7_basic_v2" || productKey === "7_advanced_v2";
 }
 
-export async function getPaidGrade7Order(env, token) {
+export async function getPaidGrade7Order(env, token, request = null) {
   if (!env.TEST_TOKENS) return { error: "STORE_UNAVAILABLE", status: 503 };
   const raw = await env.TEST_TOKENS.get(token);
   if (!raw) return { error: "INVALID_TOKEN", status: 403 };
   let order;
   try { order = JSON.parse(raw); } catch { return { error: "INVALID_ORDER", status: 403 }; }
   if (order.isPaid !== true) return { error: "NOT_PAID", status: 403 };
+  if (order.previewTest === true) {
+    let hostname = "";
+    try { hostname = new URL(request?.url || "").hostname; } catch {}
+    if (!hostname.endsWith(".pages.dev") || hostname === "reshai360-ru.pages.dev") return { error: "PREVIEW_ONLY", status: 403 };
+  }
   if (!isGrade7V2Product(order.productKey)) return { error: "NOT_GRADE7_V2", status: 409, order };
   const expiresAt = ensurePaidOrderLinkExpiry(order);
   if (expiresAt <= Date.now()) return { error: "EXPIRED", status: 403 };
