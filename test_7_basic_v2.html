@@ -1010,7 +1010,8 @@
             html += `</div>`;
           } else {
             html += `<div class="input-row">`;
-            html += `<input type="text" class="text-input" id="${qId}" inputmode="decimal" placeholder="Введите ответ" onfocus="moveAnswerCaretToEnd(this)" oninput="sanitizeAnswerInput(this, /[^0-9,.\\-\\+\\*\\/]/g); updateMinusBtnState('${qId}'); saveQuizProgress();">`;
+            const answerNeedsTextInput = /[A-Za-zА-Яа-яЁё; =()]/.test(String(qDef.a ?? ""));
+            html += `<input type="text" class="text-input" id="${qId}" inputmode="${answerNeedsTextInput ? "text" : "decimal"}" placeholder="Введите ответ" onfocus="moveAnswerCaretToEnd(this)" oninput="sanitizeAnswerInput(this, /[^0-9,.\\-\\+\\*\\/;=()A-Za-zА-Яа-яЁё ]/g); updateMinusBtnState('${qId}'); saveQuizProgress();">`;
             html += `<button type="button" class="btn-minus-toggle" id="btn_toggle_${qId}" onpointerdown="event.preventDefault(); document.getElementById('${qId}').focus({preventScroll:true})" onclick="toggleMinus('${qId}')" title="Изменить знак (+/−)">±</button>`;
             html += `</div>`;
           }
