@@ -5,6 +5,8 @@ import { onRequestPost as checkAnswerHandler } from "./check-answer-grade7-v2.js
 import { onRequestPost as saveProgressHandler } from "./save-progress.js";
 import { onRequestGet as getProgressHandler } from "./get-progress.js";
 import { onRequestPost as completeDiagnosticHandler } from "./complete-diagnostic.js";
+import { onRequestPost as sendReportHandler } from "./send-report.js";
+import { onRequestPost as getReportHandler } from "./get-report.js";
 
 export async function onRequestGet() {
   try {
@@ -23,6 +25,8 @@ export async function onRequestGet() {
       typeof saveProgressHandler === "function" &&
       typeof getProgressHandler === "function" &&
       typeof completeDiagnosticHandler === "function" &&
+      typeof sendReportHandler === "function" &&
+      typeof getReportHandler === "function" &&
       basic.length > 0 && advanced.length > 0 &&
       basic.every(question => resolveGrade7Question("7_basic_v2", question.questionId)) &&
       advanced.every(question => resolveGrade7Question("7_advanced_v2", question.questionId)) &&
@@ -35,7 +39,9 @@ export async function onRequestGet() {
         checkAnswer: typeof checkAnswerHandler === "function",
         saveProgress: typeof saveProgressHandler === "function",
         getProgress: typeof getProgressHandler === "function",
-        completeDiagnostic: typeof completeDiagnosticHandler === "function"
+        completeDiagnostic: typeof completeDiagnosticHandler === "function",
+        sendReport: typeof sendReportHandler === "function",
+        getReport: typeof getReportHandler === "function"
       },
       products: {
         basic: { available: basic.length > 0, questionCount: basic.length },
