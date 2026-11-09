@@ -3,6 +3,7 @@ import { scheduleOrderSync } from "../_lib/google-sheets.js";
 import { getPaidGrade7Order, isGrade7V2Product } from "../_lib/grade7-d1-progress.js";
 
 const RESULTS_REPORT_VERSION = 10;
+const GRADE7_V2_REPORT_VERSION = 11;
 
 async function getPromoRecordsForEmail(env, email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
@@ -127,6 +128,7 @@ export async function onRequestPost(context) {
       );
     }
     const tokenData = JSON.parse(tokenDataRaw);
+    const reportVersion = isGrade7V2Product(tokenData.productKey) ? GRADE7_V2_REPORT_VERSION : RESULTS_REPORT_VERSION;
     let authoritativeGrade7Snapshot = null;
     if (isGrade7V2Product(tokenData.productKey)) {
       const access = await getPaidGrade7Order(env, token);
@@ -291,7 +293,7 @@ export async function onRequestPost(context) {
     }
 
     // Отдельный бот результатов получает PDF и ссылку на сохранённую диагностику.
-    if (env.TELEGRAM_RESULTS_BOT_TOKEN && env.TG_CHAT_ID && (!tokenData.resultsTelegramSentAt || Number(tokenData.resultsTelegramReportVersion || 0) < RESULTS_REPORT_VERSION)) {
+    if (env.TELEGRAM_RESULTS_BOT_TOKEN && env.TG_CHAT_ID && (!tokenData.resultsTelegramSentAt || Number(tokenData.resultsTelegramReportVersion || 0) < reportVersion)) {
       try {
         const testFiles = {
           '7': 'test_7_basic.html', '7_basic': 'test_7_basic.html', '7_advanced': 'test_7_advanced.html',
@@ -338,7 +340,7 @@ export async function onRequestPost(context) {
           tokenData.resultsTelegramSentAt = new Date().toISOString();
           tokenData.resultsTelegramStatus = "Отправлен";
           tokenData.resultsTelegramError = null;
-          tokenData.resultsTelegramReportVersion = RESULTS_REPORT_VERSION;
+          tokenData.resultsTelegramReportVersion = reportVersion;
           if (sentDocument.file_id) tokenData.resultsTelegramFileId = sentDocument.file_id;
           if (sentDocument.file_unique_id) tokenData.resultsTelegramFileUniqueId = sentDocument.file_unique_id;
           if (sentMessage.message_id) tokenData.resultsTelegramMessageId = sentMessage.message_id;
