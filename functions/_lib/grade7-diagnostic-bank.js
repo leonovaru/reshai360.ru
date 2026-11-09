@@ -29,7 +29,7 @@ export function resolveGrade7Question(productKey, questionId) {
   const diagnostic = getGrade7Diagnostic(productKey);
   if (!diagnostic) return null;
 
-  const match = /^q_(\\d+)_(\\d+)_(\\d+)$/.exec(String(questionId || ""));
+  const match = /^q_(\d+)_(\d+)_(\d+)$/.exec(String(questionId || ""));
   if (!match) return null;
 
   const blockIndex = Number(match[1]);
@@ -74,20 +74,20 @@ export function listGrade7Questions(productKey) {
 }
 
 function normalizeAnswerText(value) {
-  return String(value == null ? "" : value).trim().replace(/\\s+/g, "").replace(/,/g, ".");
+  return String(value == null ? "" : value).trim().replace(/\s+/g, "").replace(/,/g, ".");
 }
 
 function parseNumericAnswer(value) {
   const normalized = normalizeAnswerText(value);
-  if (/^[+-]?\\d+(?:\\.\\d+)?$/.test(normalized)) return Number(normalized);
-  const fraction = normalized.match(/^([+-]?\\d+)\\/([+-]?\\d+)$/);
+  if (/^[+-]?\d+(?:\.\d+)?$/.test(normalized)) return Number(normalized);
+  const fraction = normalized.match(/^([+-]?\d+)\/([+-]?\d+)$/);
   if (fraction && Number(fraction[2]) !== 0) return Number(fraction[1]) / Number(fraction[2]);
   return NaN;
 }
 
 function parseReducedFraction(value) {
   const normalized = normalizeAnswerText(value);
-  const match = normalized.match(/^([+-]?\\d+)\\/(\\d+)$/);
+  const match = normalized.match(/^([+-]?\d+)\/(\d+)$/);
   if (!match) return null;
   const numerator = Number(match[1]);
   const denominator = Number(match[2]);
