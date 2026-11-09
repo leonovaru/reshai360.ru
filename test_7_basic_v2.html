@@ -1487,6 +1487,11 @@
       if (!completionResponse.ok || !completionResult.success) {
         throw new Error(completionResult.message || 'Не удалось зафиксировать завершение диагностики.');
       }
+      // Для v2 PDF получает только неизменяемый снимок, возвращённый сервером.
+      if (completionResult.snapshot && completionResult.snapshot.schemaVersion === 2) {
+        localStorage.setItem(progressStorageKey, JSON.stringify(completionResult.snapshot));
+        serverProgressSnapshot = completionResult.snapshot;
+      }
       isCompletedView = true;
       document.getElementById('progress-save-control')?.remove();
       if (progressSyncTimer) {
