@@ -1364,8 +1364,12 @@
         theme.questions.forEach((qDef, qIdx) => {
           checkSingle(bIdx, tIdx, qIdx, true);
           const hasFinalAnswer = qDef.userText !== "Не введено" && qDef.userText !== "Не выбрано";
-          qDef.checkCount = hasFinalAnswer ? 1 : 0;
-          qDef.attemptsHistory = hasFinalAnswer ? [qDef.userText] : [];
+          const previousAttempts = Array.isArray(qDef.attemptsHistory) ? [...qDef.attemptsHistory] : [];
+          if (hasFinalAnswer && previousAttempts[previousAttempts.length - 1] !== qDef.userText) {
+            previousAttempts.push(qDef.userText);
+          }
+          qDef.checkCount = Math.max(Number(qDef.checkCount) || 0, hasFinalAnswer ? 1 : 0);
+          qDef.attemptsHistory = previousAttempts;
 
           const isSkipped = (qDef.userText === "Не введено" || qDef.userText === "Не выбрано");
           if (!isSkipped) blockEvaluated++;
