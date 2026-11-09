@@ -295,7 +295,7 @@
   }
 
   async function buildPages(model) {
-    const { firstPageHtml, cards, formatMath } = model;
+    const { firstPageHtml, cards, formatMath, grade, diagnosticProfile } = model;
     const measure = document.createElement("div");
     measure.style.cssText = "position:fixed;left:-12000px;top:0;width:714px;padding:0 0 1px;box-sizing:border-box;visibility:hidden;font:15px Arial,sans-serif;";
     document.body.appendChild(measure);
@@ -528,7 +528,7 @@
       formatMath
     };
     const firstPageHtml = makeFirstPage(model);
-    resultContainer.innerHTML = await buildPages({ firstPageHtml, cards, formatMath });
+    resultContainer.innerHTML = await buildPages({ firstPageHtml, cards, formatMath, grade, diagnosticProfile });
     if (global.MathJax && global.MathJax.typesetClear) {
       try { global.MathJax.typesetClear([resultContainer]); } catch (_) {}
     }
