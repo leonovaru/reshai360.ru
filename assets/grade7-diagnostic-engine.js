@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.8.5";
+  const VERSION = "7.8.6";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -35,7 +35,7 @@
   const TRANSFER_TOPICS = new Set(["T10"]);
   // Разные действия внутри одной темы не объединяем в один навык.
   const SPLIT_QUESTION_TOPICS = new Set([
-    "N05","N05","N08","N09","F01","F02","F03","F12","DF05","DF07","Z08","P07","P08","Z09","A07","T06","S01","S02","S05"
+    "N05","N08","N09","F01","F02","F03","F12","DF05","DF07","Z08","P07","P08","Z09","A07","T06","S01","S02","S05"
   ]);
   // Повторные задания одного типа действия могут давать повторное свидетельство.
   const REPEATED_SAME_SKILL_TOPICS = new Set(["N04","N06","N07","A05","F06"]);
@@ -85,10 +85,14 @@
       ? "В составном задании получены разные результаты. Для оценки навыка нужна отдельная проверка."
       : "Нет ответов, которые позволяют оценить это действие.";
     const hasContradictoryGroup = groupedResults.some(item => item.outcome === "CONTRADICTORY");
+    // H0/H2 требуют как минимум двух наблюдений; единичный ответ не задаёт гипотезу.
     let errorHypothesisLevel = partial > 0 || hasContradictoryGroup
       ? "H1"
-      : incorrect === 0 ? "H0"
-      : (incorrect >= 2 && correct === 0 ? "H2" : "H1");
+      : (assessed.length >= 2 && correct === assessed.length)
+        ? "H0"
+        : (assessed.length >= 2 && incorrect === assessed.length)
+          ? "H2"
+          : "H1";
 
     if (partial > 0) {
       status = "Формируется";
