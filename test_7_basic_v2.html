@@ -317,6 +317,7 @@
   let studentData = { fullName: "Ученик", email: "" };
   let currentToken = "";
   let isPreviewMode = false;
+  let isServerPreviewMode = false;
   let generatedPdfBlob = null;
 
   // Готовый PDF хранится в IndexedDB этого браузера до окончания 24-часового доступа.
@@ -379,7 +380,9 @@
   // Проверка токена при загрузке страницы (защита от пересылки и повторного прохождения)
   window.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
-    isPreviewMode = location.hostname.endsWith(".pages.dev") && location.hostname !== "reshai360-ru.pages.dev";
+    const isPagesPreviewHost = location.hostname.endsWith(".pages.dev") && location.hostname !== "reshai360-ru.pages.dev";
+    isServerPreviewMode = isPagesPreviewHost && params.get("server_preview") === "1" && Boolean(params.get("token"));
+    isPreviewMode = isPagesPreviewHost && !isServerPreviewMode;
     currentToken = params.get('token') || localStorage.getItem('testToken');
 
     let completedSnapshot = null;
@@ -394,6 +397,12 @@
       banner.style.cssText = "position:sticky;top:0;z-index:1000;padding:10px 14px;background:#fff7d6;color:#713f12;text-align:center;font-weight:700;border-bottom:1px solid #facc15;font-size:13px;";
       document.body.prepend(banner);
     } else {
+      if (isServerPreviewMode) {
+        const banner = document.createElement('div');
+        banner.textContent = 'ТЕСТОВЫЙ PREVIEW — серверное сохранение и проверка включены; отправка писем и Telegram отключена';
+        banner.style.cssText = 'position:sticky;top:0;z-index:1000;padding:10px 14px;background:#e0f2fe;color:#075985;text-align:center;font-weight:700;border-bottom:1px solid #7dd3fc;font-size:13px;';
+        document.body.prepend(banner);
+      }
       if (!currentToken) {
         alert("Доступ запрещен. Требуется оплата диагностики.");
         window.location.href = "index.html";
@@ -1185,7 +1194,7 @@
   }
   async function retryReportEmail() {
     const status = document.getElementById('report-email-status');
-    if (isPreviewMode) { if (status) status.textContent = "В режиме предпросмотра отправка писем отключена."; return; }
+    if (isPreviewMode || isServerPreviewMode) { if (status) status.textContent = "В режиме предпросмотра отправка писем отключена."; return; }
     if (!generatedPdfBlob || !currentToken || !status) return;
     status.textContent = 'Повторно отправляем письмо…';
     try {
@@ -1600,7 +1609,7 @@
     const downloadBtn = document.getElementById("downloadPdfBtn");
     try {
       let savedServerPdfBlob = null;
-      if (isCompletedView && currentToken && !isPreviewMode) {
+      if (isCompletedView && currentToken && !isPreviewMode && !isServerPreviewMode) {
         try {
           const savedReportResponse = await fetch('/api/get-report', {
             method: 'POST',
@@ -1640,12 +1649,12 @@
       if (downloadBtn) { downloadBtn.disabled = false; downloadBtn.innerText = "📄 Скачать PDF-отчёт"; }
 
       // Фиксируем цель Яндекс.Метрики: Тест решен до конца
-      if (!isPreviewMode && typeof ym !== 'undefined') {
+      if (!isPreviewMode && !isServerPreviewMode && typeof ym !== 'undefined') {
         ym(113852589, 'reachGoal', 'test_completed');
       }
 
       // Повторный просмотр завершённой диагностики не должен повторно отправлять тот же отчёт.
-      if (currentToken) {
+      if (currentToken && !isServerPreviewMode) {
         const formData = new FormData();
         formData.append('token', currentToken);
         if (studentData.email) formData.append('email', studentData.email);
