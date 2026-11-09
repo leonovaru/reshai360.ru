@@ -105,7 +105,10 @@ export async function completeGrade7InD1(env, token, input) {
         component_id, attempt_number, operation_id, submitted_value_json,
         correctness, source, created_at
       )
-      SELECT ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, 'FINALIZE_DRAFT', ?
+      SELECT ?, ?, ?, ?, ?, ?,
+        (SELECT COALESCE(MAX(attempt_number), 0) + 1 FROM diagnostic_attempts
+         WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND question_id = ?),
+        ?, ?, ?, 'FINALIZE_DRAFT', ?
       WHERE EXISTS (
         SELECT 1 FROM diagnostic_progress
         WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND status = 'IN_PROGRESS'
@@ -117,7 +120,9 @@ export async function completeGrade7InD1(env, token, input) {
         )
     `).bind(
       crypto.randomUUID(), token, diagnostic.diagnosticId, diagnostic.diagnosticVersion,
-      item.questionId, item.topicId, "final-" + completionId + "-" + item.questionId,
+      item.questionId, item.topicId,
+      token, diagnostic.diagnosticId, diagnostic.diagnosticVersion, item.questionId,
+      "final-" + completionId + "-" + item.questionId,
       JSON.stringify(item.answer), item.correctness, now,
       token, diagnostic.diagnosticId, diagnostic.diagnosticVersion,
       token, diagnostic.diagnosticId, diagnostic.diagnosticVersion, item.questionId, JSON.stringify(item.answer)
