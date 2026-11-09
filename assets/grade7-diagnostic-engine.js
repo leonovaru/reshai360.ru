@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.19.0";
+  const VERSION = "7.20.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -46,7 +46,7 @@
     "N05","N08","N09","F01","F02","F03","F12","DF01","DF02","DF03","DF04","DF05","DF07","Z08","P07","P08","Z09","A07","T06","S01","S02","S05"
   ]);
   // Повторные задания одного типа действия могут давать повторное свидетельство.
-  const REPEATED_SAME_SKILL_TOPICS = new Set(["N04","N06","N07","D04","D06","D07","A05"]);
+  const REPEATED_SAME_SKILL_TOPICS = new Set(["N04","N06","N07","D04","D06","D07","A05","DF06"]);
 
   const TOPIC_COMPETENCY = Object.create(null);
   Object.keys(TOPIC_GROUPS).forEach(competencyId => {
