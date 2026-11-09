@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.8.9";
+  const VERSION = "7.9.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -32,6 +32,13 @@
     "N01","N02","D03","F01","F02","DF01","P01","Z01","Z05","A01",
     "G01","G02","G03","G06","G07","G08","G09","G16","G18","G19"
   ]);
+  const KNOWLEDGE_QUESTION_INDEXES = {
+    F01: [0],
+    F02: [0],
+    A01: [0],
+    G01: [0],
+    G08: [0]
+  };
   const TRANSFER_TOPICS = new Set(["T10"]);
   // Разные действия внутри одной темы не объединяем в один навык.
   const SPLIT_QUESTION_TOPICS = new Set([
@@ -163,7 +170,7 @@
             skillId,
             primaryCompetency: competencyId,
             competencyName: COMPETENCIES[competencyId] || "Компетенция не размечена",
-            evidenceType: KNOWLEDGE_TOPICS.has(topicId) ? "KNOWLEDGE" : TRANSFER_TOPICS.has(topicId) ? "TRANSFER" : "EXECUTION",
+            evidenceType: (KNOWLEDGE_QUESTION_INDEXES[topicId] ? KNOWLEDGE_QUESTION_INDEXES[topicId].includes(questionIndex) : KNOWLEDGE_TOPICS.has(topicId)) ? "KNOWLEDGE" : TRANSFER_TOPICS.has(topicId) ? "TRANSFER" : "EXECUTION",
             answerFormat: question.type === "radio"
               ? "SINGLE_CHOICE"
               : (question.answerMode === "exact_reduced_fraction" ? "REDUCED_FRACTION" : "NUMERIC_TEXT"),
