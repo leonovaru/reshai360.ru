@@ -1057,6 +1057,23 @@
     return !!actual && !!target && actual[0] === target[0] && actual[1] === target[1];
   }
 
+  function isExactMixedNumberAnswer(value, expected) {
+    const parseMixed = input => {
+      const match = String(input == null ? "" : input).trim().replace(/\\s+/g, " ").match(/^([+-]?)(\\d+)\\s+(\\d+)\\/(\\d+)$/);
+      if (!match) return null;
+      const whole = Number(match[2]);
+      const numerator = Number(match[3]);
+      const denominator = Number(match[4]);
+      if (!Number.isSafeInteger(whole) || !Number.isSafeInteger(numerator) ||
+          !Number.isSafeInteger(denominator) || denominator <= 0 ||
+          numerator <= 0 || numerator >= denominator) return null;
+      return [match[1] === "-" ? -1 : 1, whole, numerator, denominator];
+    };
+    const actual = parseMixed(value);
+    const target = parseMixed(expected);
+    return !!actual && !!target && actual.every((part, index) => part === target[index]);
+  }
+
   async function checkSingle(bIdx, tIdx, qIdx, silent = false) {
     const qDef = quizData[bIdx].themes[tIdx].questions[qIdx];
     const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
@@ -1070,7 +1087,8 @@
       qDef.correctText = qDef.options[qDef.a];
     } else {
       const inputEl = document.getElementById(qId);
-      userAns = inputEl ? inputEl.value.trim().replace(/\s+/g, "").replace(/,/g, ".") : "";
+      const rawUserAns = inputEl ? inputEl.value.trim().replace(/,/g, ".") : "";
+      userAns = qDef.answerMode === "exact_mixed_number" ? rawUserAns.replace(/\s+/g, " ") : rawUserAns.replace(/\s+/g, "");
       formattedUserAns = userAns !== "" ? userAns.replace(/\./g, ",") : "Не введено";
       qDef.correctText = qDef.a;
     }
@@ -1135,7 +1153,7 @@
     }
 
     const expectedAnswer = qDef.type === "text"
-      ? String(qDef.a).trim().replace(/\s+/g, "").replace(/,/g, ".")
+      ? (qDef.answerMode === "exact_mixed_number" ? String(qDef.a).trim().replace(/\s+/g, " ").replace(/,/g, ".") : String(qDef.a).trim().replace(/\s+/g, "").replace(/,/g, "."))
       : qDef.a;
     const parseNumericAnswer = value => {
       const normalized = String(value).trim().replace(/,/g, ".");
@@ -1146,13 +1164,15 @@
     };
     const userNumeric = parseNumericAnswer(userAns);
     const expectedNumeric = parseNumericAnswer(expectedAnswer);
-    qDef.isCorrect = qDef.answerMode === "exact_reduced_fraction"
-      ? isExactReducedFractionAnswer(userAns, expectedAnswer)
-      : (qDef.type === "radio"
-          ? parseInt(userAns, 10) === qDef.a
-          : (Number.isFinite(userNumeric) && Number.isFinite(expectedNumeric)
-              ? Math.abs(userNumeric - expectedNumeric) < 1e-9
-              : userAns === expectedAnswer));
+    qDef.isCorrect = qDef.answerMode === "exact_mixed_number"
+      ? isExactMixedNumberAnswer(userAns, expectedAnswer)
+      : (qDef.answerMode === "exact_reduced_fraction"
+          ? isExactReducedFractionAnswer(userAns, expectedAnswer)
+          : (qDef.type === "radio"
+              ? parseInt(userAns, 10) === qDef.a
+              : (Number.isFinite(userNumeric) && Number.isFinite(expectedNumeric)
+                  ? Math.abs(userNumeric - expectedNumeric) < 1e-9
+                  : userAns === expectedAnswer)));
   }
   function downloadPDF() {
     if (!generatedPdfBlob) return;
