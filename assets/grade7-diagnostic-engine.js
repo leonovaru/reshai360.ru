@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.26.0";
+  const VERSION = "7.27.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -179,10 +179,10 @@
             evidenceType: (KNOWLEDGE_QUESTION_INDEXES[topicId] ? KNOWLEDGE_QUESTION_INDEXES[topicId].includes(questionIndex) : KNOWLEDGE_TOPICS.has(topicId)) ? "KNOWLEDGE" : TRANSFER_TOPICS.has(topicId) ? "TRANSFER" : "EXECUTION",
             answerFormat: question.type === "radio"
               ? "SINGLE_CHOICE"
-              : (question.answerMode === "exact_reduced_fraction" ? "REDUCED_FRACTION" : "NUMERIC_TEXT"),
+              : (question.answerMode === "exact_reduced_fraction" ? "REDUCED_FRACTION" : question.answerMode === "exact_mixed_number" ? "MIXED_NUMBER" : "NUMERIC_TEXT"),
             scoringRule: question.type === "radio"
               ? "OPTION_EXACT"
-              : (question.answerMode === "exact_reduced_fraction" ? "EXACT_REDUCED_FRACTION" : "NUMERIC_EQUIVALENCE"),
+              : (question.answerMode === "exact_reduced_fraction" ? "EXACT_REDUCED_FRACTION" : question.answerMode === "exact_mixed_number" ? "EXACT_MIXED_NUMBER" : "NUMERIC_EQUIVALENCE"),
             partialCreditRule: "NOT_AVAILABLE_FINAL_ANSWER_ONLY",
             outcome,
             diagnosticLimit: "Система видит только выбранный или введённый ответ; ход решения и причина ошибки не установлены.",
