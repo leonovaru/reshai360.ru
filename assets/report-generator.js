@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 21;
+  const VERSION = 22;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -157,12 +157,14 @@
       item.topicsWithEvidence + " / " + item.presentedTopics + "</td><td style='padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
       item.topicsWithRepeatedEvidence + "</td></tr>"
     ).join("");
-    const repeated = (profile.skills || []).filter(skill => skill.evidenceCount >= 2 || skill.partialCount > 0).slice(0, 10);
+    const repeated = (profile.skills || []).filter(skill => skill.evidenceCount >= 2 || skill.partialCount > 0 || skill.incompleteCount > 0).slice(0, 10);
     const repeatedHtml = repeated.length
       ? "<ul style='font-size:.86em;line-height:1.4;margin:0;padding-left:20px;'>" +
         repeated.map(skill =>
           "<li style='margin:5px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
-          (skill.evidenceCount > 0 ? " (" + skill.correctCount + " из " + skill.evidenceCount + " повторных наблюдений верно)." : ".") +
+          (skill.partialCount > 0 ? " (частичный результат: " + skill.correctCount + " верно, " + skill.incorrectCount + " с ошибкой)." :
+          skill.incompleteCount > 0 ? " (неполное выполнение: " + skill.unansweredCount + " ответов без ответа)." :
+          skill.evidenceCount > 0 ? " (верно: " + skill.correctCount + ", с ошибкой: " + skill.incorrectCount + ")." : ".") +
           " " + escapeHtml(skill.reason) + "</li>"
         ).join("") + "</ul>"
       : "<p style='font-size:.86em;line-height:1.4;margin:0;'>Пока недостаточно повторных наблюдений для устойчивых выводов по отдельным навыкам.</p>";
@@ -212,8 +214,8 @@
         "</b>; повторные наблюдения: <b>" + ((evidence.E2 || 0) + (evidence.E3 || 0)) +
         "</b>; без оценённых наблюдений: <b>" + (evidence.E0 || 0) + "</b>.</p>" +
         "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Повторяющиеся затруднения (H2): <b>" + ((diagnosticProfile.errorHypothesisSummary || {}).H2 || 0) +
-         "</b>; диагностические единицы с частичным результатом составного задания: <b>" + (diagnosticProfile.partialSkillCount || 0) +
-        "</b>. Подробная карта компетенций и повторных наблюдений приведена на следующей странице.</p>"
+         "</b>; диагностические единицы с частичным результатом: <b>" + (diagnosticProfile.partialSkillCount || 0) +
+        "</b>; с неполным выполнением: <b>" + (diagnosticProfile.skills || []).filter(skill => skill.incompleteCount > 0).length + "</b>. Подробная карта компетенций и повторных наблюдений приведена на следующей странице.</p>"
       : "";
     const blockHeading = grade === "7"
       ? "Доля правильных ответов по блокам (описательный показатель)"
