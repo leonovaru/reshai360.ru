@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.23.0";
+  const VERSION = "7.24.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -29,7 +29,7 @@
   };
 
   const KNOWLEDGE_TOPICS = new Set([
-    "N01","N02","D03","F01","F02","DF01","P01","Z01","Z05","A01",
+    "N01","N02","D03","F01","F02","DF01","P01","Z01","Z02","Z05","A01",
     "G01","G02","G03","G06","G07","G08","G09","G16","G18","G19"
   ]);
   const KNOWLEDGE_QUESTION_INDEXES = {
