@@ -1,6 +1,7 @@
 import { sendPaymentTelegramNotification, ensurePaidOrderLinkExpiry, getOrderExpirationTtl, ORDER_ACCESS_TTL_MS } from "../_lib/telegram-payment.js";
 import { sendDiagnosticLinkEmail } from "../_lib/diagnostic-link-email.js";
 import { scheduleOrderSync } from "../_lib/google-sheets.js";
+import { getPaidGrade7Order, isGrade7V2Product } from "../_lib/grade7-d1-progress.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -89,6 +90,50 @@ export async function onRequestPost(context) {
         return Response.json({ valid: false, message: 'Платёж отменён банком. Можно безопасно попробовать оплатить ещё раз.' }, { status: 409 });
       }
       return Response.json({ valid: false, message: 'Платёж ещё подтверждается.' }, { status: 402 });
+    }
+
+    if (isGrade7V2Product(tokenData.productKey)) {
+      const access = await getPaidGrade7Order(env, token);
+      if (access.error) {
+        return Response.json({ valid: false, message: "Не удалось проверить доступ к диагностике." }, {
+          status: access.status || 503
+        });
+      }
+      const diagnostic = access.diagnostic;
+      const progress = await env.DB.prepare(`
+        SELECT revision, status, drafts_json, marked_json, updated_at
+        FROM diagnostic_progress
+        WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
+      `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion).first();
+      const completion = await env.DB.prepare(`
+        SELECT snapshot_json, completed_at
+        FROM diagnostic_completions
+        WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
+      `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion).first();
+      if (progress) {
+        let drafts = {};
+        let marked = [];
+        try { drafts = JSON.parse(progress.drafts_json || "{}"); } catch {}
+        try { marked = JSON.parse(progress.marked_json || "[]"); } catch {}
+        progressSnapshot = {
+          version: 2,
+          answers: drafts.answers && typeof drafts.answers === "object" ? drafts.answers : {},
+          stats: {},
+          marked: Array.isArray(marked) ? marked : [],
+          savedAt: Number(drafts.savedAt) || Date.parse(progress.updated_at || "") || null,
+          revision: Number(progress.revision || 0)
+        };
+      }
+      if (completion?.snapshot_json) {
+        try {
+          tokenData.answersSnapshot = JSON.parse(completion.snapshot_json);
+          tokenData.isCompleted = true;
+          tokenData.completedAt = completion.completed_at || tokenData.completedAt;
+          orderDataChanged = true;
+        } catch {
+          return Response.json({ valid: false, message: "Не удалось прочитать сохранённый результат." }, { status: 500 });
+        }
+      }
     }
 
     // Если webhook не сработал или письмо не удалось отправить раньше,
