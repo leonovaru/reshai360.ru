@@ -253,12 +253,6 @@
       t("S05", "Представление данных", n("По таблице найди, сколько страниц прочитано за неделю: <table class='tex2jax_ignore' role='table' style='border-collapse:collapse;max-width:440px;width:100%;margin:10px 0;font-size:14px;'><caption style='caption-side:top;text-align:left;font-weight:700;padding:4px;'>Количество прочитанных страниц</caption><thead><tr><th scope='col' style='border:1px solid #94a3b8;padding:6px;'>День</th><th scope='col' style='border:1px solid #94a3b8;padding:6px;'>Страницы</th></tr></thead><tbody><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Пн</th><td style='border:1px solid #94a3b8;padding:6px;'>10</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Вт</th><td style='border:1px solid #94a3b8;padding:6px;'>15</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Ср</th><td style='border:1px solid #94a3b8;padding:6px;'>12</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Чт</th><td style='border:1px solid #94a3b8;padding:6px;'>18</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Пт</th><td style='border:1px solid #94a3b8;padding:6px;'>20</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Сб</th><td style='border:1px solid #94a3b8;padding:6px;'>15</td></tr><tr><th scope='row' style='border:1px solid #94a3b8;padding:6px;'>Вс</th><td style='border:1px solid #94a3b8;padding:6px;'>10</td></tr></tbody></table>", "100"), n("По той же таблице найди наибольшее количество страниц за день.", "20"))
 ,
     ]),
-    b("Блок 11. Логика и математическое рассуждение", [
-      t("R01", "Закономерности и последовательности", n("В последовательности 2, 6, 12, 20 каждое следующее число получается прибавлением следующего чётного числа. Какое число будет следующим? Введи только число.", "30")),
-      t("R02", "Проверка утверждений и контрпример", n("Приведи контрпример к утверждению: «если сумма двух натуральных чисел делится на 3, то каждое слагаемое делится на 3». Запиши пример в виде равенства без пробелов.", "1+2=3")),
-      t("R03", "Логический вывод и обратное утверждение", r("Если число делится на 6, то оно делится на 3. Число 27 делится на 3. Можно ли заключить, что 27 делится на 6?", ["Да", "Нет"], 1)),
-      t("R04", "Распределительное свойство при вычислениях", n("Вычисли удобным способом: 3 · 24 + 3 · 16.", "120"))
-    ]),
   ];
 
   globalThis.GRADE7_DIAGNOSTIC_DATA = { version: "2.4.8", fundament, primenenie };
