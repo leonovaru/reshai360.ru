@@ -6,8 +6,8 @@ async function sha256(value) {
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
-export async function completeGrade7InD1(env, token, input) {
-  const access = await getPaidGrade7Order(env, token);
+export async function completeGrade7InD1(env, token, input, request = null) {
+  const access = await getPaidGrade7Order(env, token, request);
   if (access.error) return { error: access.error, status: access.status };
   const diagnostic = access.diagnostic;
   const validated = validateGrade7ProgressSnapshot(input, access.order.productKey);
