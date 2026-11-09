@@ -113,7 +113,7 @@ export async function completeGrade7InD1(env, token, input) {
     diagnosticVersion: diagnostic.diagnosticVersion,
     bankVersion: diagnostic.diagnosticVersion,
     scoringVersion: "grade7-server-score-v1",
-    reportVersion: "grade7-report-v2",
+    reportVersion: "grade7-report-v3",
     completionId,
     completedAt,
     level: diagnostic.level,
