@@ -107,8 +107,8 @@ export async function onRequestPost(context) {
       if (!product.displayPrice) return new Response(JSON.stringify({ message: 'Промокод доступен только для поддерживаемых диагностик.' }), { status: 400 });
     }
 
-    // В тестовом режиме базовая сумма — 1 ₽. Из-за минимального платежа ЮKassa скидка не может уменьшить тестовое списание ниже 1 ₽.
-    const testMode = env.PAYMENT_TEST_MODE !== 'false';
+    // Тестовый режим включается только явным значением PAYMENT_TEST_MODE=true.
+    const testMode = env.PAYMENT_TEST_MODE === 'true';
     const promoDiscountPercent = promoRecord && Number.isFinite(Number(promoRecord.discountPercent)) && Number(promoRecord.discountPercent) > 0
       ? Math.max(0, Math.min(100, Number(promoRecord.discountPercent)))
       : 0;
