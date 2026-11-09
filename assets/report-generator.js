@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 24;
+  const VERSION = 25;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -45,6 +45,23 @@
     return !!actual && !!target && actual[0] === target[0] && actual[1] === target[1];
   }
 
+  function isExactMixedNumberAnswer(value, expected) {
+    const parseMixed = input => {
+      const match = String(input == null ? "" : input).trim().replace(/,/g, ".").replace(/\\s+/g, " ").match(/^([+-]?)(\\d+)\\s+(\\d+)\\/(\\d+)$/);
+      if (!match) return null;
+      const whole = Number(match[2]);
+      const numerator = Number(match[3]);
+      const denominator = Number(match[4]);
+      if (!Number.isSafeInteger(whole) || !Number.isSafeInteger(numerator) ||
+          !Number.isSafeInteger(denominator) || denominator <= 0 ||
+          numerator <= 0 || numerator >= denominator) return null;
+      return [match[1] === "-" ? -1 : 1, whole, numerator, denominator];
+    };
+    const actual = parseMixed(value);
+    const target = parseMixed(expected);
+    return !!actual && !!target && actual.every((part, index) => part === target[index]);
+  }
+
   function evaluateQuestion(question, questionId, answerSnapshot, statsSnapshot, formatMath, serverResults) {
     const savedAnswer = answerSnapshot && answerSnapshot.answers && answerSnapshot.answers[questionId];
     const stat = statsSnapshot && statsSnapshot[questionId] || {};
@@ -68,7 +85,9 @@
       correctAnswer = String(question.a == null ? "" : question.a).replace(/\./g, ",");
       isSkipped = !rawAnswer;
       if (rawAnswer) {
-        if (question.answerMode === "exact_reduced_fraction") {
+        if (question.answerMode === "exact_mixed_number") {
+          isCorrect = isExactMixedNumberAnswer(rawAnswer, question.a);
+        } else if (question.answerMode === "exact_reduced_fraction") {
           isCorrect = isExactReducedFractionAnswer(rawAnswer, question.a);
         } else {
           const userNumber = parseNumeric(rawAnswer);
