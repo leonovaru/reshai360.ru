@@ -694,7 +694,7 @@
         return;
       }
       const remote = result && result.success ? result.snapshot : null;
-      if (!remote || remote.version !== 1) return;
+      if (!remote || ![1, 2].includes(remote.version)) return;
 
       const remoteSavedAt = Number(remote.savedAt) || 0;
       if (remoteSavedAt <= lastAppliedServerSavedAt || localProgressDirty) return;
