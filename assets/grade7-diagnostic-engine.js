@@ -132,7 +132,6 @@
       incorrectCount: incorrect,
       unansweredCount: observations.filter(item => item.outcome === "UNANSWERED").length,
       partialCount: partial,
-      contradictory: false
     };
   }
 
