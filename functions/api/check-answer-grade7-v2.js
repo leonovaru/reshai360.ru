@@ -103,7 +103,7 @@ export async function onRequestPost({ request, env }) {
       SELECT ?, ?, ?, ?, ?, ?,
         (SELECT COALESCE(MAX(attempt_number), 0) + 1 FROM diagnostic_attempts
          WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND question_id = ?),
-        ?, ?, ?, 'STUDENT_CHECK', ?
+        ?, ?, ?, 'USER_CHECK', ?
       WHERE NOT EXISTS (
           SELECT 1 FROM diagnostic_attempts
           WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND operation_id = ?
