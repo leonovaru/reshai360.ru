@@ -970,7 +970,7 @@
           }
 
           html += `<div class="question-action-row">`;
-          html += `<button class="btn-check" id="btn_${qId}" onclick="checkSingle(${bIdx}, ${tIdx}, ${qIdx})">Сохранить ответ</button>`;
+          html += `<button class="btn-check" id="btn_${qId}" onclick="checkSingle(${bIdx}, ${tIdx}, ${qIdx})">Проверить ответ</button>`;
           html += '<button type="button" class="question-flag" id="flag_' + qId + '" onclick="toggleQuestionFlag(\'' + qId + '\')" aria-label="Отметить задание, чтобы вернуться позже" aria-pressed="false" title="Вернуться к заданию позже">⚑</button>';
           html += `<div class="feedback" id="feed_${qId}"></div></div>`;
           html += `</div>`;
@@ -1010,7 +1010,7 @@
     return !!actual && !!target && actual[0] === target[0] && actual[1] === target[1];
   }
 
-  function checkSingle(bIdx, tIdx, qIdx, silent = false) {
+  async function checkSingle(bIdx, tIdx, qIdx, silent = false) {
     const qDef = quizData[bIdx].themes[tIdx].questions[qIdx];
     const qId = `q_${bIdx}_${tIdx}_${qIdx}`;
     let userAns = "";
@@ -1033,21 +1033,57 @@
       qDef.isCorrect = undefined;
       if (!silent) {
         const feedEl = document.getElementById(`feed_${qId}`);
-        if (feedEl) feedEl.textContent = "Ответ пока не сохранён.";
+        if (feedEl) feedEl.textContent = "Сначала введите или выберите ответ.";
         saveQuizProgress();
         updateQuestionNavigator();
       }
       return;
     }
 
-    // Во время диагностики не показываем правильность ответа и не даём
-    // использовать повторные проверки как подсказку. Оценивание — только при завершении.
     if (!silent) {
-      qDef.isCorrect = null;
       const feedEl = document.getElementById(`feed_${qId}`);
-      if (feedEl) feedEl.textContent = "Ответ сохранён. Проверка будет после завершения диагностики.";
-      saveQuizProgress();
-      updateQuestionNavigator();
+      const button = document.getElementById(`btn_${qId}`);
+      if (isPreviewMode) {
+        if (feedEl) feedEl.textContent = "В режиме предпросмотра серверная проверка недоступна.";
+        return;
+      }
+      if (!currentToken) {
+        if (feedEl) feedEl.textContent = "Не удалось подтвердить доступ к диагностике. Обновите страницу.";
+        return;
+      }
+      if (button) { button.disabled = true; button.textContent = "Проверяем…"; }
+      if (feedEl) feedEl.textContent = "Сохраняем ответ и проверяем…";
+      try {
+        const saved = await saveQuizProgress(true);
+        if (!saved || localProgressDirty) throw new Error("Не удалось сохранить ответ. Проверьте соединение и повторите попытку.");
+        const response = await fetch("/api/check-answer-grade7-v2", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: currentToken,
+            questionId: qId,
+            operationId: crypto.randomUUID(),
+            answer: { type: qDef.type, value: userAns }
+          })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.success) throw new Error(result.message || "Не удалось проверить ответ.");
+        qDef.isCorrect = result.correctness === "CORRECT";
+        qDef.checkCount = (qDef.checkCount || 0) + 1;
+        qDef.attemptsHistory = [...(qDef.attemptsHistory || []), formattedUserAns];
+        if (feedEl) {
+          feedEl.textContent = result.feedback === "Верно" ? "Верно" : "Попробуй ещё раз";
+          feedEl.style.color = qDef.isCorrect ? "#15803d" : "#b45309";
+        }
+        updateQuestionNavigator();
+      } catch (error) {
+        if (feedEl) {
+          feedEl.textContent = error.message || "Не удалось проверить ответ. Попробуйте ещё раз.";
+          feedEl.style.color = "#b91c1c";
+        }
+      } finally {
+        if (button) { button.disabled = false; button.textContent = "Проверить ответ"; }
+      }
       return;
     }
 
@@ -1071,7 +1107,6 @@
               ? Math.abs(userNumeric - expectedNumeric) < 1e-9
               : userAns === expectedAnswer));
   }
-
   function downloadPDF() {
     if (!generatedPdfBlob) return;
     const url = URL.createObjectURL(generatedPdfBlob);
