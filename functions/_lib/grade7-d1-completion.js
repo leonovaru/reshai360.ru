@@ -83,7 +83,7 @@ export async function completeGrade7InD1(env, token, input) {
         ? String(submitted.value ?? "")
         : String(question.options[selectedIndex]);
     } else if (submitted?.type === "text") {
-      displayValue = String(submitted.value ?? "").trim().replace(/\\./g, ",");
+      displayValue = String(submitted.value ?? "").trim().replace(/\./g, ",");
     }
     attemptsByQuestion.get(row.question_id).push({
       displayValue,
