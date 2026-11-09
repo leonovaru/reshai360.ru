@@ -27,6 +27,20 @@ export async function onRequestGet({ request, env }) {
         FROM diagnostic_completions
         WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
       `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion).first();
+      const attemptRows = await env.DB.prepare(`
+        SELECT attempt_id, question_id, attempt_number, correctness, source, created_at
+        FROM diagnostic_attempts
+        WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
+        ORDER BY created_at ASC, attempt_number ASC
+      `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion).all();
+      const attempts = (attemptRows.results || []).map(row => ({
+        attemptId: row.attempt_id,
+        questionId: row.question_id,
+        attemptNumber: Number(row.attempt_number || 0),
+        correctness: row.correctness,
+        source: row.source,
+        createdAt: row.created_at
+      }));
       let snapshot = null;
       if (progress) {
         let drafts = {};
@@ -50,6 +64,7 @@ export async function onRequestGet({ request, env }) {
       return Response.json({
         success: true,
         snapshot,
+        attempts,
         completed,
         completedAt: completion?.completed_at || tokenData.completedAt || null,
         answersSnapshot
