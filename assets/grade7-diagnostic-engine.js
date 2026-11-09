@@ -308,7 +308,8 @@
       '</b>; с повторными наблюдениями: <b>' + ((profile.evidenceSummary.E2 || 0) + (profile.evidenceSummary.E3 || 0)) +
       '</b>; без оценённых наблюдений: <b>' + (profile.evidenceSummary.E0 || 0) + '</b>.</p>' +
       '<p style="margin:0 0 10px;line-height:1.5;">Повторяющиеся затруднения по повторным наблюдениям (H2): <b>' + (profile.errorHypothesisSummary.H2 || 0) +
-      '</b>; диагностические единицы с частичным результатом составного задания: <b>' + (profile.partialSkillCount || 0) + '</b>.</p>' +
+      '</b>; диагностические единицы с частичным результатом: <b>' + (profile.partialSkillCount || 0) +
+      '</b>; с неполным выполнением: <b>' + profile.skills.filter(skill => skill.incompleteCount > 0).length + '</b>.</p>' +
       '<p style="margin:0 0 12px;line-height:1.5;color:#475569;">Единичный ответ не подтверждает устойчивое владение навыком. Процент правильных ответов — описательный показатель, а не уровень сформированности.</p>' +
       '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.92em;"><thead><tr><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Компетенция</th><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Темы с данными</th><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Повторные наблюдения</th></tr></thead><tbody>' +
       rows + '</tbody></table></div>' +
