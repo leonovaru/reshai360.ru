@@ -62,6 +62,48 @@ export async function completeGrade7InD1(env, token, input) {
     });
   }
 
+  // История проверок берётся только из D1; данные браузера не могут её подменить.
+  const attemptRows = await env.DB.prepare(`
+    SELECT question_id, submitted_value_json, correctness, attempt_number
+    FROM diagnostic_attempts
+    WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ? AND source = 'USER_CHECK'
+    ORDER BY question_id ASC, attempt_number ASC
+  `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion).all();
+  const questionsById = new Map(questions.map(question => [question.questionId, question]));
+  const attemptsByQuestion = new Map();
+  for (const row of attemptRows.results || []) {
+    if (!attemptsByQuestion.has(row.question_id)) attemptsByQuestion.set(row.question_id, []);
+    let submitted = null;
+    try { submitted = JSON.parse(row.submitted_value_json || "null"); } catch {}
+    const question = questionsById.get(row.question_id);
+    let displayValue = "";
+    if (submitted?.type === "radio") {
+      const selectedIndex = Number(submitted.value);
+      displayValue = question?.options?.[selectedIndex] == null
+        ? String(submitted.value ?? "")
+        : String(question.options[selectedIndex]);
+    } else if (submitted?.type === "text") {
+      displayValue = String(submitted.value ?? "").trim().replace(/\\./g, ",");
+    }
+    attemptsByQuestion.get(row.question_id).push({
+      displayValue,
+      correctness: row.correctness,
+      attemptNumber: Number(row.attempt_number || 0)
+    });
+  }
+  const correctnessByQuestion = new Map(questionResults.map(item => [item.questionId, item.correctness]));
+  const stats = {};
+  for (const question of questions) {
+    const history = attemptsByQuestion.get(question.questionId) || [];
+    const finalCorrect = correctnessByQuestion.get(question.questionId) === "CORRECT";
+    stats[question.questionId] = {
+      checkCount: history.length,
+      attemptsHistory: history.map(item => item.displayValue).filter(Boolean).slice(-20),
+      isCorrect: finalCorrect,
+      selfCorrected: finalCorrect && history.some(item => item.correctness === "INCORRECT")
+    };
+  }
+
   const completedAt = new Date().toISOString();
   const completionId = crypto.randomUUID();
   const operationId = crypto.randomUUID();
@@ -78,7 +120,7 @@ export async function completeGrade7InD1(env, token, input) {
     questions: questionResults,
     answers,
     marked: validated.snapshot.marked,
-    stats: {},
+    stats,
     scoring,
     reportMetadata: { questionCount: questions.length, answeredCount: Object.keys(answers).length }
   };
