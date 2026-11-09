@@ -669,6 +669,49 @@
   }
 
 
+  function restoreGrade7ServerAttempts(attempts) {
+    const byQuestion = new Map();
+    (Array.isArray(attempts) ? attempts : []).forEach(attempt => {
+      if (!attempt || attempt.source !== "USER_CHECK" || !attempt.questionId) return;
+      if (!byQuestion.has(attempt.questionId)) byQuestion.set(attempt.questionId, []);
+      byQuestion.get(attempt.questionId).push(attempt);
+    });
+    questionNavigation.forEach(item => {
+      const history = byQuestion.get(item.id) || [];
+      if (!history.length) return;
+      item.qDef.checkCount = history.length;
+      item.qDef.attemptsHistory = history.map(attempt => {
+        const submitted = attempt.submittedValue;
+        if (!submitted || typeof submitted !== "object") return "";
+        if (submitted.type === "radio") {
+          const index = Number(submitted.value);
+          return Number.isInteger(index) && item.qDef.options[index] !== undefined
+            ? item.qDef.options[index] : String(submitted.value ?? "");
+        }
+        return String(submitted.value ?? "").replace(/\./g, ",");
+      }).filter(Boolean);
+      const latest = history[history.length - 1];
+      const current = getQuestionAnswer(item.id, item.qDef);
+      const sameAnswer = current && latest.submittedValue &&
+        current.type === latest.submittedValue.type &&
+        (current.type === "radio"
+          ? String(current.value) === String(latest.submittedValue.value)
+          : String(current.value).trim().replace(/\s+/g, "").replace(/,/g, ".") ===
+            String(latest.submittedValue.value).trim().replace(/\s+/g, "").replace(/,/g, "."));
+      const feedback = document.getElementById("feed_" + item.id);
+      if (sameAnswer) {
+        item.qDef.isCorrect = latest.correctness === "CORRECT";
+        if (feedback) {
+          feedback.textContent = item.qDef.isCorrect ? "Верно" : "Попробуй ещё раз";
+          feedback.style.color = item.qDef.isCorrect ? "#15803d" : "#b45309";
+        }
+      } else {
+        item.qDef.isCorrect = null;
+        if (feedback) feedback.textContent = "";
+      }
+    });
+  }
+
   async function syncProgressFromServer() {
     if (isPreviewMode || !currentToken || !progressStorageKey || isCompletedView || progressSyncInFlight || document.visibilityState === "hidden") return;
     progressSyncInFlight = true;
@@ -701,6 +744,7 @@
       serverProgressSnapshot = remote;
       localStorage.setItem(progressStorageKey, JSON.stringify(remote));
       restoreQuizProgress();
+      restoreGrade7ServerAttempts(result.attempts);
       questionNavigation.forEach(item => {
         const button = document.getElementById("flag_" + item.id);
         const active = markedQuestions.has(item.id);
