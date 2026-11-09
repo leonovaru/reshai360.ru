@@ -30,12 +30,23 @@ export async function completeGrade7InD1(env, token, input) {
   `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion).first();
   if (progress && progress.status !== "IN_PROGRESS") return { error: "ALREADY_LOCKED", status: 409 };
 
+  let savedDrafts = {};
+  try { savedDrafts = JSON.parse(progress?.drafts_json || "{}"); } catch {}
+  const mergedAnswers = {
+    ...(savedDrafts.answers && typeof savedDrafts.answers === "object" && !Array.isArray(savedDrafts.answers)
+      ? savedDrafts.answers : {})
+  };
+  for (const [questionId, answer] of Object.entries(validated.snapshot.answers)) {
+    if (answer === null) delete mergedAnswers[questionId];
+    else mergedAnswers[questionId] = answer;
+  }
+
   const questions = listGrade7Questions(access.order.productKey);
   const questionResults = [];
   const answers = {};
   const scoring = { correct: 0, incorrect: 0, unassessed: 0 };
   for (const question of questions) {
-    const answer = validated.snapshot.answers[question.questionId] || null;
+    const answer = mergedAnswers[question.questionId] || null;
     const correctness = answer ? scoreGrade7Answer(question, answer) : "UNASSESSED";
     if (answer) answers[question.questionId] = answer;
     if (correctness === "CORRECT") scoring.correct++;
@@ -67,7 +78,7 @@ export async function completeGrade7InD1(env, token, input) {
     questions: questionResults,
     answers,
     marked: validated.snapshot.marked,
-    stats: validated.snapshot.stats,
+    stats: {},
     scoring,
     reportMetadata: { questionCount: questions.length, answeredCount: Object.keys(answers).length }
   };
@@ -85,7 +96,7 @@ export async function completeGrade7InD1(env, token, input) {
       ) VALUES (?, ?, ?, 1, 'IN_PROGRESS', ?, ?, ?, 2)
       ON CONFLICT(token, diagnostic_id, diagnostic_version) DO NOTHING
     `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion,
-      JSON.stringify({ version: 2, answers, stats: validated.snapshot.stats }), JSON.stringify(snapshot.marked), operationId),
+      JSON.stringify({ version: 2, answers, stats: {} }), JSON.stringify(snapshot.marked), operationId),
     env.DB.prepare(`
       INSERT INTO diagnostic_operations (
         token, diagnostic_id, diagnostic_version, operation_id,
