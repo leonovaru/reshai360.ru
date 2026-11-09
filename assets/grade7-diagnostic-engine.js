@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.8.6";
+  const VERSION = "7.8.7";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -81,12 +81,9 @@
     const partial = assessed.filter(item => item.outcome === "PARTIAL").length;
     const evidenceLevel = assessed.length === 0 ? "E0" : assessed.length === 1 ? "E1" : "E2";
     let status = "Недостаточно данных";
-    let reason = groupedResults.some(item => item.outcome === "CONTRADICTORY")
-      ? "В составном задании получены разные результаты. Для оценки навыка нужна отдельная проверка."
-      : "Нет ответов, которые позволяют оценить это действие.";
-    const hasContradictoryGroup = groupedResults.some(item => item.outcome === "CONTRADICTORY");
+    let reason = "Нет ответов, которые позволяют оценить это действие.";
     // H0/H2 требуют как минимум двух наблюдений; единичный ответ не задаёт гипотезу.
-    let errorHypothesisLevel = partial > 0 || hasContradictoryGroup
+    let errorHypothesisLevel = partial > 0
       ? "H1"
       : (assessed.length >= 2 && correct === assessed.length)
         ? "H0"
@@ -135,7 +132,7 @@
       incorrectCount: incorrect,
       unansweredCount: observations.filter(item => item.outcome === "UNANSWERED").length,
       partialCount: partial,
-      contradictory: groupedResults.some(item => item.outcome === "CONTRADICTORY")
+      contradictory: false
     };
   }
 
@@ -255,7 +252,7 @@
       },
       statusCounts,
       errorHypothesisSummary,
-      contradictorySkillCount: skills.filter(skill => skill.contradictory).length,
+      partialSkillCount: skills.filter(skill => skill.partialCount > 0).length,
       competencies,
       skills,
       observations,
@@ -276,7 +273,7 @@
         item.topicsWithEvidence + " из " + item.presentedTopics + "</td><td>" +
         item.topicsWithRepeatedEvidence + "</td></tr>";
     }).join("");
-    const repeatedSkills = profile.skills.filter(skill => skill.evidenceCount >= 2 || skill.contradictory).slice(0, 8);
+    const repeatedSkills = profile.skills.filter(skill => skill.evidenceCount >= 2 || skill.partialCount > 0).slice(0, 8);
     const repeatedHtml = repeatedSkills.length
       ? "<ul style='margin:8px 0 0;padding-left:20px;'>" + repeatedSkills.map(skill =>
           "<li style='margin:4px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
@@ -293,7 +290,7 @@
       '</b>; с повторными наблюдениями: <b>' + ((profile.evidenceSummary.E2 || 0) + (profile.evidenceSummary.E3 || 0)) +
       '</b>; без оценённых наблюдений: <b>' + (profile.evidenceSummary.E0 || 0) + '</b>.</p>' +
       '<p style="margin:0 0 10px;line-height:1.5;">Повторяющиеся затруднения по повторным наблюдениям (H2): <b>' + (profile.errorHypothesisSummary.H2 || 0) +
-      '</b>; диагностические единицы с противоречивыми результатами: <b>' + (profile.contradictorySkillCount || 0) + '</b>.</p>' +
+      '</b>; диагностические единицы с частичным результатом составного задания: <b>' + (profile.partialSkillCount || 0) + '</b>.</p>' +
       '<p style="margin:0 0 12px;line-height:1.5;color:#475569;">Единичный ответ не подтверждает устойчивое владение навыком. Процент правильных ответов — описательный показатель, а не уровень сформированности.</p>' +
       '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.92em;"><thead><tr><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Компетенция</th><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Темы с данными</th><th style="text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;">Повторные наблюдения</th></tr></thead><tbody>' +
       rows + '</tbody></table></div>' +
