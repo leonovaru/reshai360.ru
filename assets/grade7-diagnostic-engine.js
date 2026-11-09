@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.8.8";
+  const VERSION = "7.8.9";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -79,7 +79,7 @@
     const correct = assessed.filter(item => item.outcome === "CORRECT").length;
     const incorrect = assessed.filter(item => item.outcome === "INCORRECT").length;
     const partial = assessed.filter(item => item.outcome === "PARTIAL").length;
-    const evidenceLevel = assessed.length === 0 ? "E0" : assessed.length === 1 ? "E1" : "E2";
+    const evidenceLevel = assessed.length === 0 ? "E0" : assessed.length === 1 ? "E1" : assessed.length === 2 ? "E2" : "E3";
     let status = "Недостаточно данных";
     let reason = "Нет ответов, которые позволяют оценить это действие.";
     // H0/H2 требуют как минимум двух наблюдений; единичный ответ не задаёт гипотезу.
