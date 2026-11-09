@@ -705,8 +705,11 @@
         current.type === latest.submittedValue.type &&
         (current.type === "radio"
           ? String(current.value) === String(latest.submittedValue.value)
-          : String(current.value).trim().replace(/\s+/g, "").replace(/,/g, ".") ===
-            String(latest.submittedValue.value).trim().replace(/\s+/g, "").replace(/,/g, "."));
+          : (item.qDef.answerMode === "exact_mixed_number"
+              ? String(current.value).trim().replace(/\s+/g, " ").replace(/,/g, ".") ===
+                String(latest.submittedValue.value).trim().replace(/\s+/g, " ").replace(/,/g, ".")
+              : String(current.value).trim().replace(/\s+/g, "").replace(/,/g, ".") ===
+                String(latest.submittedValue.value).trim().replace(/\s+/g, "").replace(/,/g, ".")));
       const feedback = document.getElementById("feed_" + item.id);
       if (sameAnswer) {
         item.qDef.isCorrect = latest.correctness === "CORRECT";
