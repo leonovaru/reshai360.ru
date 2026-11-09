@@ -1,5 +1,5 @@
 export async function onRequestGet({ env }) {
-  const testMode = env.PAYMENT_TEST_MODE !== 'false';
+  const testMode = env.PAYMENT_TEST_MODE === 'true';
   return Response.json({
     testMode,
     paymentAmount: testMode ? '1.00' : null,
