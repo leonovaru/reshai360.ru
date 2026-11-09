@@ -45,7 +45,7 @@
     return !!actual && !!target && actual[0] === target[0] && actual[1] === target[1];
   }
 
-  function evaluateQuestion(question, questionId, answerSnapshot, statsSnapshot, formatMath) {
+  function evaluateQuestion(question, questionId, answerSnapshot, statsSnapshot, formatMath, serverResults) {
     const savedAnswer = answerSnapshot && answerSnapshot.answers && answerSnapshot.answers[questionId];
     const stat = statsSnapshot && statsSnapshot[questionId] || {};
     let rawAnswer = "";
@@ -78,6 +78,12 @@
             : normalizeAnswer(rawAnswer) === normalizeAnswer(question.a);
         }
       }
+    }
+
+    const serverResult = serverResults && serverResults.get(questionId);
+    if (serverResult) {
+      isSkipped = serverResult.correctness === "UNASSESSED";
+      isCorrect = serverResult.correctness === "CORRECT";
     }
 
     const history = Array.isArray(stat.attemptsHistory) ? stat.attemptsHistory.map(String) : [];
@@ -392,6 +398,11 @@
     if (!Array.isArray(quizData) || !resultContainer) throw new Error("Недостаточно данных для формирования отчёта.");
     const answersSnapshot = snapshot && typeof snapshot === "object" ? snapshot : {};
     const statsSnapshot = answersSnapshot.stats || {};
+    const serverResults = new Map(
+      (Array.isArray(answersSnapshot.questions) ? answersSnapshot.questions : [])
+        .filter(item => item && typeof item.questionId === "string")
+        .map(item => [item.questionId, item])
+    );
     const diagnosticProfile = suppliedDiagnosticProfile || answersSnapshot.diagnosticProfile || null;
     const match = String(global.location && global.location.pathname || "").match(/test_(\d+)_(basic|advanced)/i);
     const grade = match ? match[1] : "";
@@ -416,7 +427,7 @@
         (theme.questions || []).forEach((question, questionIndex) => {
           questionNumber++;
           const id = "q_" + blockIndex + "_" + themeIndex + "_" + questionIndex;
-          const result = evaluateQuestion(question, id, answersSnapshot, statsSnapshot, formatMath);
+          const result = evaluateQuestion(question, id, answersSnapshot, statsSnapshot, formatMath, serverResults);
           if (result.isCorrect) blockCorrect++;
           blockTotal++;
           if (!result.isSkipped) blockEvaluated++;
