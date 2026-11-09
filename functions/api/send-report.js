@@ -3,7 +3,7 @@ import { scheduleOrderSync } from "../_lib/google-sheets.js";
 import { getPaidGrade7Order, isGrade7V2Product } from "../_lib/grade7-d1-progress.js";
 
 const RESULTS_REPORT_VERSION = 10;
-const GRADE7_V2_REPORT_VERSION = 11;
+const GRADE7_V2_REPORT_VERSION = 12;
 
 async function getPromoRecordsForEmail(env, email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
