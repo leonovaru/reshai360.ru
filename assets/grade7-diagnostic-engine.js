@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "7.12.0";
+  const VERSION = "7.13.0";
   const COMPETENCIES = {
     M01: "Числовая грамотность",
     M02: "Вычислительные навыки",
@@ -203,6 +203,7 @@
         skillId,
         topicId: items[0].topicId,
         topicName: items[0].topicName,
+        skillLabel: SPLIT_QUESTION_TOPICS.has(items[0].topicId) ? items[0].topicName + " · действие " + (items[0].questionIndex + 1) : items[0].topicName,
         blockName: items[0].blockName,
         competencyId: items[0].primaryCompetency,
         competencyName: items[0].competencyName,
@@ -217,6 +218,7 @@
         if (!relatedTopics.has(skill.topicId)) relatedTopics.set(skill.topicId, []);
         relatedTopics.get(skill.topicId).push(skill);
       });
+      const competencySkills = skills.filter(skill => skill.competencyId === competencyId);
       const topicProfiles = Array.from(relatedTopics.values());
       return {
         competencyId,
@@ -225,7 +227,11 @@
         presentedTopics: topicProfiles.length,
         topicsWithEvidence: topicProfiles.filter(units => units.some(skill => skill.evidenceCount > 0)).length,
         topicsWithRepeatedEvidence: topicProfiles.filter(units => units.some(skill => skill.evidenceCount >= 2)).length,
-        topicsInsufficientData: topicProfiles.filter(units => units.every(skill => skill.evidenceCount < 2)).length
+        topicsInsufficientData: topicProfiles.filter(units => units.every(skill => skill.evidenceCount < 2)).length,
+        presentedUnits: competencySkills.length,
+        unitsWithEvidence: competencySkills.filter(skill => skill.evidenceCount > 0).length,
+        unitsWithRepeatedEvidence: competencySkills.filter(skill => skill.evidenceCount >= 2).length,
+        unitsInsufficientData: competencySkills.filter(skill => skill.evidenceCount < 2).length
       };
     });
 
@@ -281,8 +287,8 @@
     if (!profile) return "";
     const rows = profile.competencies.map(item => {
       return "<tr><td>" + escapeHtml(item.competencyId + " · " + item.name) + "</td><td>" +
-        item.topicsWithEvidence + " из " + item.presentedTopics + "</td><td>" +
-        item.topicsWithRepeatedEvidence + "</td></tr>";
+        item.unitsWithEvidence + " из " + item.presentedUnits + "</td><td>" +
+        item.unitsWithRepeatedEvidence + "</td></tr>";
     }).join("");
     const repeatedSkills = profile.skills.filter(skill => skill.evidenceCount >= 2 || skill.partialCount > 0 || skill.incompleteCount > 0).slice(0, 8);
     const repeatedHtml = repeatedSkills.length
@@ -293,7 +299,7 @@
           skill.evidenceCount > 0 ? " (верно: " + skill.correctCount + ", с ошибкой: " + skill.incorrectCount + "). " : ". ") +
           escapeHtml(skill.reason) + "</li>"
         ).join("") + "</ul>"
-      : "<p style='margin:8px 0 0;color:#475569;'>В текущем наборе пока недостаточно повторных наблюдений для устойчивых выводов по отдельным навыкам.</p>";
+      : "<p style='margin:8px 0 0;color:#475569;'>В текущем наборе пока недостаточно повторных наблюдений для устойчивых выводов по отдельным диагностическим единицам.</p>";
     return '<section class="g7-diagnostic-summary" style="margin:24px 0;padding:18px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#1e293b;">' +
       '<h3 style="margin:0 0 8px;color:#1b365d;font-size:1.15em;">Диагностическая интерпретация</h3>' +
       '<p style="margin:0 0 8px;color:#64748b;font-size:.82em;">Методика ' + escapeHtml(profile.version) + ' · банк заданий ' + escapeHtml(profile.bankVersion) + '</p>' +
