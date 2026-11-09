@@ -28,7 +28,7 @@ export async function onRequestGet({ request, env }) {
         WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
       `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion).first();
       const attemptRows = await env.DB.prepare(`
-        SELECT attempt_id, question_id, attempt_number, correctness, source, created_at
+        SELECT attempt_id, question_id, attempt_number, submitted_value_json, correctness, source, created_at
         FROM diagnostic_attempts
         WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
         ORDER BY created_at ASC, attempt_number ASC
@@ -37,6 +37,7 @@ export async function onRequestGet({ request, env }) {
         attemptId: row.attempt_id,
         questionId: row.question_id,
         attemptNumber: Number(row.attempt_number || 0),
+        submittedValue: (() => { try { return JSON.parse(row.submitted_value_json || "null"); } catch { return null; } })(),
         correctness: row.correctness,
         source: row.source,
         createdAt: row.created_at
