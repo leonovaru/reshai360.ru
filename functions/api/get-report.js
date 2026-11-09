@@ -19,6 +19,7 @@ export async function onRequestPost({ request, env }) {
     }
 
     const order = JSON.parse(raw);
+    if (order.previewTest === true) return Response.json({ success: false, message: 'Получение сохранённого PDF отключено для тестового Preview-заказа.' }, { status: 403 });
     const expiresAt = Number(order.linkExpiresAt) || 0;
     if (order.isPaid !== true || order.isCompleted !== true || (expiresAt && expiresAt <= Date.now())) {
       return Response.json({ success: false, message: "Доступ к отчёту недействителен." }, { status: 403 });
