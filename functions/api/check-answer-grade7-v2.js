@@ -35,7 +35,7 @@ export async function onRequestPost({ request, env }) {
       return jsonError("Некорректный формат ответа.", 400);
     }
 
-    const access = await getPaidGrade7Order(env, token);
+    const access = await getPaidGrade7Order(env, token, request);
     if (access.error) return progressErrorResponse(access.error, access.status);
     const diagnostic = access.diagnostic;
     const question = resolveGrade7Question(access.order.productKey, questionId);
