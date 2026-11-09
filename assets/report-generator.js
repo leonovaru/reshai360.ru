@@ -403,10 +403,37 @@
         .filter(item => item && typeof item.questionId === "string")
         .map(item => [item.questionId, item])
     );
-    const diagnosticProfile = suppliedDiagnosticProfile || answersSnapshot.diagnosticProfile || null;
-    const match = String(global.location && global.location.pathname || "").match(/test_(\d+)_(basic|advanced)/i);
+    let diagnosticProfile = suppliedDiagnosticProfile || answersSnapshot.diagnosticProfile || null;
+    const match = String(global.location && global.location.pathname || "").match(/test_(\\d+)_(basic|advanced)/i);
     const grade = match ? match[1] : "";
     const level = match ? match[2] : "basic";
+    if (grade === "7" && answersSnapshot.schemaVersion === 2 && serverResults.size &&
+        global.Reshai360Grade7Diagnostic && typeof global.Reshai360Grade7Diagnostic.evaluate === "function") {
+      const serverRatedQuiz = quizData.map((block, blockIndex) => ({
+        ...block,
+        themes: (block.themes || []).map((theme, themeIndex) => ({
+          ...theme,
+          questions: (theme.questions || []).map((question, questionIndex) => {
+            const questionId = "q_" + blockIndex + "_" + themeIndex + "_" + questionIndex;
+            const serverResult = serverResults.get(questionId);
+            const answer = serverResult && serverResult.answer;
+            let userText = question.type === "radio" ? "Не выбрано" : "Не введено";
+            if (answer && answer.type === "radio") {
+              const option = (question.options || [])[Number(answer.value)];
+              if (option !== undefined) userText = String(option);
+            } else if (answer && answer.type === "text") {
+              userText = String(answer.value ?? "").replace(/\\./g, ",");
+            }
+            return {
+              ...question,
+              userText,
+              isCorrect: serverResult ? serverResult.correctness === "CORRECT" : undefined
+            };
+          })
+        }))
+      }));
+      diagnosticProfile = global.Reshai360Grade7Diagnostic.evaluate({ quizData: serverRatedQuiz, level });
+    }
     const levelLabel = grade === "7" ? (level === "basic" ? "Фундамент" : "Применение") : (level === "basic" ? "Лёгкий старт" : "Полная диагностика");
     const dateText = new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
     let score = 0;
