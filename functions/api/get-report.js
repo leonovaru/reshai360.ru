@@ -1,5 +1,5 @@
 const RESULTS_REPORT_VERSION = 10;
-const GRADE7_V2_REPORT_VERSION = 11;
+const GRADE7_V2_REPORT_VERSION = 12;
 
 export async function onRequestPost({ request, env }) {
   try {
