@@ -70,7 +70,7 @@ export async function onRequestPost(context) {
       return Response.json({ success: false, message: "Завершить можно только оплаченную диагностику." }, { status: 403 });
     }
 
-    let changed = false;
+    let changed = Boolean(grade7V2Snapshot);
     if (tokenData.isCompleted !== true) {
       tokenData.isCompleted = true;
       tokenData.completedAt = new Date().toISOString();
