@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 23;
+  const VERSION = 24;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -154,14 +154,21 @@
     const rows = (profile.competencies || []).map(item =>
       "<tr><td style='padding:7px;border-bottom:1px solid #e2e8f0;'>" + escapeHtml(item.competencyId + " · " + item.name) +
       "</td><td style='padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
-      item.topicsWithEvidence + " / " + item.presentedTopics + "</td><td style='padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
-      item.topicsWithRepeatedEvidence + "</td></tr>"
+      item.unitsWithEvidence + " / " + item.presentedUnits + "</td><td style='padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
+      item.unitsWithRepeatedEvidence + "</td></tr>"
     ).join("");
-    const repeated = (profile.skills || []).filter(skill => skill.evidenceCount >= 2 || skill.partialCount > 0 || skill.incompleteCount > 0).slice(0, 10);
+    const repeated = (profile.skills || [])
+      .filter(skill => skill.evidenceCount >= 2 || skill.partialCount > 0 || skill.incompleteCount > 0)
+      .sort((a, b) => {
+        const priority = skill => skill.errorHypothesisLevel === "H2" ? 0 :
+          skill.partialCount > 0 ? 1 : skill.incompleteCount > 0 ? 2 :
+          skill.errorHypothesisLevel === "H1" ? 3 : 4;
+        return priority(a) - priority(b);
+      }).slice(0, 10);
     const repeatedHtml = repeated.length
       ? "<ul style='font-size:.86em;line-height:1.4;margin:0;padding-left:20px;'>" +
         repeated.map(skill =>
-          "<li style='margin:5px 0;'><b>" + escapeHtml(skill.topicName) + ":</b> " + escapeHtml(skill.status) +
+          "<li style='margin:5px 0;'><b>" + escapeHtml(skill.skillLabel || skill.topicName) + ":</b> " + escapeHtml(skill.status) +
           (skill.partialCount > 0 ? " (частичный результат: " + skill.correctCount + " верно, " + skill.incorrectCount + " с ошибкой)." :
           skill.incompleteCount > 0 ? " (неполное выполнение: " + skill.unansweredCount + " ответов без ответа)." :
           skill.evidenceCount > 0 ? " (верно: " + skill.correctCount + ", с ошибкой: " + skill.incorrectCount + ")." : ".") +
@@ -174,11 +181,11 @@
       "<p style='font-size:.82em;color:#64748b;margin:0 0 12px;'>Методика " + escapeHtml(profile.version || "") +
       " · банк заданий " + escapeHtml(profile.bankVersion || "") + " · предварительная разметка</p>" +
       "<div class='pdf-analytics-title'>Покрытие компетенций</div>" +
-      "<p style='font-size:.82em;line-height:1.4;margin:0 0 8px;'>В таблице показано, по скольким темам получены оценённые ответы. Это показатель покрытия, а не уровень сформированности компетенции.</p>" +
+      "<p style='font-size:.82em;line-height:1.4;margin:0 0 8px;'>В таблице показано, по скольким диагностическим единицам получены оценённые ответы. В разделённых темах разные действия считаются отдельно. Это показатель покрытия, а не уровень сформированности компетенции.</p>" +
       "<table style='width:100%;border-collapse:collapse;font-size:.82em;margin-bottom:16px;'><thead><tr>" +
       "<th style='text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;'>Компетенция</th>" +
-      "<th style='padding:7px;border-bottom:1px solid #cbd5e1;'>Темы с данными</th>" +
-      "<th style='padding:7px;border-bottom:1px solid #cbd5e1;'>Повторные</th></tr></thead><tbody>" + rows + "</tbody></table>" +
+      "<th style='padding:7px;border-bottom:1px solid #cbd5e1;'>Диагностические единицы с данными</th>" +
+      "<th style='padding:7px;border-bottom:1px solid #cbd5e1;'>Единицы с повторными наблюдениями</th></tr></thead><tbody>" + rows + "</tbody></table>" +
       "<div class='pdf-analytics-title'>Навыки с повторными свидетельствами или неполным результатом</div>" + repeatedHtml +
       "<div class='pdf-analytics-title' style='margin-top:16px;'>Ограничения интерпретации</div>" +
       "<ul style='font-size:.8em;line-height:1.35;margin:0;padding-left:20px;'>" + limitations + "</ul>" +
