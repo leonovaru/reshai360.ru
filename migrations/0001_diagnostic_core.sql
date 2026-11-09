@@ -2,6 +2,7 @@
 -- Migration: 0001_diagnostic_core
 -- This migration creates new tables only. It does not read, alter, or delete KV data.
 -- D1 enforces SQLite foreign-key constraints by default.
+-- Single-column IDs are explicitly NOT NULL; triggers provide an additional guard.
 
 CREATE TABLE IF NOT EXISTS diagnostic_progress (
   token TEXT NOT NULL,
@@ -22,7 +23,7 @@ CREATE TABLE IF NOT EXISTS diagnostic_progress (
 );
 
 CREATE TABLE IF NOT EXISTS diagnostic_attempts (
-  attempt_id TEXT PRIMARY KEY,
+  attempt_id TEXT NOT NULL PRIMARY KEY,
   token TEXT NOT NULL,
   diagnostic_id TEXT NOT NULL,
   diagnostic_version TEXT NOT NULL,
@@ -44,7 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_attempts_token_question
   ON diagnostic_attempts(token, diagnostic_id, diagnostic_version, question_id, created_at);
 
 CREATE TABLE IF NOT EXISTS diagnostic_completions (
-  completion_id TEXT PRIMARY KEY,
+  completion_id TEXT NOT NULL PRIMARY KEY,
   token TEXT NOT NULL,
   diagnostic_id TEXT NOT NULL,
   diagnostic_version TEXT NOT NULL,
@@ -59,7 +60,7 @@ CREATE TABLE IF NOT EXISTS diagnostic_completions (
 );
 
 CREATE TABLE IF NOT EXISTS report_deliveries (
-  delivery_id TEXT PRIMARY KEY,
+  delivery_id TEXT NOT NULL PRIMARY KEY,
   completion_id TEXT NOT NULL,
   channel TEXT NOT NULL CHECK (channel IN ('EMAIL', 'TELEGRAM')),
   status TEXT NOT NULL DEFAULT 'PENDING'
@@ -78,7 +79,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_report_delivery_completion_channel
   ON report_deliveries(completion_id, channel);
 
 CREATE TABLE IF NOT EXISTS promo_issuances (
-  issuance_id TEXT PRIMARY KEY,
+  issuance_id TEXT NOT NULL PRIMARY KEY,
   completion_id TEXT NOT NULL UNIQUE,
   promo_code TEXT NOT NULL UNIQUE,
   status TEXT NOT NULL DEFAULT 'ISSUED'
@@ -105,7 +106,7 @@ CREATE INDEX IF NOT EXISTS idx_diagnostic_operations_created
   ON diagnostic_operations(created_at);
 
 CREATE TABLE IF NOT EXISTS outbox_events (
-  event_id TEXT PRIMARY KEY,
+  event_id TEXT NOT NULL PRIMARY KEY,
   completion_id TEXT NOT NULL,
   event_type TEXT NOT NULL
     CHECK (event_type IN ('ISSUE_PROMO', 'SEND_EMAIL', 'SEND_TELEGRAM')),
@@ -142,3 +143,75 @@ CREATE TABLE IF NOT EXISTS legacy_migrations (
 
 CREATE INDEX IF NOT EXISTS idx_legacy_migrations_status
   ON legacy_migrations(status, updated_at);
+
+-- Defensive NULL guards for single-column identifiers.
+-- Fresh installations also enforce NOT NULL at the column definition level.
+CREATE TRIGGER IF NOT EXISTS trg_attempt_id_not_null
+BEFORE INSERT ON diagnostic_attempts
+WHEN NEW.attempt_id IS NULL
+BEGIN
+  SELECT RAISE(ABORT, 'attempt_id is required');
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_attempt_id_not_null_update
+BEFORE UPDATE OF attempt_id ON diagnostic_attempts
+WHEN NEW.attempt_id IS NULL
+BEGIN
+  SELECT RAISE(ABORT, 'attempt_id is required');
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_completion_id_not_null
+BEFORE INSERT ON diagnostic_completions
+WHEN NEW.completion_id IS NULL
+BEGIN
+  SELECT RAISE(ABORT, 'completion_id is required');
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_completion_id_not_null_update
+BEFORE UPDATE OF completion_id ON diagnostic_completions
+WHEN NEW.completion_id IS NULL
+BEGIN
+  SELECT RAISE(ABORT, 'completion_id is required');
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_delivery_id_not_null
+BEFORE INSERT ON report_deliveries
+WHEN NEW.delivery_id IS NULL
+BEGIN
+  SELECT RAISE(ABORT, 'delivery_id is required');
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_delivery_id_not_null_update
+BEFORE UPDATE OF delivery_id ON report_deliveries
+WHEN NEW.delivery_id IS NULL
+BEGIN
+  SELECT RAISE(ABORT, 'delivery_id is required');
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_issuance_id_not_null
+BEFORE INSERT ON promo_issuances
+WHEN NEW.issuance_id IS NULL
+BEGIN
+  SELECT RAISE(ABORT, 'issuance_id is required');
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_issuance_id_not_null_update
+BEFORE UPDATE OF issuance_id ON promo_issuances
+WHEN NEW.issuance_id IS NULL
+BEGIN
+  SELECT RAISE(ABORT, 'issuance_id is required');
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_outbox_event_id_not_null
+BEFORE INSERT ON outbox_events
+WHEN NEW.event_id IS NULL
+BEGIN
+  SELECT RAISE(ABORT, 'event_id is required');
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_outbox_event_id_not_null_update
+BEFORE UPDATE OF event_id ON outbox_events
+WHEN NEW.event_id IS NULL
+BEGIN
+  SELECT RAISE(ABORT, 'event_id is required');
+END;
