@@ -321,8 +321,8 @@
                 <div class="glass-panel rounded-2xl p-5 border border-slate-800 space-y-2">
                     <span class="text-xs font-bold text-indigo-300 uppercase tracking-wide">Шаг 2</span>
                     <h3 class="text-lg font-bold text-white">Выберите формат диагностики</h3>
-                    <p class="text-sm text-slate-300 leading-relaxed"><strong class="text-white">Лёгкий старт</strong> — несложные задания в один-два шага. Подойдёт, если хочется начать с более комфортного уровня и выявить основные пробелы.</p>
-                    <p class="text-sm text-slate-300 leading-relaxed"><strong class="text-white">Полная диагностика</strong> — задания разной сложности, в том числе многошаговые. Рекомендуем этот вариант, чтобы оценить, насколько хорошо ученик действительно усвоил темы и умеет применять знания самостоятельно.</p>
+                    <p class="text-sm text-slate-300 leading-relaxed">Первый уровень — проверка понимания основных понятий и умения выполнять простые типовые действия.</p>
+                    <p class="text-sm text-slate-300 leading-relaxed">Второй уровень — проверка умения самостоятельно использовать знания в стандартных задачах, в том числе в несколько действий.</p>
                 </div>
                 <div class="glass-panel rounded-2xl p-5 border border-slate-800 space-y-2">
                     <span class="text-xs font-bold text-indigo-300 uppercase tracking-wide">Шаг 3</span>
@@ -400,12 +400,12 @@
                             </div>
                             <div id="level-selector" class="space-y-2">
                                 <button type="button" onclick="selectOption('10_basic')" id="btn-10_basic" class="level-btn w-full text-left px-3 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:border-indigo-500 transition">
-                                    <span class="flex items-center justify-between gap-2 text-sm font-bold text-white"><span>Лёгкий старт</span><span class="level-price text-indigo-300 whitespace-nowrap">790 ₽</span></span>
-                                    <span class="block text-xs font-normal text-slate-300 mt-1">Несложные задания в один-два шага</span>
+                                    <span class="flex items-center justify-between gap-2 text-sm font-bold text-white"><span class="level-name">Лёгкий старт</span><span class="level-price text-indigo-300 whitespace-nowrap">790 ₽</span></span>
+                                    <span class="level-description block text-xs font-normal text-slate-300 mt-1">Несложные задания в один-два шага</span>
                                 </button>
                                 <button type="button" onclick="selectOption('10_advanced')" id="btn-10_advanced" class="level-btn w-full text-left px-3 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:border-indigo-500 transition">
-                                    <span class="flex items-center justify-between gap-2 text-sm font-bold text-white"><span>Полная диагностика</span><span class="level-price text-indigo-300 whitespace-nowrap">990 ₽</span></span>
-                                    <span class="block text-xs font-normal text-slate-300 mt-1">Задания разной сложности, в том числе многошаговые</span>
+                                    <span class="flex items-center justify-between gap-2 text-sm font-bold text-white"><span class="level-name">Полная диагностика</span><span class="level-price text-indigo-300 whitespace-nowrap">990 ₽</span></span>
+                                    <span class="level-description block text-xs font-normal text-slate-300 mt-1">Задания разной сложности, в том числе многошаговые</span>
                                 </button>
                             </div>
                         </div>
@@ -617,14 +617,14 @@
             if (offerCheckbox) offerCheckbox.checked = state.offerAccepted === true;
             if (consentCheckbox) consentCheckbox.checked = state.personalDataConsent === true;
 
-            if (typeof state.productKey === 'string' && /^(7|8|9|10|11)(_(basic|advanced))?$/.test(state.productKey)) {
+            if (typeof state.productKey === 'string' && /^(7|8|9|10|11)(_(basic|advanced)(?:_v2)?)?$/.test(state.productKey)) {
                 selectOption(state.productKey);
             }
 
             const promoInput = document.getElementById('promo-code');
             if (promoInput && typeof state.promoCode === 'string' && state.promoCode) {
                 promoInput.value = state.promoCode;
-                if (currentSelectedProductKey && /_(basic|advanced)$/.test(currentSelectedProductKey)) {
+                if (currentSelectedProductKey && /_(basic|advanced)(?:_v2)?$/.test(currentSelectedProductKey)) {
                     await applyPromoCode();
                 }
             }
@@ -992,7 +992,7 @@
                 document.getElementById('mobile-blocks-container').innerHTML = document.getElementById('blocks-container').innerHTML;
                 return;
             }
-            const isLevelKey = /^(7|8|9|10|11)_(basic|advanced)$/.test(key);
+            const isLevelKey = /^(7|8|9|10|11)_(basic|advanced)(?:_v2)?$/.test(key);
             const gradeKey = isLevelKey ? key.split('_')[0] : key;
             const gradeSelect = document.getElementById('grade-select');
             const gradeWasAlreadySelected = !!(gradeSelect && gradeSelect.value === gradeKey);
@@ -1001,18 +1001,36 @@
             const levelSelector = document.getElementById('level-selector');
             const buttons = levelSelector.querySelectorAll('.level-btn');
             buttons.forEach(btn => { btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); });
-            buttons[0].id = 'btn-' + gradeKey + '_basic';
-            buttons[0].setAttribute('onclick', "selectOption('" + gradeKey + "_basic')");
-            buttons[1].id = 'btn-' + gradeKey + '_advanced';
-            buttons[1].setAttribute('onclick', "selectOption('" + gradeKey + "_advanced')");
+            const useGrade7V2 = gradeKey === '7';
+            const basicProductKey = gradeKey + (useGrade7V2 ? '_basic_v2' : '_basic');
+            const advancedProductKey = gradeKey + (useGrade7V2 ? '_advanced_v2' : '_advanced');
+            buttons[0].id = 'btn-' + basicProductKey;
+            buttons[0].setAttribute('onclick', "selectOption('" + basicProductKey + "')");
+            buttons[1].id = 'btn-' + advancedProductKey;
+            buttons[1].setAttribute('onclick', "selectOption('" + advancedProductKey + "')");
+            const basicName = buttons[0].querySelector('.level-name');
+            const advancedName = buttons[1].querySelector('.level-name');
+            const basicDescription = buttons[0].querySelector('.level-description');
+            const advancedDescription = buttons[1].querySelector('.level-description');
+            if (useGrade7V2) {
+                if (basicName) basicName.textContent = 'Фундамент';
+                if (advancedName) advancedName.textContent = 'Применение';
+                if (basicDescription) basicDescription.textContent = 'Фундаментальные знания и простые типовые действия';
+                if (advancedDescription) advancedDescription.textContent = 'Самостоятельное решение стандартных задач';
+            } else {
+                if (basicName) basicName.textContent = 'Лёгкий старт';
+                if (advancedName) advancedName.textContent = 'Полная диагностика';
+                if (basicDescription) basicDescription.textContent = 'Несложные задания в один-два шага';
+                if (advancedDescription) advancedDescription.textContent = 'Задания разной сложности, включая многошаговые';
+            }
             buttons.forEach(btn => {
                 btn.classList.remove('border-indigo-500', 'bg-indigo-600', 'shadow-lg', 'shadow-indigo-600/30');
                 btn.classList.add('border-slate-700', 'bg-slate-900');
             });
             const config = window.CONFIG || (typeof CONFIG !== 'undefined' ? CONFIG : null);
             const programs = config && config.programs ? config.programs : {};
-            const baseData = programs[gradeKey + '_basic'];
-            const advancedData = programs[gradeKey + '_advanced'];
+            const baseData = programs[basicProductKey];
+            const advancedData = programs[advancedProductKey];
             if (baseData) buttons[0].querySelector('.level-price').textContent = baseData.price;
             if (advancedData) buttons[1].querySelector('.level-price').textContent = advancedData.price;
             if (!isLevelKey) {
@@ -1059,8 +1077,11 @@
                 activeBtn.classList.add('border-indigo-500', 'bg-indigo-600', 'shadow-lg', 'shadow-indigo-600/30');
             }
             document.getElementById('card-title').innerText = 'Диагностика ' + gradeKey + ' класса';
-            document.getElementById('card-level').innerText = key.endsWith('_basic') ? 'Лёгкий старт' : 'Полная диагностика';
-            document.getElementById('card-desc').innerText = 'Содержание программы одинаковое для обоих уровней; меняется сложность заданий.';
+            const isGrade7V2 = key.endsWith('_v2');
+            document.getElementById('card-level').innerText = key.endsWith('_basic_v2') ? 'Фундамент' : (key.endsWith('_advanced_v2') ? 'Применение' : (key.endsWith('_basic') ? 'Лёгкий старт' : 'Полная диагностика'));
+            document.getElementById('card-desc').innerText = isGrade7V2
+                ? (key.endsWith('_basic_v2') ? 'Проверка фундаментальных знаний и простых типовых действий.' : 'Проверка самостоятельного применения знаний в стандартных задачах.')
+                : 'Содержание программы одинаковое для обоих уровней; меняется сложность заданий.';
             const paymentAvailable = true;
             appliedPromoCode = '';
             appliedPromoDiscount = 0;

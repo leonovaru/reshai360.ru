@@ -1,5 +1,7 @@
 import { ensurePaidOrderLinkExpiry, getOrderExpirationTtl } from "../_lib/telegram-payment.js";
 import { scheduleOrderSync } from "../_lib/google-sheets.js";
+import { isGrade7V2Product } from "../_lib/grade7-d1-progress.js";
+import { completeGrade7InD1 } from "../_lib/grade7-d1-completion.js";
 export async function onRequestPost(context) {
   const { request, env } = context;
   try {
@@ -19,7 +21,10 @@ export async function onRequestPost(context) {
     const snapshot = {
       answers: input.answers,
       marked: Array.isArray(input.marked) ? input.marked : [],
-      stats: input.stats && typeof input.stats === "object" && !Array.isArray(input.stats) ? input.stats : {}
+      stats: input.stats && typeof input.stats === "object" && !Array.isArray(input.stats) ? input.stats : {},
+      diagnosticProfile: input.diagnosticProfile && typeof input.diagnosticProfile === "object" && !Array.isArray(input.diagnosticProfile)
+        ? input.diagnosticProfile
+        : null
     };
 
     if (JSON.stringify(snapshot).length > 512000) {
@@ -32,18 +37,56 @@ export async function onRequestPost(context) {
     }
 
     const tokenData = JSON.parse(tokenDataRaw);
+    const requestHost = new URL(request.url).hostname;
+    const isPagesPreviewHost = requestHost.endsWith('.pages.dev') && requestHost !== 'reshai360-ru.pages.dev';
+    if (tokenData.previewTest === true && !isPagesPreviewHost) return Response.json({ success: false, message: 'Тестовый заказ доступен только в Preview.' }, { status: 403 });
+    const isPreviewTestOrder = tokenData.previewTest === true && isPagesPreviewHost;
+    let grade7V2Snapshot = null;
+    if (isGrade7V2Product(tokenData.productKey)) {
+      const completion = await completeGrade7InD1(env, token, input, request);
+      if (completion.error) {
+        const messages = {
+          INVALID_TOKEN: "Ссылка на диагностику недействительна или истекла.",
+          INVALID_ORDER: "Не удалось проверить заказ.",
+          NOT_PAID: "Завершить можно только оплаченную диагностику.",
+          EXPIRED: "Срок действия ссылки на диагностику истёк.",
+          DATABASE_UNAVAILABLE: "Хранилище диагностики временно недоступно.",
+          DIAGNOSTIC_UNAVAILABLE: "Банк диагностики временно недоступен.",
+          INVALID_SNAPSHOT: "Некорректные данные завершения диагностики.",
+          UNKNOWN_QUESTION: "В снимке обнаружено неизвестное задание.",
+          INVALID_ANSWER: "Некорректный формат ответа.",
+          INVALID_MARKED_QUESTION: "Некорректный список отмеченных заданий.",
+          ALREADY_LOCKED: "Диагностика уже заблокирована.",
+          COMPLETION_CORRUPTED: "Не удалось прочитать сохранённый результат.",
+          COMPLETION_TOO_LARGE: "Размер результатов превышает допустимый.",
+          COMPLETION_FAILED: "Не удалось зафиксировать результат в базе данных."
+        };
+        return Response.json({ success: false, message: messages[completion.error] || "Не удалось завершить диагностику." }, {
+          status: completion.status || 500, headers: { "Cache-Control": "no-store" }
+        });
+      }
+      grade7V2Snapshot = completion.snapshot;
+      tokenData.isCompleted = true;
+      tokenData.completedAt = completion.completedAt || grade7V2Snapshot.completedAt;
+      tokenData.answersSnapshot = grade7V2Snapshot;
+    }
     if (tokenData.isPaid !== true) {
       return Response.json({ success: false, message: "Завершить можно только оплаченную диагностику." }, { status: 403 });
     }
 
-    let changed = false;
+    let changed = Boolean(grade7V2Snapshot);
     if (tokenData.isCompleted !== true) {
       tokenData.isCompleted = true;
       tokenData.completedAt = new Date().toISOString();
       changed = true;
     }
     // Для старых завершённых заказов без снимка дополняем его при первом повторном открытии.
-    if (!tokenData.answersSnapshot) {
+    if (grade7V2Snapshot) {
+      if (JSON.stringify(tokenData.answersSnapshot) !== JSON.stringify(grade7V2Snapshot)) {
+        tokenData.answersSnapshot = grade7V2Snapshot;
+        changed = true;
+      }
+    } else if (!tokenData.answersSnapshot) {
       tokenData.answersSnapshot = snapshot;
       changed = true;
     }
@@ -54,7 +97,7 @@ export async function onRequestPost(context) {
     if (Number(tokenData.linkExpiresAt) !== previousLinkExpiry) changed = true;
 
     // Бонусный промокод создаётся сразу при завершении диагностики, независимо от PDF и email.
-    if (!tokenData.promoCodeIssued) {
+    if (!isPreviewTestOrder && !tokenData.promoCodeIssued) {
       const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
       let promoCode = null;
       for (let attempt = 0; attempt < 8 && !promoCode; attempt++) {
@@ -79,6 +122,8 @@ export async function onRequestPost(context) {
 
     if (changed) await env.TEST_TOKENS.put(token, JSON.stringify(tokenData), { expirationTtl: getOrderExpirationTtl(tokenData) });
 
+    if (isPreviewTestOrder) return Response.json({ success: true, completed: true, completedAt: tokenData.completedAt || null, promoCode: null, previewTest: true, snapshot: grade7V2Snapshot || tokenData.answersSnapshot || null });
+
     const archiveKey = "completed-order:" + token;
     let previousArchive = {};
     try { previousArchive = JSON.parse(await env.TEST_TOKENS.get(archiveKey) || "{}"); } catch {}
@@ -98,7 +143,7 @@ export async function onRequestPost(context) {
     }), { expirationTtl: 3888000 });
     scheduleOrderSync(context, { env, token, order: tokenData, event: "diagnostic_completed" });
 
-    return Response.json({ success: true, completed: true, completedAt: tokenData.completedAt || null, promoCode: tokenData.promoCodeIssued || null });
+    return Response.json({ success: true, completed: true, completedAt: tokenData.completedAt || null, promoCode: tokenData.promoCodeIssued || null, snapshot: grade7V2Snapshot || tokenData.answersSnapshot || null });
   } catch (error) {
     console.error("Complete diagnostic error:", error);
     return Response.json({ success: false, message: "Не удалось сохранить завершение диагностики. Попробуйте ещё раз." }, { status: 500 });

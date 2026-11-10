@@ -1,3 +1,5 @@
+import { getPaidGrade7Order, isGrade7V2Product, progressErrorResponse } from "../_lib/grade7-d1-progress.js";
+
 export async function onRequestGet({ request, env }) {
   try {
     const url = new URL(request.url);
@@ -11,6 +13,64 @@ export async function onRequestGet({ request, env }) {
     if (!tokenDataRaw) return Response.json({ success: false, message: "Ссылка недействительна или срок её действия истёк." }, { status: 403, headers });
 
     const tokenData = JSON.parse(tokenDataRaw);
+    if (isGrade7V2Product(tokenData.productKey)) {
+      const access = await getPaidGrade7Order(env, token, request);
+      if (access.error) return progressErrorResponse(access.error, access.status);
+      const diagnostic = access.diagnostic;
+      const progress = await env.DB.prepare(`
+        SELECT revision, status, drafts_json, marked_json, updated_at
+        FROM diagnostic_progress
+        WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
+      `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion).first();
+      const completion = await env.DB.prepare(`
+        SELECT snapshot_json, completed_at
+        FROM diagnostic_completions
+        WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
+      `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion).first();
+      const attemptRows = await env.DB.prepare(`
+        SELECT attempt_id, question_id, attempt_number, submitted_value_json, correctness, source, created_at
+        FROM diagnostic_attempts
+        WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
+        ORDER BY created_at ASC, attempt_number ASC
+      `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion).all();
+      const attempts = (attemptRows.results || []).map(row => ({
+        attemptId: row.attempt_id,
+        questionId: row.question_id,
+        attemptNumber: Number(row.attempt_number || 0),
+        submittedValue: (() => { try { return JSON.parse(row.submitted_value_json || "null"); } catch { return null; } })(),
+        correctness: row.correctness,
+        source: row.source,
+        createdAt: row.created_at
+      }));
+      let snapshot = null;
+      if (progress) {
+        let drafts = {};
+        let marked = [];
+        try { drafts = JSON.parse(progress.drafts_json || "{}"); } catch {}
+        try { marked = JSON.parse(progress.marked_json || "[]"); } catch {}
+        snapshot = {
+          version: 2,
+          answers: drafts.answers && typeof drafts.answers === "object" ? drafts.answers : {},
+          stats: drafts.stats && typeof drafts.stats === "object" ? drafts.stats : {},
+          marked: Array.isArray(marked) ? marked : [],
+          savedAt: Math.max(Number(drafts.savedAt) || 0, Date.parse(progress.updated_at || "") || 0) || null,
+          revision: Number(progress.revision || 0)
+        };
+      }
+      let answersSnapshot = null;
+      if (completion?.snapshot_json) {
+        try { answersSnapshot = JSON.parse(completion.snapshot_json); } catch {}
+      }
+      const completed = Boolean(completion) || progress?.status === "COMPLETED" || tokenData.isCompleted === true;
+      return Response.json({
+        success: true,
+        snapshot,
+        attempts,
+        completed,
+        completedAt: completion?.completed_at || tokenData.completedAt || null,
+        answersSnapshot
+      }, { headers });
+    }
     if (tokenData.isPaid !== true) return Response.json({ success: false, message: "Доступ к прогрессу не подтверждён." }, { status: 403, headers });
 
     const progressRaw = await env.TEST_TOKENS.get("progress:" + token);

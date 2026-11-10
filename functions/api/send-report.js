@@ -1,7 +1,9 @@
 import { ensurePaidOrderLinkExpiry, getOrderExpirationTtl } from "../_lib/telegram-payment.js";
 import { scheduleOrderSync } from "../_lib/google-sheets.js";
+import { getPaidGrade7Order, isGrade7V2Product } from "../_lib/grade7-d1-progress.js";
 
 const RESULTS_REPORT_VERSION = 10;
+const GRADE7_V2_REPORT_VERSION = 12;
 
 async function getPromoRecordsForEmail(env, email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
@@ -100,7 +102,10 @@ export async function onRequestPost(context) {
           answersSnapshot = {
             answers: parsed.answers,
             marked: Array.isArray(parsed.marked) ? parsed.marked : [],
-            stats: parsed.stats && typeof parsed.stats === "object" ? parsed.stats : {}
+            stats: parsed.stats && typeof parsed.stats === "object" ? parsed.stats : {},
+            diagnosticProfile: parsed.diagnosticProfile && typeof parsed.diagnosticProfile === "object" && !Array.isArray(parsed.diagnosticProfile)
+              ? parsed.diagnosticProfile
+              : null
           };
         }
       }
@@ -123,6 +128,25 @@ export async function onRequestPost(context) {
       );
     }
     const tokenData = JSON.parse(tokenDataRaw);
+    const reportVersion = isGrade7V2Product(tokenData.productKey) ? GRADE7_V2_REPORT_VERSION : RESULTS_REPORT_VERSION;
+    let authoritativeGrade7Snapshot = null;
+    if (isGrade7V2Product(tokenData.productKey)) {
+      const access = await getPaidGrade7Order(env, token, request);
+      if (access.error) return Response.json({ success: false, message: "Не удалось подтвердить завершённую диагностику." }, { status: access.status || 403 });
+      const completion = await env.DB.prepare(`
+        SELECT snapshot_json
+        FROM diagnostic_completions
+        WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
+      `).bind(token, access.diagnostic.diagnosticId, access.diagnostic.diagnosticVersion).first();
+      if (!completion?.snapshot_json) {
+        return Response.json({ success: false, message: "Сначала завершите диагностику и зафиксируйте результат." }, { status: 409 });
+      }
+      try { authoritativeGrade7Snapshot = JSON.parse(completion.snapshot_json); }
+      catch { return Response.json({ success: false, message: "Не удалось прочитать зафиксированный результат." }, { status: 500 }); }
+      // Для v2 серверный снимок и серверная оценка имеют приоритет над полями формы.
+      answersSnapshot = authoritativeGrade7Snapshot;
+      tokenData.answersSnapshot = authoritativeGrade7Snapshot;
+    }
     if (tokenData.isPaid !== true) {
       return Response.json(
         { success: false, message: "Отчёт доступен только после подтверждения оплаты." },
@@ -142,15 +166,26 @@ export async function onRequestPost(context) {
       );
     }
 
-    const scoreNumber = Number(score);
-    const totalNumber = Number(total);
+    const scoreNumber = authoritativeGrade7Snapshot
+      ? Number(authoritativeGrade7Snapshot.scoring?.correct || 0)
+      : Number(score);
+    const totalNumber = authoritativeGrade7Snapshot
+      ? Number(authoritativeGrade7Snapshot.reportMetadata?.questionCount || authoritativeGrade7Snapshot.questions?.length || 0)
+      : Number(total);
+    const evaluatedRaw = formData.get("evaluated");
+    const evaluatedNumber = authoritativeGrade7Snapshot
+      ? Number(authoritativeGrade7Snapshot.scoring?.correct || 0) + Number(authoritativeGrade7Snapshot.scoring?.incorrect || 0)
+      : (evaluatedRaw == null || evaluatedRaw === "" ? totalNumber : Number(evaluatedRaw));
 
     if (
       !Number.isFinite(scoreNumber) ||
       !Number.isFinite(totalNumber) ||
+      !Number.isFinite(evaluatedNumber) ||
       totalNumber <= 0 ||
+      evaluatedNumber < 0 ||
+      evaluatedNumber > totalNumber ||
       scoreNumber < 0 ||
-      scoreNumber > totalNumber
+      scoreNumber > evaluatedNumber
     ) {
       return Response.json(
         { success: false, message: "Некорректный результат теста" },
@@ -158,7 +193,10 @@ export async function onRequestPost(context) {
       );
     }
 
-    const percent = Math.round((scoreNumber / totalNumber) * 100);
+    const percent = evaluatedNumber > 0 ? Math.round((scoreNumber / evaluatedNumber) * 100) : null;
+    const resultSummary = evaluatedNumber > 0
+      ? scoreNumber + " из " + evaluatedNumber + " оценённых ответов (" + percent + "%)"
+      : "нет оценённых ответов";
     const safeName = String(name || "Ученик").replace(/[\\/:*?"<>|]/g, "_");
     const safeNameHtml = String(name || "ученик").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/\x27/g, "&#39;");
 
@@ -169,7 +207,11 @@ export async function onRequestPost(context) {
     let feedbackPrefillToken = null;
     {
         tokenData.isCompleted = true;
-        if (answersSnapshot) tokenData.answersSnapshot = answersSnapshot;
+        if (answersSnapshot) {
+          const isGrade7V2 = tokenData.productKey === "7_basic_v2" || tokenData.productKey === "7_advanced_v2";
+          // Для новой диагностики сохраняем первый завершённый снимок неизменным.
+          if (!isGrade7V2 || !tokenData.answersSnapshot) tokenData.answersSnapshot = answersSnapshot;
+        }
         tokenData.completedAt = tokenData.completedAt || new Date().toISOString();
 
         // Один промокод на завершённую диагностику; повторный запрос отчёта не создаёт новый.
@@ -251,10 +293,11 @@ export async function onRequestPost(context) {
     }
 
     // Отдельный бот результатов получает PDF и ссылку на сохранённую диагностику.
-    if (env.TELEGRAM_RESULTS_BOT_TOKEN && env.TG_CHAT_ID && (!tokenData.resultsTelegramSentAt || Number(tokenData.resultsTelegramReportVersion || 0) < RESULTS_REPORT_VERSION)) {
+    if (env.TELEGRAM_RESULTS_BOT_TOKEN && env.TG_CHAT_ID && (!tokenData.resultsTelegramSentAt || Number(tokenData.resultsTelegramReportVersion || 0) < reportVersion)) {
       try {
         const testFiles = {
           '7': 'test_7_basic.html', '7_basic': 'test_7_basic.html', '7_advanced': 'test_7_advanced.html',
+          '7_basic_v2': 'test_7_basic_v2.html', '7_advanced_v2': 'test_7_advanced_v2.html',
           '8': 'test_8_basic.html', '8_basic': 'test_8_basic.html', '8_advanced': 'test_8_advanced.html',
           '9': 'test_9_basic.html', '9_basic': 'test_9_basic.html', '9_advanced': 'test_9_advanced.html',
           '10': 'test_10_basic.html', '10_basic': 'test_10_basic.html', '10_advanced': 'test_10_advanced.html',
@@ -273,7 +316,7 @@ export async function onRequestPost(context) {
           'Имя: ' + (name || 'Не указано'),
           'Email: ' + (email || 'Не указан'),
           'Открыть диагностику или итоговые результаты: ' + testUrl,
-          'Результат: ' + scoreNumber + ' из ' + totalNumber + ' (' + percent + '%)',
+          'Результат: ' + resultSummary + '; всего заданий: ' + totalNumber,
           'Новый промокод: ' + (promoCode || 'не выдан'),
           'Скидка: ' + (issuedPromo ? Number(issuedPromo.discountPercent || 10) + '%' : '—'),
           'Действует до: ' + expiresText
@@ -297,7 +340,7 @@ export async function onRequestPost(context) {
           tokenData.resultsTelegramSentAt = new Date().toISOString();
           tokenData.resultsTelegramStatus = "Отправлен";
           tokenData.resultsTelegramError = null;
-          tokenData.resultsTelegramReportVersion = RESULTS_REPORT_VERSION;
+          tokenData.resultsTelegramReportVersion = reportVersion;
           if (sentDocument.file_id) tokenData.resultsTelegramFileId = sentDocument.file_id;
           if (sentDocument.file_unique_id) tokenData.resultsTelegramFileUniqueId = sentDocument.file_unique_id;
           if (sentMessage.message_id) tokenData.resultsTelegramMessageId = sentMessage.message_id;
@@ -418,7 +461,8 @@ export async function onRequestPost(context) {
                         <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#475569;">Спасибо, что прошли диагностику на платформе Решай360. Ваш персональный PDF-отчёт с результатами и рекомендациями прикреплён к этому письму.</p>
                         <div style="padding:16px 18px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;">
                           <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Ваш результат</div>
-                          <div style="margin-top:6px;font-size:24px;font-weight:800;color:#312e81;">${scoreNumber} из ${totalNumber} · ${percent}%</div>
+                          <div style="margin-top:6px;font-size:24px;font-weight:800;color:#312e81;">${resultSummary}</div>
+                          <div style="margin-top:4px;font-size:12px;color:#64748b;">Всего заданий: ${totalNumber}; без ответа: ${totalNumber - evaluatedNumber}</div>
                         </div>
                         ${promoCode ? `
                         <div style="margin-top:18px;padding:20px;border-radius:16px;background:#eef2ff;border:1px solid #c7d2fe;">

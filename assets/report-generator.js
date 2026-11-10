@@ -5,7 +5,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = 10;
+  const VERSION = 26;
   const PAGE_WIDTH = 794;
   const PAGE_HEIGHT = 1122;
   const PAGE_CONTENT_HEIGHT = 1030;
@@ -29,7 +29,40 @@
     return NaN;
   }
 
-  function evaluateQuestion(question, questionId, answerSnapshot, statsSnapshot, formatMath) {
+  function isExactReducedFractionAnswer(value, expected) {
+    const parseReduced = input => {
+      const match = normalizeAnswer(input).match(/^([+-]?\d+)\/(\d+)$/);
+      if (!match) return null;
+      const numerator = Number(match[1]);
+      const denominator = Number(match[2]);
+      if (!Number.isSafeInteger(numerator) || !Number.isSafeInteger(denominator) || denominator <= 0) return null;
+      let a = Math.abs(numerator), b = denominator;
+      while (b) { const remainder = a % b; a = b; b = remainder; }
+      return a === 1 ? [numerator, denominator] : null;
+    };
+    const actual = parseReduced(value);
+    const target = parseReduced(expected);
+    return !!actual && !!target && actual[0] === target[0] && actual[1] === target[1];
+  }
+
+  function isExactMixedNumberAnswer(value, expected) {
+    const parseMixed = input => {
+      const match = String(input == null ? "" : input).trim().replace(/,/g, ".").replace(/\s+/g, " ").match(/^([+-]?)(\d+)\s+(\d+)\/(\d+)$/);
+      if (!match) return null;
+      const whole = Number(match[2]);
+      const numerator = Number(match[3]);
+      const denominator = Number(match[4]);
+      if (!Number.isSafeInteger(whole) || !Number.isSafeInteger(numerator) ||
+          !Number.isSafeInteger(denominator) || denominator <= 0 ||
+          numerator <= 0 || numerator >= denominator) return null;
+      return [match[1] === "-" ? -1 : 1, whole, numerator, denominator];
+    };
+    const actual = parseMixed(value);
+    const target = parseMixed(expected);
+    return !!actual && !!target && actual.every((part, index) => part === target[index]);
+  }
+
+  function evaluateQuestion(question, questionId, answerSnapshot, statsSnapshot, formatMath, serverResults) {
     const savedAnswer = answerSnapshot && answerSnapshot.answers && answerSnapshot.answers[questionId];
     const stat = statsSnapshot && statsSnapshot[questionId] || {};
     let rawAnswer = "";
@@ -52,16 +85,29 @@
       correctAnswer = String(question.a == null ? "" : question.a).replace(/\./g, ",");
       isSkipped = !rawAnswer;
       if (rawAnswer) {
-        const userNumber = parseNumeric(rawAnswer);
-        const expectedNumber = parseNumeric(question.a);
-        isCorrect = Number.isFinite(userNumber) && Number.isFinite(expectedNumber)
-          ? Math.abs(userNumber - expectedNumber) < 1e-9
-          : normalizeAnswer(rawAnswer) === normalizeAnswer(question.a);
+        if (question.answerMode === "exact_mixed_number") {
+          isCorrect = isExactMixedNumberAnswer(rawAnswer, question.a);
+        } else if (question.answerMode === "exact_reduced_fraction") {
+          isCorrect = isExactReducedFractionAnswer(rawAnswer, question.a);
+        } else {
+          const userNumber = parseNumeric(rawAnswer);
+          const expectedNumber = parseNumeric(question.a);
+          isCorrect = Number.isFinite(userNumber) && Number.isFinite(expectedNumber)
+            ? Math.abs(userNumber - expectedNumber) < 1e-9
+            : normalizeAnswer(rawAnswer) === normalizeAnswer(question.a);
+        }
       }
+    }
+
+    const serverResult = serverResults && serverResults.get(questionId);
+    if (serverResult) {
+      isSkipped = serverResult.correctness === "UNASSESSED";
+      isCorrect = serverResult.correctness === "CORRECT";
     }
 
     const history = Array.isArray(stat.attemptsHistory) ? stat.attemptsHistory.map(String) : [];
     const checkCount = Math.max(Number(stat.checkCount) || 0, history.length);
+    const selfCorrected = stat.selfCorrected === true;
     const distinctRadioAnswers = new Set(history.filter(item => item && item !== "Не выбрано"));
     if (question.type === "radio" && finalAnswer !== "Не выбрано") distinctRadioAnswers.add(finalAnswer);
     const guessedByBruteForce = question.type === "radio" && (question.options || []).length > 0 && distinctRadioAnswers.size >= question.options.length;
@@ -81,6 +127,10 @@
       badgeText = "Не решено ❌";
     }
 
+    if (isCorrect && selfCorrected && !guessedByBruteForce) {
+      badgeText = "Исправлено самостоятельно ✓";
+    }
+
     const attemptsText = history.length ? history.join(" ➔ ") : "Проверок ещё не было";
     return {
       finalAnswer,
@@ -88,6 +138,7 @@
       isSkipped,
       isCorrect,
       guessedByBruteForce,
+      selfCorrected,
       checkCount,
       attemptsText,
       statusClass,
@@ -96,19 +147,24 @@
     };
   }
 
-  function makeQuestionCard(question, number, result, formatMath) {
+  function makeQuestionCard(question, number, result, formatMath, grade) {
     const questionHtml = typeof formatMath === "function"
       ? formatMath(question.q)
       : escapeHtml(question.q);
     const correctHtml = typeof formatMath === "function"
       ? formatMath(result.correctAnswer)
       : escapeHtml(result.correctAnswer);
+    const answerDetails = grade === "7"
+      ? "<b>Ответ участника:</b> " + escapeHtml(result.finalAnswer) + "<br>" +
+        (result.checkCount ? "<b>История проверок:</b> " + escapeHtml(result.attemptsText) + "<br>" : "")
+      : "<b>Введенных ответов:</b> " + result.checkCount + " | <b>Ответы:</b> " +
+        (result.checkCount ? escapeHtml(result.attemptsText) : (result.isSkipped ? (question.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")) + "<br>";
     return `
       <div class="pdf-card ${result.statusClass}">
         <div class="pdf-q">${number}. ${questionHtml}</div>
         <div class="pdf-card-footer">
           <div class="pdf-ans">
-            <b>Введенных ответов:</b> ${result.checkCount} | <b>Ответы:</b> ${result.checkCount ? escapeHtml(result.attemptsText) : (result.isSkipped ? (question.type === "radio" ? "Не выбрано" : "Не введено") : "Проверок ещё не было")}<br>
+            ${answerDetails}
             <b>Правильный ответ:</b> ${correctHtml}
           </div>
           <span class="badge ${result.badgeClass}">${result.badgeText}</span>
@@ -126,44 +182,120 @@
     }
   }
 
+  function makeCompetencyPage(profile) {
+    const rows = (profile.competencies || []).map(item =>
+      "<tr><td style='padding:7px;border-bottom:1px solid #e2e8f0;'>" + escapeHtml(item.competencyId + " · " + item.name) +
+      "</td><td style='padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
+      item.unitsWithEvidence + " / " + item.presentedUnits + "</td><td style='padding:7px;border-bottom:1px solid #e2e8f0;text-align:center;'>" +
+      item.unitsWithRepeatedEvidence + "</td></tr>"
+    ).join("");
+    const repeated = (profile.skills || [])
+      .filter(skill => skill.evidenceCount >= 2 || skill.partialCount > 0 || skill.incompleteCount > 0)
+      .sort((a, b) => {
+        const priority = skill => skill.errorHypothesisLevel === "H2" ? 0 :
+          skill.partialCount > 0 ? 1 : skill.incompleteCount > 0 ? 2 :
+          skill.errorHypothesisLevel === "H1" ? 3 : 4;
+        return priority(a) - priority(b);
+      }).slice(0, 10);
+    const repeatedHtml = repeated.length
+      ? "<ul style='font-size:.86em;line-height:1.4;margin:0;padding-left:20px;'>" +
+        repeated.map(skill =>
+          "<li style='margin:5px 0;'><b>" + escapeHtml(skill.skillLabel || skill.topicName) + ":</b> " + escapeHtml(skill.status) +
+          (skill.partialCount > 0 ? " (частичный результат: " + skill.correctCount + " верно, " + skill.incorrectCount + " с ошибкой)." :
+          skill.incompleteCount > 0 ? " (неполное выполнение: " + skill.unansweredCount + " ответов без ответа)." :
+          skill.evidenceCount > 0 ? " (верно: " + skill.correctCount + ", с ошибкой: " + skill.incorrectCount + ")." : ".") +
+          " " + escapeHtml(skill.reason) + "</li>"
+        ).join("") + "</ul>"
+      : "<p style='font-size:.86em;line-height:1.4;margin:0;'>Пока недостаточно повторных наблюдений для устойчивых выводов по отдельным навыкам.</p>";
+    const limitations = (profile.limitations || []).map(item => "<li>" + escapeHtml(item) + "</li>").join("");
+    return "<div class='pdf-first-page-content'>" +
+      "<h1 class='pdf-header-title'>Карта компетенций и свидетельств</h1>" +
+      "<p style='font-size:.82em;color:#64748b;margin:0 0 12px;'>Методика " + escapeHtml(profile.version || "") +
+      " · банк заданий " + escapeHtml(profile.bankVersion || "") + " · предварительная разметка</p>" +
+      "<div class='pdf-analytics-title'>Покрытие компетенций</div>" +
+      "<p style='font-size:.82em;line-height:1.4;margin:0 0 8px;'>В таблице показано, по скольким диагностическим единицам получены оценённые ответы. В разделённых темах разные действия считаются отдельно. Это показатель покрытия, а не уровень сформированности компетенции.</p>" +
+      "<table style='width:100%;border-collapse:collapse;font-size:.82em;margin-bottom:16px;'><thead><tr>" +
+      "<th style='text-align:left;padding:7px;border-bottom:1px solid #cbd5e1;'>Компетенция</th>" +
+      "<th style='padding:7px;border-bottom:1px solid #cbd5e1;'>Диагностические единицы с данными</th>" +
+      "<th style='padding:7px;border-bottom:1px solid #cbd5e1;'>Единицы с повторными наблюдениями</th></tr></thead><tbody>" + rows + "</tbody></table>" +
+      "<div class='pdf-analytics-title'>Навыки с повторными свидетельствами или неполным результатом</div>" + repeatedHtml +
+      "<div class='pdf-analytics-title' style='margin-top:16px;'>Ограничения интерпретации</div>" +
+      "<ul style='font-size:.8em;line-height:1.35;margin:0;padding-left:20px;'>" + limitations + "</ul>" +
+      "</div>";
+  }
+
   function makeFirstPage(model) {
-    const { grade, studentName, dateText, score, total, blockRows, repeatTopics, studyTopics } = model;
-    const percent = total ? Math.round(score / total * 100) : 0;
+    const { grade, levelLabel, studentName, dateText, score, total, evaluated, unanswered, blockRows, repeatTopics, studyTopics, diagnosticProfile } = model;
+    const accuracyDenominator = grade === "7" ? evaluated : total;
+    const percent = accuracyDenominator ? Math.round(score / accuracyDenominator * 100) : 0;
+    const scoreLabel = grade === "7" ? "Доля правильных ответов среди оценённых" : "Итоговый результат";
+    const scoreText = grade === "7"
+      ? (evaluated > 0 ? score + " из " + evaluated + " (" + percent + "%)" : "Нет оценённых ответов")
+      : score + " из " + total + " (" + percent + "%)";
+    const topicLimit = 12;
+    const repeatVisible = repeatTopics.slice(0, topicLimit);
+    const studyVisible = studyTopics.slice(0, topicLimit);
     const repeatHtml = repeatTopics.length
-      ? "<ol>" + repeatTopics.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>"
-      : '<p style="margin:0;">Ошибок в решённых заданиях нет.</p>';
+      ? "<ol>" + repeatVisible.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>" + (repeatTopics.length > topicLimit ? '<p style="margin:4px 0 0;">И ещё ' + (repeatTopics.length - topicLimit) + ' тем — см. задания в подробной части отчёта.</p>' : "")
+      : (grade === "7"
+          ? (diagnosticProfile && diagnosticProfile.evaluated === 0
+              ? '<p style="margin:0;">Нет оценённых ответов.</p>'
+              : '<p style="margin:0;">Повторяющихся затруднений по имеющимся наблюдениям не выявлено. Единичные ошибки см. в подробных заданиях.</p>')
+          : '<p style="margin:0;">Ошибок в решённых заданиях нет.</p>');
     const studyHtml = studyTopics.length
-      ? "<ol>" + studyTopics.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>"
+      ? "<ol>" + studyVisible.map(topic => "<li>" + escapeHtml(topic) + "</li>").join("") + "</ol>" + (studyTopics.length > topicLimit ? '<p style="margin:4px 0 0;">И ещё ' + (studyTopics.length - topicLimit) + ' тем — см. задания в подробной части отчёта.</p>' : "")
       : '<p style="margin:0;">Пропущенных заданий нет.</p>';
+    const evidence = diagnosticProfile && diagnosticProfile.evidenceSummary || {};
+    const diagnosticSummaryHtml = grade === "7" && diagnosticProfile
+      ? "<div class='pdf-analytics-title'>Диагностическая интерпретация</div>" +
+        "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Единичное выполнение описывает ответ на конкретное задание, но не подтверждает устойчивое владение навыком. Процент правильных ответов не является уровнем сформированности. Разметка навыков и компетенций предварительная и требует экспертной проверки.</p>" +
+        "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Диагностические единицы с единичным наблюдением: <b>" + (evidence.E1 || 0) +
+        "</b>; повторные наблюдения: <b>" + ((evidence.E2 || 0) + (evidence.E3 || 0)) +
+        "</b>; без оценённых наблюдений: <b>" + (evidence.E0 || 0) + "</b>.</p>" +
+        "<p style='font-size:.78em;line-height:1.35;margin:0 0 6px;'>Повторяющиеся затруднения (H2): <b>" + ((diagnosticProfile.errorHypothesisSummary || {}).H2 || 0) +
+         "</b>; диагностические единицы с частичным результатом: <b>" + (diagnosticProfile.partialSkillCount || 0) +
+        "</b>; с неполным выполнением: <b>" + (diagnosticProfile.skills || []).filter(skill => skill.incompleteCount > 0).length + "</b>. Подробная карта компетенций и повторных наблюдений приведена на следующей странице.</p>"
+      : "";
+    const blockHeading = grade === "7"
+      ? "Доля правильных ответов по блокам (описательный показатель)"
+      : "Результат диагностики";
+    const repeatHeading = grade === "7"
+      ? "Темы с повторяющимися затруднениями:"
+      : "⚠️ Темы для повторения (ошибки / перебор):";
+    const studyHeading = grade === "7"
+      ? "Темы с пропущенными заданиями (недостаточно данных):"
+      : "📌 Темы для изучения (не решено):";
     return `
       <div class="pdf-first-page-content">
         <h1 class="pdf-header-title">Диагностическая карта знаний</h1>
         <div class="pdf-score-card">
           <div class="pdf-student-info">
-            ${escapeHtml(grade)} класс<br>
+            ${escapeHtml(grade)} класс · ${escapeHtml(levelLabel || "")}<br>
             <strong>Ученик:</strong> ${escapeHtml(studentName)}<br>
             Дата прохождения: ${escapeHtml(dateText)}
           </div>
           <div class="pdf-score-right">
-            <div class="pdf-score-label">Итоговый результат</div>
-            <div class="pdf-score-main">${score} из ${total} (${percent}%)</div>
+            <div class="pdf-score-label">${scoreLabel}</div>
+            <div class="pdf-score-main">${scoreText}</div>
+            ${grade === "7" ? "<div class='pdf-score-label'>Всего заданий: " + total + "; без ответа: " + unanswered + "</div>" : ""}
           </div>
         </div>
-        <div class="pdf-analytics-title">Результат диагностики</div>
+        <div class="pdf-analytics-title">${blockHeading}</div>
         <div>${blockRows}</div>
+        ${diagnosticSummaryHtml}
         <div class="pdf-topics-container">
           <div class="pdf-topics-box repeat">
-            <h4>⚠️ Темы для повторения (ошибки / перебор):</h4>${repeatHtml}
+            <h4>${repeatHeading}</h4>${repeatHtml}
           </div>
           <div class="pdf-topics-box study">
-            <h4>📌 Темы для изучения (не решено):</h4>${studyHtml}
+            <h4>${studyHeading}</h4>${studyHtml}
           </div>
         </div>
       </div>`;
   }
 
   async function buildPages(model) {
-    const { firstPageHtml, cards, formatMath } = model;
+    const { firstPageHtml, cards, formatMath, grade, diagnosticProfile } = model;
     const measure = document.createElement("div");
     measure.style.cssText = "position:fixed;left:-12000px;top:0;width:714px;padding:0 0 1px;box-sizing:border-box;visibility:hidden;font:15px Arial,sans-serif;";
     document.body.appendChild(measure);
@@ -192,17 +324,23 @@
     }
     measure.remove();
 
-    const totalPages = 1 + detailPages.length;
+    const hasCompetencyPage = grade === "7" && !!diagnosticProfile;
+    const totalPages = 1 + (hasCompetencyPage ? 1 : 0) + detailPages.length;
     let html = '<div class="pdf-page">' + firstPageHtml +
       '<div class="page-footer">Диагностический отчет | Страница 1 из ' + totalPages + '</div></div>';
+    if (hasCompetencyPage) {
+      html += '<div class="pdf-page">' + makeCompetencyPage(diagnosticProfile) +
+        '<div class="page-footer">Диагностический отчет | Страница 2 из ' + totalPages + '</div></div>';
+    }
     let index = 0;
     detailPages.forEach((pageCards, pageIndex) => {
       const start = index + 1;
       const end = index + pageCards.length;
       index += pageCards.length;
+      const pageNumber = pageIndex + (hasCompetencyPage ? 3 : 2);
       html += '<div class="pdf-page"><h3 class="detail-section-title">Результаты выполнения заданий (Задания ' +
         start + "–" + end + ")</h3>" + pageCards.join("") +
-        '<div class="page-footer">Диагностический отчет | Страница ' + (pageIndex + 2) + " из " + totalPages + "</div></div>";
+        '<div class="page-footer">Диагностический отчет | Страница ' + pageNumber + " из " + totalPages + "</div></div>";
     });
     return html;
   }
@@ -282,16 +420,51 @@
   }
 
   async function generate(options) {
-    const { quizData, snapshot, studentName, formatMath, resultContainer } = options || {};
+    const { quizData, snapshot, studentName, formatMath, resultContainer, diagnosticProfile: suppliedDiagnosticProfile } = options || {};
     if (!Array.isArray(quizData) || !resultContainer) throw new Error("Недостаточно данных для формирования отчёта.");
     const answersSnapshot = snapshot && typeof snapshot === "object" ? snapshot : {};
     const statsSnapshot = answersSnapshot.stats || {};
+    const serverResults = new Map(
+      (Array.isArray(answersSnapshot.questions) ? answersSnapshot.questions : [])
+        .filter(item => item && typeof item.questionId === "string")
+        .map(item => [item.questionId, item])
+    );
+    let diagnosticProfile = suppliedDiagnosticProfile || answersSnapshot.diagnosticProfile || null;
     const match = String(global.location && global.location.pathname || "").match(/test_(\d+)_(basic|advanced)/i);
     const grade = match ? match[1] : "";
     const level = match ? match[2] : "basic";
+    if (grade === "7" && answersSnapshot.schemaVersion === 2 && serverResults.size &&
+        global.Reshai360Grade7Diagnostic && typeof global.Reshai360Grade7Diagnostic.evaluate === "function") {
+      const serverRatedQuiz = quizData.map((block, blockIndex) => ({
+        ...block,
+        themes: (block.themes || []).map((theme, themeIndex) => ({
+          ...theme,
+          questions: (theme.questions || []).map((question, questionIndex) => {
+            const questionId = "q_" + blockIndex + "_" + themeIndex + "_" + questionIndex;
+            const serverResult = serverResults.get(questionId);
+            const answer = serverResult && serverResult.answer;
+            let userText = question.type === "radio" ? "Не выбрано" : "Не введено";
+            if (answer && answer.type === "radio") {
+              const option = (question.options || [])[Number(answer.value)];
+              if (option !== undefined) userText = String(option);
+            } else if (answer && answer.type === "text") {
+              userText = String(answer.value ?? "").replace(/\./g, ",");
+            }
+            return {
+              ...question,
+              userText,
+              isCorrect: serverResult ? serverResult.correctness === "CORRECT" : undefined
+            };
+          })
+        }))
+      }));
+      diagnosticProfile = global.Reshai360Grade7Diagnostic.evaluate({ quizData: serverRatedQuiz, level });
+    }
+    const levelLabel = grade === "7" ? (level === "basic" ? "Фундамент" : "Применение") : (level === "basic" ? "Лёгкий старт" : "Полная диагностика");
     const dateText = new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
     let score = 0;
     let total = 0;
+    let evaluated = 0;
     let blockRows = "";
     const repeatTopics = new Set();
     const studyTopics = new Set();
@@ -301,43 +474,61 @@
     quizData.forEach((block, blockIndex) => {
       let blockCorrect = 0;
       let blockTotal = 0;
+      let blockEvaluated = 0;
       (block.themes || []).forEach((theme, themeIndex) => {
         const themeName = String(theme.theme || "").replace(/^\d+\.\s*/, "");
         (theme.questions || []).forEach((question, questionIndex) => {
           questionNumber++;
           const id = "q_" + blockIndex + "_" + themeIndex + "_" + questionIndex;
-          const result = evaluateQuestion(question, id, answersSnapshot, statsSnapshot, formatMath);
+          const result = evaluateQuestion(question, id, answersSnapshot, statsSnapshot, formatMath, serverResults);
           if (result.isCorrect) blockCorrect++;
           blockTotal++;
+          if (!result.isSkipped) blockEvaluated++;
           if (result.isSkipped) studyTopics.add(themeName);
           else if (!result.isCorrect || result.guessedByBruteForce) repeatTopics.add(themeName);
-          cards.push(makeQuestionCard(question, questionNumber, result, formatMath));
+          cards.push(makeQuestionCard(question, questionNumber, result, formatMath, grade));
         });
       });
-      const blockPercent = blockTotal ? Math.round(blockCorrect / blockTotal * 100) : 0;
-      const fillClass = blockPercent < 50 ? "bg-red" : (blockPercent < 70 ? "bg-yellow" : "bg-green");
+      const blockDenominator = grade === "7" ? blockEvaluated : blockTotal;
+      const blockPercent = blockDenominator ? Math.round(blockCorrect / blockDenominator * 100) : null;
+      const fillClass = blockPercent === null ? "" : (blockPercent < 50 ? "bg-red" : (blockPercent < 70 ? "bg-yellow" : "bg-green"));
+      const blockValue = blockPercent === null
+        ? "нет данных"
+        : (grade === "7" ? blockCorrect + " / " + blockEvaluated + " (" + blockPercent + "%)" : blockPercent + "%");
       blockRows += '<div class="pdf-progress-row"><div class="pdf-progress-header"><span>' +
-        escapeHtml(block.block) + '</span><span>' + blockPercent + '%</span></div><div class="pdf-progress-track">' +
-        '<div class="pdf-progress-fill ' + fillClass + '" style="width:' + blockPercent + '%"></div></div></div>';
+        escapeHtml(block.block) + '</span><span>' + blockValue + '</span></div><div class="pdf-progress-track">' +
+        '<div class="pdf-progress-fill ' + fillClass + '" style="width:' + (blockPercent === null ? 0 : blockPercent) + '%"></div></div></div>';
       score += blockCorrect;
       total += blockTotal;
+      evaluated += blockEvaluated;
     });
+
+    if (grade === "7") {
+      repeatTopics.clear();
+      (diagnosticProfile && diagnosticProfile.skills || []).forEach(skill => {
+        if (skill.status === "Требует развития") repeatTopics.add(skill.topicName);
+      });
+    }
 
     const model = {
       grade,
       level,
+      levelLabel,
       studentName: studentName || "Ученик",
       dateText,
       score,
       total,
+      evaluated,
+      unanswered: total - evaluated,
       blockRows,
       repeatTopics: Array.from(repeatTopics),
       studyTopics: Array.from(studyTopics),
+      diagnosticProfile,
       cards,
       formatMath
     };
     const firstPageHtml = makeFirstPage(model);
-    resultContainer.innerHTML = await buildPages({ firstPageHtml, cards, formatMath });
+    resultContainer.innerHTML = await buildPages({ firstPageHtml, cards, formatMath, grade, diagnosticProfile });
     if (global.MathJax && global.MathJax.typesetClear) {
       try { global.MathJax.typesetClear([resultContainer]); } catch (_) {}
     }

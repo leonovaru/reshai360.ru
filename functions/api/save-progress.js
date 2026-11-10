@@ -1,4 +1,5 @@
 import { ensurePaidOrderLinkExpiry, getOrderExpirationTtl } from "../_lib/telegram-payment.js";
+import { getPaidGrade7Order, isGrade7V2Product, validateGrade7ProgressSnapshot, progressErrorResponse } from "../_lib/grade7-d1-progress.js";
 export async function onRequestPost({ request, env }) {
   try {
     if (!env.TEST_TOKENS) {
@@ -31,6 +32,47 @@ export async function onRequestPost({ request, env }) {
     }
 
     const tokenData = JSON.parse(tokenDataRaw);
+    if (isGrade7V2Product(tokenData.productKey)) {
+      const access = await getPaidGrade7Order(env, token, request);
+      if (access.error) return progressErrorResponse(access.error, access.status);
+      const validated = validateGrade7ProgressSnapshot(input, tokenData.productKey);
+      if (validated.error) return progressErrorResponse(validated.error, 400);
+      const snapshotV2 = {
+        version: 2,
+        answers: validated.snapshot.answers,
+        stats: validated.snapshot.stats,
+        savedAt: Date.now()
+      };
+      const draftsJson = JSON.stringify(snapshotV2);
+      const markedJson = JSON.stringify(validated.snapshot.marked);
+      if (draftsJson.length + markedJson.length > 512000) {
+        return Response.json({ success: false, message: "Размер прогресса превышает допустимый." }, { status: 413 });
+      }
+      const diagnostic = access.diagnostic;
+      const operationId = crypto.randomUUID();
+      const result = await env.DB.prepare(`
+        INSERT INTO diagnostic_progress (
+          token, diagnostic_id, diagnostic_version, revision, status,
+          drafts_json, marked_json, last_operation_id, schema_version
+        ) VALUES (?, ?, ?, 1, 'IN_PROGRESS', ?, ?, ?, 2)
+        ON CONFLICT(token, diagnostic_id, diagnostic_version) DO UPDATE SET
+          revision = diagnostic_progress.revision + 1,
+          drafts_json = excluded.drafts_json,
+          marked_json = excluded.marked_json,
+          last_operation_id = excluded.last_operation_id,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE diagnostic_progress.status = 'IN_PROGRESS'
+      `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion, draftsJson, markedJson, operationId).run();
+      if (!result.success) throw new Error("D1 progress write failed");
+      if (Number(result.meta?.changes || 0) === 0) {
+        return Response.json({ success: false, completed: true, message: "Диагностика уже завершена." }, { status: 409 });
+      }
+      const row = await env.DB.prepare(`
+        SELECT revision FROM diagnostic_progress
+        WHERE token = ? AND diagnostic_id = ? AND diagnostic_version = ?
+      `).bind(token, diagnostic.diagnosticId, diagnostic.diagnosticVersion).first();
+      return Response.json({ success: true, savedAt: snapshotV2.savedAt, revision: Number(row?.revision || 1) });
+    }
     if (tokenData.isPaid !== true) return Response.json({ success: false, message: "Прогресс можно сохранить только для оплаченной диагностики." }, { status: 403 });
     const linkExpiresAt = ensurePaidOrderLinkExpiry(tokenData);
     if (linkExpiresAt <= Date.now()) return Response.json({ success: false, message: "Срок действия ссылки на диагностику истёк." }, { status: 403 });

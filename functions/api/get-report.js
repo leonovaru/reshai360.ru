@@ -1,4 +1,5 @@
 const RESULTS_REPORT_VERSION = 10;
+const GRADE7_V2_REPORT_VERSION = 12;
 
 export async function onRequestPost({ request, env }) {
   try {
@@ -18,13 +19,17 @@ export async function onRequestPost({ request, env }) {
     }
 
     const order = JSON.parse(raw);
+    if (order.previewTest === true) return Response.json({ success: false, message: 'Получение сохранённого PDF отключено для тестового Preview-заказа.' }, { status: 403 });
     const expiresAt = Number(order.linkExpiresAt) || 0;
     if (order.isPaid !== true || order.isCompleted !== true || (expiresAt && expiresAt <= Date.now())) {
       return Response.json({ success: false, message: "Доступ к отчёту недействителен." }, { status: 403 });
     }
 
     const fileId = String(order.resultsTelegramFileId || "").trim();
-    if (!fileId || Number(order.resultsTelegramReportVersion || 0) !== RESULTS_REPORT_VERSION) {
+    const expectedReportVersion = order.productKey === "7_basic_v2" || order.productKey === "7_advanced_v2"
+      ? GRADE7_V2_REPORT_VERSION
+      : RESULTS_REPORT_VERSION;
+    if (!fileId || Number(order.resultsTelegramReportVersion || 0) !== expectedReportVersion) {
       return Response.json({ success: false, message: "Актуальный сохранённый отчёт ещё не готов." }, { status: 404 });
     }
 

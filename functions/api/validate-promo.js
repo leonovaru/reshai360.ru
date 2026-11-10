@@ -6,6 +6,7 @@ export async function onRequestPost({ request, env }) {
     // Все доступные платные уровни. Цена берётся с сервера, а не из запроса браузера.
     const displayPrices = {
       "7_basic": 790, "7_advanced": 990,
+      "7_basic_v2": 790, "7_advanced_v2": 990,
       "8_basic": 790, "8_advanced": 990,
       "9_basic": 790, "9_advanced": 990,
       "10_basic": 790, "10_advanced": 990,
