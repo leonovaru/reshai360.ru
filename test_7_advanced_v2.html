@@ -678,7 +678,18 @@
   }
 
 
-  function restoreGrade7ServerAttempts(attempts) {
+  function applyCorrectQuestionLock(questionId, qDef) {
+    if (!qDef || qDef.isCorrect !== true) return;
+    const textInput = document.getElementById(questionId);
+    if (textInput && textInput.tagName === "INPUT") textInput.disabled = true;
+    document.querySelectorAll('input[name="' + questionId + '"]').forEach(input => { input.disabled = true; });
+    const minusButton = document.getElementById("btn_toggle_" + questionId);
+    if (minusButton) minusButton.disabled = true;
+    const checkButton = document.getElementById("btn_" + questionId);
+    if (checkButton) checkButton.style.display = "none";
+  }
+
+function restoreGrade7ServerAttempts(attempts) {
     const byQuestion = new Map();
     (Array.isArray(attempts) ? attempts : []).forEach(attempt => {
       if (!attempt || attempt.source !== "USER_CHECK" || !attempt.questionId) return;
@@ -721,6 +732,7 @@
         item.qDef.isCorrect = null;
         if (feedback) feedback.textContent = "";
       }
+      applyCorrectQuestionLock(item.id, item.qDef);
     });
   }
 
@@ -1020,7 +1032,7 @@
           }
 
           html += `<div class="question-action-row">`;
-          html += `<button class="btn-check" id="btn_${qId}" onclick="checkSingle(${bIdx}, ${tIdx}, ${qIdx})">Проверить ответ</button>`;
+          html += `<button class="btn-check" id="btn_${qId}" onclick="checkSingle(${bIdx}, ${tIdx}, ${qIdx})">Проверить</button>`;
           html += '<button type="button" class="question-flag" id="flag_' + qId + '" onclick="toggleQuestionFlag(\'' + qId + '\')" aria-label="Отметить задание, чтобы вернуться позже" aria-pressed="false" title="Вернуться к заданию позже">⚑</button>';
           html += `<div class="feedback" id="feed_${qId}"></div></div>`;
           html += `</div>`;
@@ -1119,8 +1131,7 @@
         if (feedEl) feedEl.textContent = "Не удалось подтвердить доступ к диагностике. Обновите страницу.";
         return;
       }
-      if (button) { button.disabled = true; button.textContent = "Проверяем…"; }
-      if (feedEl) feedEl.textContent = "Сохраняем ответ и проверяем…";
+      if (button) button.disabled = true;
       try {
         const saved = await saveQuizProgress(true);
         if (!saved || localProgressDirty) throw new Error("Не удалось сохранить ответ. Проверьте соединение и повторите попытку.");
@@ -1143,6 +1154,7 @@
           feedEl.textContent = result.feedback === "Верно" ? "Верно" : "Попробуй ещё раз";
           feedEl.style.color = qDef.isCorrect ? "#15803d" : "#b45309";
         }
+        applyCorrectQuestionLock(qId, qDef);
         updateQuestionNavigator();
       } catch (error) {
         if (feedEl) {
@@ -1150,7 +1162,7 @@
           feedEl.style.color = "#b91c1c";
         }
       } finally {
-        if (button) { button.disabled = false; button.textContent = "Проверить ответ"; }
+        if (button && qDef.isCorrect !== true) button.disabled = false;
       }
       return;
     }
