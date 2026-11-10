@@ -1443,7 +1443,7 @@
     const hasInstruction = /^(найдите|вычислите|решите|определите|посчитайте|укажите|сравните|постройте|докажите|запишите|округлите|выберите|ответьте|сократите|переведите|представьте|выразите|установите|расположите|выполните|упростите|раскройте|разложите|составьте|дополните|изобразите|рассчитайте|заполните|оцените)\\b/.test(normalized);
     const expressionOnly = plain.length > 0 && !/[a-zа-яё]/i.test(plain);
     const instruction = type === "text" && !hasInstruction
-      ? (expressionOnly ? "Вычислите: " : "Найдите ответ: ")
+      ? (expressionOnly ? "Вычислите: " : "")
       : "";
     return instruction + formatMathText(source);
   }
