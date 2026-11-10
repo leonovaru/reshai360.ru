@@ -314,6 +314,7 @@
   let studentData = { fullName: "Ученик", email: "" };
   let currentToken = "";
   let generatedPdfBlob = null;
+  const isFreePreview = new URLSearchParams(window.location.search).get('free_preview') === '1';
 
   // Готовый PDF хранится в IndexedDB этого браузера до окончания 24-часового доступа.
   function openDiagnosticPdfCache() {
@@ -372,70 +373,75 @@
   let isCompletedView = false;
   let existingPromoCode = "";
 
-  // Проверка токена при загрузке страницы (защита от пересылки и повторного прохождения)
+  // Внутренний бесплатный просмотр доступен только по специальному параметру тестовой ветки.
   window.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
-    currentToken = params.get('token') || localStorage.getItem('testToken');
-
-    if (!currentToken) {
-      alert("Доступ запрещен. Требуется оплата диагностики.");
-      window.location.href = "index.html";
-      return;
-    }
+    currentToken = isFreePreview
+      ? 'free-preview-11-advanced-' + Date.now()
+      : (params.get('token') || localStorage.getItem('testToken'));
 
     let completedSnapshot = null;
     let wasCompleted = false;
-    try {
-      const response = await fetch('/api/verify-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: currentToken })
-      });
 
-      if (!response.ok) {
-        throw new Error(`Сервер проверки доступа ответил с кодом ${response.status}`);
-      }
-
-      const result = await response.json();
-      if (!result.valid) {
-        alert(result.message || "Ссылка недействительна или уже была использована.");
+    if (isFreePreview) {
+      studentData.fullName = localStorage.getItem('studentName') || "Ученик";
+      studentData.email = localStorage.getItem('studentEmail') || "";
+    } else {
+      if (!currentToken) {
+        alert("Доступ запрещен. Требуется оплата диагностики.");
         window.location.href = "index.html";
         return;
       }
 
-      if (result.data) {
-        if (result.data.productKey !== '11_advanced') {
-          alert("Эта ссылка не соответствует выбранному уровню диагностики.");
+      try {
+        const response = await fetch('/api/verify-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: currentToken })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Сервер проверки доступа ответил с кодом ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (!result.valid) {
+          alert(result.message || "Ссылка недействительна или уже была использована.");
           window.location.href = "index.html";
           return;
         }
-        studentData.fullName = result.data.studentName || localStorage.getItem('studentName') || "Ученик";
-        studentData.email = result.data.email || localStorage.getItem('studentEmail') || "";
-        wasCompleted = result.data.isCompleted === true;
-        isCompletedView = wasCompleted;
-        existingPromoCode = String(result.data.promoCodeIssued || "");
-        completedSnapshot = result.data.answersSnapshot || null;
-        serverCompletedSnapshot = completedSnapshot;
-        serverProgressSnapshot = result.data.progressSnapshot || null;
+
+        if (result.data) {
+          if (result.data.productKey !== '11_advanced') {
+            alert("Эта ссылка не соответствует выбранному уровню диагностики.");
+            window.location.href = "index.html";
+            return;
+          }
+          studentData.fullName = result.data.studentName || localStorage.getItem('studentName') || "Ученик";
+          studentData.email = result.data.email || localStorage.getItem('studentEmail') || "";
+          wasCompleted = result.data.isCompleted === true;
+          isCompletedView = wasCompleted;
+          existingPromoCode = String(result.data.promoCodeIssued || "");
+          completedSnapshot = result.data.answersSnapshot || null;
+          serverCompletedSnapshot = completedSnapshot;
+          serverProgressSnapshot = result.data.progressSnapshot || null;
+        }
+      } catch (err) {
+        console.error("Ошибка проверки токена:", err);
+        alert("Не удалось проверить доступ к тесту. Проверьте подключение к интернету и попробуйте открыть ссылку ещё раз.");
+        window.location.href = "index.html";
+        return;
       }
-    } catch (err) {
-      console.error("Ошибка проверки токена:", err);
-      alert("Не удалось проверить доступ к тесту. Проверьте подключение к интернету и попробуйте открыть ссылку ещё раз.");
-      window.location.href = "index.html";
-      return;
     }
 
     progressStorageKey = "reshai360_progress_11_advanced_" + currentToken;
     if (completedSnapshot) {
-      // Серверный снимок завершённой диагностики важнее локального черновика с другого устройства.
       try { localStorage.setItem(progressStorageKey, JSON.stringify({ version: 1, ...completedSnapshot, savedAt: Date.now() })); } catch (_) {}
     }
     await renderQuiz();
-    if (!wasCompleted) createProgressSaveControl();
+    if (!wasCompleted && !isFreePreview) createProgressSaveControl();
     if (!wasCompleted) document.getElementById("main-container").style.visibility = "visible";
-    // После восстановления локального черновика сразу отправляем его на сервер,
-    // чтобы уже введённые ответы стали доступны на другом устройстве.
-    if (!wasCompleted) {
+    if (!wasCompleted && !isFreePreview) {
       const hasRestoredProgress = markedQuestions.size > 0 || questionNavigation.some(item =>
         getQuestionAnswer(item.id, item.qDef) ||
         item.qDef.checkCount > 0 ||
@@ -443,7 +449,7 @@
       );
       if (hasRestoredProgress) saveQuizProgress(true);
     }
-    if (!wasCompleted) startProgressSync();
+    if (!wasCompleted && !isFreePreview) startProgressSync();
     if (wasCompleted) await checkAll(true);
   });
 
@@ -536,6 +542,7 @@
       });
       const snapshot = { version: 1, answers, marked: Array.from(markedQuestions), stats, savedAt: Date.now() };
       localStorage.setItem(progressStorageKey, JSON.stringify(snapshot));
+      if (isFreePreview) return Promise.resolve(true);
       const revision = ++localProgressRevision;
       localProgressDirty = true;
       const saveToServer = () => {
@@ -723,7 +730,7 @@
   }
 
   function startProgressSync() {
-    if (isCompletedView || progressSyncTimer) return;
+    if (isFreePreview || isCompletedView || progressSyncTimer) return;
     lastAppliedServerSavedAt = Math.max(lastAppliedServerSavedAt, Number(serverProgressSnapshot && serverProgressSnapshot.savedAt) || 0);
     syncProgressFromServer();
     progressSyncTimer = setInterval(syncProgressFromServer, 2500);
@@ -1751,35 +1758,41 @@
         attemptsHistory: item.qDef.attemptsHistory || []
       };
     });
-    try {
-      const completionController = new AbortController();
-      const completionTimeout = setTimeout(() => completionController.abort(), 30000);
-      let completionResponse;
-      try {
-        completionResponse = await fetch('/api/complete-diagnostic', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: currentToken, snapshot: completionSnapshot }),
-          signal: completionController.signal
-        });
-      } finally { clearTimeout(completionTimeout); }
-      const completionResult = await completionResponse.json().catch(() => ({}));
-      existingPromoCode = completionResult.promoCode || existingPromoCode;
-      if (!completionResponse.ok || !completionResult.success) {
-        throw new Error(completionResult.message || 'Не удалось зафиксировать завершение диагностики.');
-      }
+    if (isFreePreview) {
       isCompletedView = true;
       document.getElementById('progress-save-control')?.remove();
-      if (progressSyncTimer) {
-        clearInterval(progressSyncTimer);
-        progressSyncTimer = null;
+      if (progressSyncTimer) { clearInterval(progressSyncTimer); progressSyncTimer = null; }
+    } else {
+      try {
+        const completionController = new AbortController();
+        const completionTimeout = setTimeout(() => completionController.abort(), 30000);
+        let completionResponse;
+        try {
+          completionResponse = await fetch('/api/complete-diagnostic', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: currentToken, snapshot: completionSnapshot }),
+            signal: completionController.signal
+          });
+        } finally { clearTimeout(completionTimeout); }
+        const completionResult = await completionResponse.json().catch(() => ({}));
+        existingPromoCode = completionResult.promoCode || existingPromoCode;
+        if (!completionResponse.ok || !completionResult.success) {
+          throw new Error(completionResult.message || 'Не удалось зафиксировать завершение диагностики.');
+        }
+        isCompletedView = true;
+        document.getElementById('progress-save-control')?.remove();
+        if (progressSyncTimer) {
+          clearInterval(progressSyncTimer);
+          progressSyncTimer = null;
+        }
+      } catch (completionError) {
+        console.error('Ошибка фиксации завершения диагностики:', completionError);
+        hideCompletionStatus(); completionInProgress = false;
+        if (finishButton) { finishButton.disabled = false; finishButton.textContent = 'Завершить и посмотреть результаты'; }
+        const errorMessage = completionError.name === 'AbortError' ? 'Сервер долго не отвечает. Проверьте подключение и попробуйте завершить диагностику ещё раз.' : (completionError.message || 'Не удалось сохранить завершение диагностики. Проверьте подключение и нажмите «Завершить» ещё раз.');
+        alert(errorMessage); return;
       }
-    } catch (completionError) {
-      console.error('Ошибка фиксации завершения диагностики:', completionError);
-      hideCompletionStatus(); completionInProgress = false;
-      if (finishButton) { finishButton.disabled = false; finishButton.textContent = 'Завершить и посмотреть результаты'; }
-      const errorMessage = completionError.name === 'AbortError' ? 'Сервер долго не отвечает. Проверьте подключение и попробуйте завершить диагностику ещё раз.' : (completionError.message || 'Не удалось сохранить завершение диагностики. Проверьте подключение и нажмите «Завершить» ещё раз.');
-      alert(errorMessage); return;
     }
 
     let repeatBoxHtml = topicsToRepeat.length > 0 ? `<ol>${topicsToRepeat.map(t => `<li>${t}</li>`).join('')}</ol>` : `<p style="margin: 0;">Ошибок в решенных заданиях нет.</p>`;
@@ -1873,7 +1886,7 @@
     const downloadBtn = document.getElementById("downloadPdfBtn");
     try {
       let savedServerPdfBlob = null;
-      if (isCompletedView && currentToken) {
+      if (!isFreePreview && isCompletedView && currentToken) {
         try {
           const savedReportResponse = await fetch('/api/get-report', {
             method: 'POST',
@@ -1917,7 +1930,7 @@
       }
 
       // Повторный просмотр завершённой диагностики не должен повторно отправлять тот же отчёт.
-      if (currentToken) {
+      if (!isFreePreview && currentToken) {
         const formData = new FormData();
         formData.append('token', currentToken);
         if (studentData.email) formData.append('email', studentData.email);
