@@ -761,10 +761,19 @@ function restoreGrade7ServerAttempts(attempts) {
         return;
       }
       const remote = result && result.success ? result.snapshot : null;
+      if (!result || !result.success) return;
+
+      // История проверок хранится отдельно от черновика. Восстанавливаем её
+      // даже если savedAt снимка уже применён: иначе после перезагрузки
+      // ответы остаются, а результат проверки теряется.
+      restoreGrade7ServerAttempts(result.attempts);
       if (!remote || ![1, 2].includes(remote.version)) return;
 
       const remoteSavedAt = Number(remote.savedAt) || 0;
-      if (remoteSavedAt <= lastAppliedServerSavedAt || localProgressDirty) return;
+      if (remoteSavedAt <= lastAppliedServerSavedAt || localProgressDirty) {
+        updateQuestionNavigator();
+        return;
+      }
       serverProgressSnapshot = remote;
       localStorage.setItem(progressStorageKey, JSON.stringify(remote));
       restoreQuizProgress();
